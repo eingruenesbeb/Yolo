@@ -1,0 +1,13 @@
+name: Yolo
+version: '${version}'
+main: io.github.eingruenesbeb.yolo.Yolo
+api-version: 1.19
+prefix: Yolo
+softdepend: [ AdvancedBan ]
+default-permission: op
+permissions:
+  yolo.exempt:
+    default: op
+    description: Players with this permission cannot get banned by this plugin, when they die. Usually useful for server staff.
+authors: [ eingruenesbeb ]
+description: This plugin facilitates auto-banning people from hardcore servers, with the ability to specify exceptions.
