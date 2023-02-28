@@ -17,7 +17,7 @@ public class YoloEventListener implements Listener {
              if (Yolo.useAB) {
                  BukkitMethods abMethods = new BukkitMethods();
                  abMethods.loadFiles();
-                 boolean layoutConfigured = abMethods.getMessages().contains("Hardcore_death");
+                 boolean layoutConfigured = abMethods.getLayouts().contains("Message.Hardcore_death");
                  if (layoutConfigured) {
                      Bukkit.dispatchCommand(YoloPluginCommandSender.PLUGIN_COMMAND_SENDER, String.format("ban -s %s @Hardcore_death", player.getName()));
                  } else {
