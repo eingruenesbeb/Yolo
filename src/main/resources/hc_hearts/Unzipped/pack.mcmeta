@@ -1,0 +1,6 @@
+{
+  "pack": {
+    "description": "This pack is part of the \"Yolo\" plugin. It automatically converts the hearts to their hardcore version, if you're not exempt.",
+    "pack_format": 10
+  }
+}
