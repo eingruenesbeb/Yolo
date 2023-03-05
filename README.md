@@ -38,7 +38,7 @@ For a general guide to permissions on Bukkit, please refer to
 ## 4. Further considerations:
 
 - If hardcore is enabled in `server.properties`, the resource pack is always forced upon players. Support for disabling
-or custom resource packs is planned and probably coming soon™.
+it or using a custom resource packs is planned and probably coming soon™.
 - If you use AdvancedBan, you can customize the message-layout, by creating one called "Hardcore_death". Please refer 
 to [the Spigot page of AdvancedBan](https://www.spigotmc.org/resources/advancedban.8695/#Configuration) to find out 
 how to do that.
