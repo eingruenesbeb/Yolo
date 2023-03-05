@@ -1,0 +1,3 @@
+# Set a channel-id and send to true, if you want to announce a death on a discord channel.
+send: false
+message_channel_id: ""

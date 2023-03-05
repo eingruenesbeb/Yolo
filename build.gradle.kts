@@ -35,6 +35,8 @@ repositories {
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.19.3-R0.1-SNAPSHOT")
     compileOnly("com.github.DevLeoko:AdvancedBan:v2.3.0")
+    compileOnly("net.dv8tion:JDA:5.0.0-beta.5")
+    compileOnly("com.github.Spicord.Spicord:spicord-common:v5-SNAPSHOT")
     testCompileOnly("io.papermc.paper:paper-api:1.19.3-R0.1-SNAPSHOT")
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
     testImplementation("org.mockito:mockito-core:5.1.1")

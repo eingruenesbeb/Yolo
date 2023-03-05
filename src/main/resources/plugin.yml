@@ -3,7 +3,7 @@ version: '${version}'
 main: io.github.eingruenesbeb.yolo.Yolo
 api-version: 1.19
 prefix: Yolo
-softdepend: [ AdvancedBan ]
+softdepend: [ AdvancedBan, Spicord ]
 default-permission: op
 permissions:
   yolo.exempt:

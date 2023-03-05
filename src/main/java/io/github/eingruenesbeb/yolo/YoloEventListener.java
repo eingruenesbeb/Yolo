@@ -1,6 +1,8 @@
 package io.github.eingruenesbeb.yolo;
 
 import me.leoko.advancedban.bukkit.BukkitMethods;
+import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
@@ -11,14 +13,21 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.jetbrains.annotations.NotNull;
+import org.spicord.bot.DiscordBot;
+import org.spicord.embed.EmbedParser;
+
+import java.util.Objects;
+import java.util.logging.Level;
 
 public class YoloEventListener implements Listener {
+    private final Yolo yoloPluginInstance = Yolo.getPlugin(Yolo.class);
+    
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
-    public void onPlayerDeath(PlayerDeathEvent event) {
+    public void onPlayerDeath(@NotNull PlayerDeathEvent event) {
          Player player = event.getPlayer();
-         String reason = Yolo.PLUGIN_RESOURCE_BUNDLE.getString("player.ban.death");
+         String reason = yoloPluginInstance.getPluginResourceBundle().getString("player.ban.death");
          if (!player.hasPermission("yolo.exempt") && Bukkit.getServer().isHardcore()) {
-             if (Yolo.useAB) {
+             if (yoloPluginInstance.isUseAB()) {
                  BukkitMethods abMethods = new BukkitMethods();
                  abMethods.loadFiles();
                  boolean layoutConfigured = abMethods.getLayouts().contains("Message.Hardcore_death");
@@ -30,7 +39,32 @@ public class YoloEventListener implements Listener {
              } else {
                  player.banPlayerFull(reason);
              }
+             if (yoloPluginInstance.isSpicordBotAvailable()) {
+                 trySend(player);
+             }
          }
+    }
+
+    private void trySend(@NotNull Player player) {
+        DiscordBot bot = yoloPluginInstance.getSpicordBot();
+        String embedFromTemplate;
+        try {
+            embedFromTemplate = yoloPluginInstance.getDeathMessageTemplate().replace("%player_name%", player.getName());
+        } catch (NullPointerException npe){
+            embedFromTemplate = Yolo.getPlugin(Yolo.class).getPluginResourceBundle().getString("sending.no_death_message");
+        }
+        net.dv8tion.jda.api.entities.MessageEmbed embed = EmbedParser.parse(embedFromTemplate).toJdaEmbed();
+        if (embed.isSendable()) {
+            try {
+                MessageCreateAction messageCreateAction = Objects.requireNonNull(bot.getJda().getTextChannelById(yoloPluginInstance.getMessage_channel_id())).sendMessage(MessageCreateData.fromEmbeds(embed));
+                messageCreateAction.submit().whenComplete((message, throwable) -> {
+                    // Handle potential errors
+                    if (throwable != null) yoloPluginInstance.getLogger().log(Level.SEVERE, yoloPluginInstance.getPluginResourceBundle().getString("sending.failed").replace("%error%", throwable.toString()));
+                });
+            } catch (NullPointerException e) {
+               yoloPluginInstance.getLogger().log(Level.WARNING, yoloPluginInstance.getPluginResourceBundle().getString("sending.null_channel"));
+            }
+        }
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -40,9 +74,9 @@ public class YoloEventListener implements Listener {
             final TextComponent textComponent = (TextComponent) Component.text("You are in hardcore mode. Please accept this ressource pack to reflecting that.").replaceText(builder -> {
                 builder.matchLiteral("You are in hardcore mode. Please accept this ressource pack to reflecting that.");
                 switch (player.locale().getLanguage()) {
-                    case "lol_us":
+                    case "lol_US":
                         builder.replacement("U R IN YOLO MODE. PLZ ACCEPT DIS RESOURCE PACKZ 2 REFLECTIN DAT.");
-                    case "de_de":
+                    case "de_DE":
                         builder.replacement("Du bist im Hardcoremodus. Bitte akzeptiere dieses Resourcenpacket um dies akkurat darzustellen.");
                     default:
                         builder.replacement("You are in hardcore mode. Please accept this ressource pack to reflecting that.");
@@ -51,19 +85,19 @@ public class YoloEventListener implements Listener {
             });
 
             player.setResourcePack("https://drive.google.com/uc?export=download&id=1UWoiOGFlt2QIyQPVKAv5flLTNeNiI439",
-                hashFromString("cc17ee284417acd83536af878dabecab7ca7f3d1"),
+                getResourcePackHash(),
                 textComponent,
                 true
             );
         }
     }
 
-    private byte @NotNull [] hashFromString(@NotNull String input) {
-        assert input.matches("[0-f]{40}");
-        byte[] result = new byte[input.length() / 2];
+    private byte @NotNull [] getResourcePackHash() {
+        assert "cc17ee284417acd83536af878dabecab7ca7f3d1".matches("[0-f]{40}");
+        byte[] result = new byte["cc17ee284417acd83536af878dabecab7ca7f3d1".length() / 2];
         for (int i = 0; i < result.length; i++) {
             int index = i * 2;
-            int val = Integer.parseInt(input.substring(index, index + 2), 16);
+            int val = Integer.parseInt("cc17ee284417acd83536af878dabecab7ca7f3d1".substring(index, index + 2), 16);
             result[i] = (byte) val;
         }
 
