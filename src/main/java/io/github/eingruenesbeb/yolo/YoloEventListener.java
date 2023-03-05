@@ -19,6 +19,11 @@ import org.spicord.embed.EmbedParser;
 import java.util.Objects;
 import java.util.logging.Level;
 
+/**
+ * The event listener for this plugin.
+ * @see Listener
+ * @see org.bukkit.event.Event
+ */
 public class YoloEventListener implements Listener {
     private final Yolo yoloPluginInstance = Yolo.getPlugin(Yolo.class);
 
@@ -45,7 +50,7 @@ public class YoloEventListener implements Listener {
              } else {
                  player.banPlayerFull(reason);
              }
-             if (yoloPluginInstance.isSpicordBotAvailable()) {
+             if (yoloPluginInstance.isSpicordBotAvailable() && yoloPluginInstance.getConfig().getBoolean("send")) {
                  trySend(player);
              }
          }
