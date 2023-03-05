@@ -102,23 +102,11 @@ $RECYCLE.BIN/
 
 .gradle
 
-!build/
-build/*
-!build/docs/
-build/docs/*
-!build/docs/javadoc/
-
 # Ignore Gradle GUI config
 gradle-app.setting
 
 # Cache of project
 .gradletasknamecache
-
-!**/build/
-**/build/*
-**/!build/docs/
-**/build/docs/*
-**/!build/docs/javadoc/
 
 # Common working directory
 run/
@@ -127,3 +115,9 @@ run/
 !gradle-wrapper.jar
 
 
+/build/classes/
+/build/generated/
+/build/libs/
+/build/papermake/
+/build/resources/
+/build/tmp/
