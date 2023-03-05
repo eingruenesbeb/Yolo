@@ -15,6 +15,10 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * A Bukkit plugin that adds features related to player deaths and Discord integration.
+ * This is the main class of that plugin.
+ */
 @SuppressWarnings("unused")
 public final class Yolo extends JavaPlugin {
     private final ResourceBundle pluginResourceBundle = ResourceBundle.getBundle("i18n");
@@ -26,36 +30,63 @@ public final class Yolo extends JavaPlugin {
     private DiscordBot spicordBot;
     private String message_channel_id;
 
+    /**
+     * Accessor for {@link Yolo#message_channel_id}
+     * @return The id of the channel to send the death notifications to.
+     */
     public String getMessage_channel_id() {
         return message_channel_id;
     }
 
+    /**
+     * Accessor for {@link Yolo#spicordBot}
+     * @return (Spicord version of) The bot, that is used for sending the message, if provided.
+     * @see DiscordBot
+     */
     public DiscordBot getSpicordBot() {
         return spicordBot;
     }
 
+    /**
+     * Accessor for {@link Yolo#pluginResourceBundle}
+     * @return The resource bundle used for localizing the plugin's messages.
+     */
     public ResourceBundle getPluginResourceBundle() {
         return pluginResourceBundle;
     }
 
+    /**
+     * Accessor for {@link Yolo#useAB}
+     * @return Whether the plugin can use AdvancedBan for banning players. Should only be true, if AdvancedBan is loaded.
+     */
     public boolean isUseAB() {
         return useAB;
     }
 
+    /**
+     * Accessor for {@link Yolo#deathMessageTemplate}
+     * @return The template configured in this plugin's data-folder as a String. Can be used to generate an embed from,
+     * whilst replacing supported variables in it. (Currently only supports {@code %player_name%}.)
+     */
     public String getDeathMessageTemplate() {
         return deathMessageTemplate;
     }
 
+    /**
+     * Accessor for {@link Yolo#addon}
+     * @return The addon, that this plugin provides for Spicord to register.
+     * @see SimpleAddon
+     */
     public SpicordPlugin getAddon() {
         return addon;
     }
 
+    /**
+     * Accessor for {@link Yolo#spicordBotAvailable}
+     * @return If the bot is available for sending a message.
+     */
     public boolean isSpicordBotAvailable() {
         return spicordBotAvailable;
-    }
-
-    private void setSpicordBotAvailable(boolean spicordBotAvailable) {
-        this.spicordBotAvailable = spicordBotAvailable;
     }
 
     @Override
@@ -82,6 +113,11 @@ public final class Yolo extends JavaPlugin {
         // Plugin shutdown logic
     }
 
+    /**
+     * Private method for regenerating any missing file, if it doesn't exist.
+     * @throws IOException Thrown, when the desired path is unavailable or another thing blocks writing to that
+     * location/file.
+     */
     private void regenerateMissingFiles() throws IOException {
         // Guarantee the existence of the data folder.
         //noinspection ResultOfMethodCallIgnored
@@ -94,11 +130,20 @@ public final class Yolo extends JavaPlugin {
         saveResource("death_message.json", false);
     }
 
+    /**
+     * Private method reading the configured message from the data directory.
+     * @return The contents of the configured message, as a String.
+     * @throws IOException If the file couldn't be read.
+     */
     private String setDeathMessageTemplate() throws IOException {
         File file = new File(getDataFolder().getPath() + "/death_message.json");
         return Files.readString(file.toPath());
     }
 
+    /**
+     * Private method to register this plugin as an addon for Spicord and to set a few important fields for Spicord
+     * support.
+     */
     private void loadSpicord() {
         SpicordLoader.addStartupListener(spicord -> spicord.getAddonManager().registerAddon(new SimpleAddon("Yolo-Spicord", "yolo-deaths", "eingruenesbeb", "v0.3.0") {
             @Override

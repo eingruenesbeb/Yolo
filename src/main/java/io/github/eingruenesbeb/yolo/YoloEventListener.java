@@ -21,7 +21,13 @@ import java.util.logging.Level;
 
 public class YoloEventListener implements Listener {
     private final Yolo yoloPluginInstance = Yolo.getPlugin(Yolo.class);
-    
+
+    /**
+     * This is the main "attraction" of this plugin, that is triggered everytime a player dies. If the player isn't
+     * exempt and the server is in hardcore mode, the plugin bans the player and, if enabled, sends a custom message to
+     * the configured discord text channel.
+     * @param event The {@link PlayerDeathEvent} passed to the listener.
+     */
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void onPlayerDeath(@NotNull PlayerDeathEvent event) {
          Player player = event.getPlayer();
@@ -45,6 +51,10 @@ public class YoloEventListener implements Listener {
          }
     }
 
+    /**
+     * Private message, that handles sending the message on Discord.
+     * @param player The player, that is the subject of the message. Used for replacing template values.
+     */
     private void trySend(@NotNull Player player) {
         DiscordBot bot = yoloPluginInstance.getSpicordBot();
         String embedFromTemplate;
@@ -67,6 +77,11 @@ public class YoloEventListener implements Listener {
         }
     }
 
+    /**
+     * Send all players, that are not exempt a forced resource-pack, to reflect, that they are (essentially) in hardcore-
+     * mode.
+     * @param event The {@link PlayerJoinEvent} passed to the listener.
+     */
     @EventHandler(ignoreCancelled = true)
     public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
         Player player = event.getPlayer();
@@ -92,6 +107,10 @@ public class YoloEventListener implements Listener {
         }
     }
 
+    /**
+     * A private method, used for retrieving the byte array version of this plugin's resource-pack's hash.
+     * @return The byte array version of this plugin's resource-pack's hash
+     */
     private byte @NotNull [] getResourcePackHash() {
         assert "cc17ee284417acd83536af878dabecab7ca7f3d1".matches("[0-f]{40}");
         byte[] result = new byte["cc17ee284417acd83536af878dabecab7ca7f3d1".length() / 2];

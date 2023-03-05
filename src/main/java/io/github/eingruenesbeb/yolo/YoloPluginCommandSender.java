@@ -12,7 +12,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
+/**
+ * This class is a custom {@link CommandSender}, that triggers commands on behalf of this plugin.
+ */
 public class YoloPluginCommandSender extends PermissibleBase implements CommandSender {
+    /**
+     * A singleton instance of this command sender.
+     */
     public static final YoloPluginCommandSender PLUGIN_COMMAND_SENDER = new YoloPluginCommandSender(null);
 
     private YoloPluginCommandSender(@Nullable ServerOperator opable) {
