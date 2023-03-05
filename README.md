@@ -59,7 +59,7 @@ you have to add it like this:
 ### ↓ Other irrelevant stuff below ↓ ###
 ```
 - **This plugin was made for PaperMC-1.19.3.** Other versions and platforms haven't been tested *yet*, but this is planned 
-to be completed until the full release. Issues for incompatibility can be [submitted](), but will not be resolved, if 
+to be completed until the full release. Issues for incompatibility can be [submitted](https://github.com/eingruenesbeb/Yolo/issues/new/choose), but will not be resolved, if 
 this would mean dropping support for other compatible versions.
 - This is a pre-release version, so bugs or glitches may be encountered more often.
 
@@ -69,6 +69,7 @@ this would mean dropping support for other compatible versions.
 - `/revive` command to undo a player-ban by this plugin
 - `/reload` command to reload this plugin on its own
 - Support for more ban-manager-plugins
+- Have a suggestion? Submit it [here](https://github.com/eingruenesbeb/Yolo/issues/new/choose)!
 
 ---
 *From Version: 0.4.0*
