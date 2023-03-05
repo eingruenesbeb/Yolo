@@ -2,6 +2,8 @@
 
 ## 1. What does this plugin do?
 
+You only live once... the name says it all.
+
 This plugin is meant for hardcore survival servers, that implements, but also expands on the vanilla hardcore 
 mechanics for a player's death on a server.\
 Upon death players usually get banned of a server, if (and only if) the setting for hardcore was enabled in 
