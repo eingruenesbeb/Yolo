@@ -20,8 +20,6 @@
 package io.github.eingruenesbeb.yolo;
 
 import me.leoko.advancedban.bukkit.BukkitMethods;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -77,40 +75,7 @@ public class YoloEventListener implements Listener {
     public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
         Player player = event.getPlayer();
         if (!player.hasPermission("yolo.exempt") && Bukkit.isHardcore()) {
-            final TextComponent textComponent = (TextComponent) Component.text("You are in hardcore mode. Please accept this ressource pack to reflecting that.").replaceText(builder -> {
-                builder.matchLiteral("You are in hardcore mode. Please accept this ressource pack to reflecting that.");
-                switch (player.locale().getLanguage()) {
-                    case "lol_US":
-                        builder.replacement("U R IN YOLO MODE. PLZ ACCEPT DIS RESOURCE PACKZ 2 REFLECTIN DAT.");
-                    case "de_DE":
-                        builder.replacement("Du bist im Hardcoremodus. Bitte akzeptiere dieses Resourcenpacket um dies akkurat darzustellen.");
-                    default:
-                        builder.replacement("You are in hardcore mode. Please accept this ressource pack to reflecting that.");
-                }
-                builder.once();
-            });
-
-            player.setResourcePack("https://drive.google.com/uc?export=download&id=1UWoiOGFlt2QIyQPVKAv5flLTNeNiI439",
-                getResourcePackHash(),
-                textComponent,
-                true
-            );
+            yoloPluginInstance.getResourcePackManager().applyPack(player);
         }
-    }
-
-    /**
-     * A private method, used for retrieving the byte array version of this plugin's resource-pack's hash.
-     * @return The byte array version of this plugin's resource-pack's hash
-     */
-    private byte @NotNull [] getResourcePackHash() {
-        assert "cc17ee284417acd83536af878dabecab7ca7f3d1".matches("[0-f]{40}");
-        byte[] result = new byte["cc17ee284417acd83536af878dabecab7ca7f3d1".length() / 2];
-        for (int i = 0; i < result.length; i++) {
-            int index = i * 2;
-            int val = Integer.parseInt("cc17ee284417acd83536af878dabecab7ca7f3d1".substring(index, index + 2), 16);
-            result[i] = (byte) val;
-        }
-
-        return result;
     }
 }

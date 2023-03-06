@@ -20,6 +20,7 @@
 package io.github.eingruenesbeb.yolo;
 
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -27,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,6 +42,7 @@ public final class Yolo extends JavaPlugin {
     private SpicordManager spicordManager;
     private boolean useAB;
     private Logger logger;
+    private ResourcePackManager resourcePackManager;
 
 
     /**
@@ -68,6 +71,15 @@ public final class Yolo extends JavaPlugin {
         return useAB;
     }
 
+    /**
+     * Accessor for {@link Yolo#resourcePackManager}
+     * @return The plugin's resource pack manager.
+     * @see ResourcePackManager
+     */
+    public ResourcePackManager getResourcePackManager() {
+        return resourcePackManager;
+    }
+
     @Override
     public void onEnable() {
         try {
@@ -75,7 +87,9 @@ public final class Yolo extends JavaPlugin {
         } catch (IOException e) {
             getLogger().log(Level.SEVERE, pluginResourceBundle.getString("loading.data_IOException").replace("%error%", e.toString()));
         }
+        validateConfigVersion();
         FileConfiguration config = getConfig();
+        resourcePackManager = new ResourcePackManager();
         useAB = Bukkit.getPluginManager().isPluginEnabled("AdvancedBan");
         if (Bukkit.getPluginManager().isPluginEnabled("Spicord")) {
             spicordManager = new SpicordManager();
@@ -105,6 +119,42 @@ public final class Yolo extends JavaPlugin {
         // (No content checks, no subdir) death_message.json:
         if (!new File(getDataFolder().getPath() + "/death_message.json").exists()) {
             saveResource("death_message.json", false);
+        }
+    }
+
+    private void validateConfigVersion() {
+        FileConfiguration inFolder = getConfig();
+        Configuration embedded = getConfig().getDefaults();
+        int inFolderVer = getConfig().getInt("config_version", 0);
+        assert embedded != null;
+        int embeddedVer = embedded.getInt("config_version");
+        if (inFolderVer != embeddedVer) {
+            Set<String> inFolderKeys = inFolder.getKeys(true);
+            Set<String> embeddedKeys = embedded.getKeys(true);
+
+            // Remove redundant keys:
+            for (String key: inFolderKeys) {
+                if (embedded.get(key) == null) {
+                    inFolder.set(key, null);
+                }
+            }
+            // Add missing keys:
+            for (String key : embeddedKeys) {
+                if (!inFolder.contains(key, true)) {
+                    inFolder.createSection(key);
+                    inFolder.set(key, embedded.get(key));
+                    inFolder.setComments(key, embedded.getComments(key));
+                }
+            }
+
+            // Set to the newest config version
+            inFolder.set("config_version", embeddedVer);
+
+            try {
+                inFolder.save( getDataFolder().getPath() + "/config.yml");
+            } catch (IOException e) {
+                getLogger().severe(pluginResourceBundle.getString("loading.configUpdateFail"));
+            }
         }
     }
 

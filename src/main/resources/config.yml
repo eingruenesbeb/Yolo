@@ -9,3 +9,6 @@ resource-pack:
 spicord:
   send: false
   message_channel_id: ""
+
+### ↓ DO NOT CHANGE! ↓ ###
+config_version: 2
