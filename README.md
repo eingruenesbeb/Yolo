@@ -6,9 +6,9 @@ You only live once... the name says it all.
 
 This plugin is meant for hardcore survival servers, that implements, but also expands on the vanilla hardcore 
 mechanics for a player's death on a server.\
-Upon death players usually get banned of a server, if (and only if) the setting for hardcore was enabled in 
+Upon death players usually get banned off of a server, if (and only if) the setting for hardcore was enabled in 
 `server.properties` before world generation. That is not the case, if this setting was set to true retroactively. And 
-here is, where this plugin comes into play, by implementing this behaviour regardless of, when hardcore was enabled. If 
+here is, where this plugin comes into play, by implementing this behaviour regardless of when hardcore was enabled. If 
 you also have [AdvancedBan](https://www.spigotmc.org/resources/advancedban.8695/) installed, this plugin will 
 automatically use this for banning players. 
 Additionally, you can exempt players from this rule and send a customized message to a Discord-server upon occurrence of 
@@ -40,7 +40,7 @@ For a general guide to permissions on Bukkit, please refer to
 - If hardcore is enabled in `server.properties`, the resource pack is always forced upon players. Support for disabling
 it or using a custom resource packs is planned and probably coming soon™.
 - If you use AdvancedBan, you can customize the message-layout, by creating one called "Hardcore_death". Please refer 
-to [the Spigot page of AdvancedBan](https://www.spigotmc.org/resources/advancedban.8695/#Configuration) to find out 
+to [the Spigot page of AdvancedBan](https://www.spigotmc.org/resources/advancedban.8695/#Configuration) to find out, 
 how to do that.
 - In order to use Spicord, you have to configure it correctly. In order to register this plugin as an addon for a bot, 
 you have to add it like this:
@@ -72,4 +72,4 @@ this would mean dropping support for other compatible versions.
 - Have a suggestion? Submit it [here](https://github.com/eingruenesbeb/Yolo/issues/new/choose)!
 
 ---
-*From Version: 0.4.0*
+*From Version: 0.3.0*
