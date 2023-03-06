@@ -24,10 +24,29 @@ hardcore-hearts, on any non-exempt player. (*You can check out the resource-pack
 
 ## 2. Configuration:
 
-There are currently only two configuration options, that are required for sending messages to Discord:
+There are currently two configuration sections.\
+The first one is for managing the resource-pack sent to non-exempt players:
 ```yaml
-send: false
-message_channel_id: ""
+# You can specify a custom resource pack and turn off forcing the pack onto non-exempt players.
+resource-pack:
+  force: true
+  custom:
+    use: false
+    url: ""
+    sha1: ""
+```
+- The `force` option lets you control, whether the player *has* to accept the pack. (Allowed values: `true`, `false`)
+- `custom` lets you define a custom resource-pack, other than the default one.
+  - `use`: Set to `true` to use the custom pack, otherwise set it to `false`
+  - `url`: The download-link to the custom pack.
+  - `sha1`: The sha1-checksum of the file. You can use 
+  [this tool](https://emn178.github.io/online-tools/sha1_checksum.html) to obtain it.
+
+The next section is for configuring the Spicord integration:
+```yaml
+spicord:
+    send: false
+    message_channel_id: ""
 ```
 - `send`: Whether to enable the Spicord-Integration. (Allowed values: `true`, `false`)
 - `message_channel_id`: The id of the channel to send the message to. You can obtain it using 
@@ -70,7 +89,6 @@ this would mean dropping support for other compatible versions.
 - This is a pre-release version, so bugs or glitches may be encountered more often.
 
 ## 5. Planned features:
-- Config option for disabling or not forcing the default resource pack and possibility to supply an alternative
 - Config option to enable on servers, that aren't explicitly set to hardcore
 - `/revive` command to undo a player-ban by this plugin
 - `/reload` command to reload this plugin on its own
@@ -78,4 +96,4 @@ this would mean dropping support for other compatible versions.
 - Have a suggestion? Submit it [here](https://github.com/eingruenesbeb/Yolo/issues/new/choose)!
 
 ---
-*From Version: 0.3.0*
+*From Version: 0.4.0*
