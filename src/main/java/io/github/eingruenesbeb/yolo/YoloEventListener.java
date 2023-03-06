@@ -20,8 +20,6 @@
 package io.github.eingruenesbeb.yolo;
 
 import me.leoko.advancedban.bukkit.BukkitMethods;
-import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
-import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
@@ -32,11 +30,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.jetbrains.annotations.NotNull;
-import org.spicord.bot.DiscordBot;
-import org.spicord.embed.EmbedParser;
-
-import java.util.Objects;
-import java.util.logging.Level;
 
 /**
  * The event listener for this plugin.
@@ -69,36 +62,10 @@ public class YoloEventListener implements Listener {
              } else {
                  player.banPlayerFull(reason);
              }
-             if (yoloPluginInstance.isSpicordBotAvailable() && yoloPluginInstance.getConfig().getBoolean("send")) {
-                 trySend(player);
+             if (yoloPluginInstance.getSpicordManager().isSpicordBotAvailable() && yoloPluginInstance.getConfig().getBoolean("send")) {
+                 yoloPluginInstance.getSpicordManager().trySend(player);
              }
          }
-    }
-
-    /**
-     * Private message, that handles sending the message on Discord.
-     * @param player The player, that is the subject of the message. Used for replacing template values.
-     */
-    private void trySend(@NotNull Player player) {
-        DiscordBot bot = yoloPluginInstance.getSpicordBot();
-        String embedFromTemplate;
-        try {
-            embedFromTemplate = yoloPluginInstance.getDeathMessageTemplate().replace("%player_name%", player.getName());
-        } catch (NullPointerException npe){
-            embedFromTemplate = Yolo.getPlugin(Yolo.class).getPluginResourceBundle().getString("sending.no_death_message");
-        }
-        net.dv8tion.jda.api.entities.MessageEmbed embed = EmbedParser.parse(embedFromTemplate).toJdaEmbed();
-        if (embed.isSendable()) {
-            try {
-                MessageCreateAction messageCreateAction = Objects.requireNonNull(bot.getJda().getTextChannelById(yoloPluginInstance.getMessage_channel_id())).sendMessage(MessageCreateData.fromEmbeds(embed));
-                messageCreateAction.submit().whenComplete((message, throwable) -> {
-                    // Handle potential errors
-                    if (throwable != null) yoloPluginInstance.getLogger().log(Level.SEVERE, yoloPluginInstance.getPluginResourceBundle().getString("sending.failed").replace("%error%", throwable.toString()));
-                });
-            } catch (NullPointerException e) {
-               yoloPluginInstance.getLogger().log(Level.WARNING, yoloPluginInstance.getPluginResourceBundle().getString("sending.null_channel"));
-            }
-        }
     }
 
     /**

@@ -22,10 +22,6 @@ package io.github.eingruenesbeb.yolo;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.spicord.SpicordLoader;
-import org.spicord.SpicordPlugin;
-import org.spicord.api.addon.SimpleAddon;
-import org.spicord.bot.DiscordBot;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,29 +37,27 @@ import java.util.logging.Logger;
 @SuppressWarnings("unused")
 public final class Yolo extends JavaPlugin {
     private final ResourceBundle pluginResourceBundle = ResourceBundle.getBundle("i18n");
+    private SpicordManager spicordManager;
     private boolean useAB;
     private String deathMessageTemplate;
-    private SpicordPlugin addon;
-    private boolean spicordBotAvailable = false;
     private Logger logger;
-    private DiscordBot spicordBot;
     private String message_channel_id;
 
+    /**
+     * Accessor for {@link Yolo#spicordManager}
+     * @return The SpicordManager for the plugin.
+     *
+     * @see SpicordManager
+     */
+    public SpicordManager getSpicordManager() {
+        return spicordManager;
+    }
     /**
      * Accessor for {@link Yolo#message_channel_id}
      * @return The id of the channel to send the death notifications to.
      */
     public String getMessage_channel_id() {
         return message_channel_id;
-    }
-
-    /**
-     * Accessor for {@link Yolo#spicordBot}
-     * @return (Spicord version of) The bot, that is used for sending the message, if provided.
-     * @see DiscordBot
-     */
-    public DiscordBot getSpicordBot() {
-        return spicordBot;
     }
 
     /**
@@ -91,23 +85,6 @@ public final class Yolo extends JavaPlugin {
         return deathMessageTemplate;
     }
 
-    /**
-     * Accessor for {@link Yolo#addon}
-     * @return The addon, that this plugin provides for Spicord to register.
-     * @see SimpleAddon
-     */
-    public SpicordPlugin getAddon() {
-        return addon;
-    }
-
-    /**
-     * Accessor for {@link Yolo#spicordBotAvailable}
-     * @return If the bot is available for sending a message.
-     */
-    public boolean isSpicordBotAvailable() {
-        return spicordBotAvailable;
-    }
-
     @Override
     public void onEnable() {
         try {
@@ -123,7 +100,10 @@ public final class Yolo extends JavaPlugin {
             getLogger().log(Level.SEVERE, pluginResourceBundle.getString("loading.embed.IOException").replace("%error%", e.toString()));
         }
         message_channel_id = config.getString("message_channel_id");
-        if (Bukkit.getPluginManager().isPluginEnabled("Spicord")) loadSpicord();
+        if (Bukkit.getPluginManager().isPluginEnabled("Spicord")) {
+            spicordManager = new SpicordManager();
+            spicordManager.loadSpicord();
+        }
         getServer().getPluginManager().registerEvents(new YoloEventListener(), this);
     }
 
@@ -157,39 +137,5 @@ public final class Yolo extends JavaPlugin {
     private String setDeathMessageTemplate() throws IOException {
         File file = new File(getDataFolder().getPath() + "/death_message.json");
         return Files.readString(file.toPath());
-    }
-
-    /**
-     * Private method to register this plugin as an addon for Spicord and to set a few important fields for Spicord
-     * support.
-     */
-    private void loadSpicord() {
-        SpicordLoader.addStartupListener(spicord -> spicord.getAddonManager().registerAddon(new SimpleAddon("Yolo-Spicord", "yolo-deaths", "eingruenesbeb", "v0.3.0") {
-            @Override
-            public void onLoad(DiscordBot bot) {
-                spicordBotAvailable = bot == null;
-            }
-
-            @Override
-            public void onReady(DiscordBot bot) {
-                spicordBot = bot;
-                spicordBotAvailable = bot != null;
-                if (!spicordBotAvailable) {
-                    getLogger().warning(pluginResourceBundle.getString("loading.spicord.bot_unavailable"));
-                } else {
-                    getLogger().info(pluginResourceBundle.getString("loading.spicord.bot_available"));
-                }
-            }
-
-            @Override
-            public void onShutdown(DiscordBot bot) {
-                spicordBotAvailable = false;
-            }
-
-            @Override
-            public void onDisable() {
-                spicordBotAvailable = false;
-            }
-        }));
     }
 }
