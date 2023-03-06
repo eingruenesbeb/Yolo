@@ -76,3 +76,7 @@ tasks.test {
         events("passed")
     }
 }
+
+tasks.javadoc {
+    setDestinationDir(File(projectDir.path + "/docs"))
+}
