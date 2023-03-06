@@ -3,6 +3,7 @@ import java.net.URI as URI
 plugins {
     id("java")
     id("com.rikonardo.papermake") version "1.0.5"
+    id("maven-publish")
 }
 
 group = "io.github.eingruenesbeb"
