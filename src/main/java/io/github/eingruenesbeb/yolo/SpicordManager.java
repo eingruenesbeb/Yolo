@@ -29,8 +29,10 @@ import org.spicord.api.addon.SimpleAddon;
 import org.spicord.bot.DiscordBot;
 import org.spicord.embed.EmbedParser;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Objects;
-import java.util.logging.Level;
 
 /**
  * This class is instantiated, when Spicord is also loaded as a Plugin. It manages every aspect regarding functionality
@@ -38,8 +40,10 @@ import java.util.logging.Level;
  */
 public class SpicordManager {
     private final Yolo yolo = Yolo.getPlugin(Yolo.class);
-    private boolean spicordBotAvailable = false;
+    private boolean spicordBotAvailable;
     private DiscordBot spicordBot;
+    private String messageChannelId;
+    private String deathMessageTemplate;
 
     /**
      * Accessor for {@link SpicordManager#spicordBotAvailable}
@@ -59,6 +63,17 @@ public class SpicordManager {
         return spicordBot;
     }
 
+    private void updateDeathMessageTemplate() throws IOException {
+        try {
+            deathMessageTemplate = Files.readString(Path.of(yolo.getDataFolder().getPath() + "/death_message.json"));
+        } catch (IOException e) {
+            // Shouldn't be happening, unless the file was deleted, after the plugin was loaded.
+            // Default to the embedded message-config.
+            // NPE shouldn't occur on embedded resources.
+            deathMessageTemplate = new String(Objects.requireNonNull(yolo.getResource("death_message.json")).readAllBytes());
+        }
+    }
+
     /**
      * Tries to send a message to Discord created from the configured template, using Spicord and JDA.
      * @param player The player. This is used, to replace the variable {@code %player_name%} in the template. This is
@@ -67,24 +82,23 @@ public class SpicordManager {
      */
     public void trySend(@NotNull Player player) {
         if (!spicordBotAvailable) return;
-        Yolo yoloPluginInstance = Yolo.getPlugin(Yolo.class);
-        DiscordBot bot = yoloPluginInstance.getSpicordManager().getSpicordBot();
+        DiscordBot bot = yolo.getSpicordManager().getSpicordBot();
         String embedFromTemplate;
         try {
-            embedFromTemplate = yoloPluginInstance.getDeathMessageTemplate().replace("%player_name%", player.getName());
+            embedFromTemplate = deathMessageTemplate.replace("%player_name%", player.getName());
         } catch (NullPointerException npe){
             embedFromTemplate = Yolo.getPlugin(Yolo.class).getPluginResourceBundle().getString("sending.no_death_message");
         }
         net.dv8tion.jda.api.entities.MessageEmbed embed = EmbedParser.parse(embedFromTemplate).toJdaEmbed();
         if (embed.isSendable()) {
             try {
-                MessageCreateAction messageCreateAction = Objects.requireNonNull(bot.getJda().getTextChannelById(yoloPluginInstance.getMessage_channel_id())).sendMessage(MessageCreateData.fromEmbeds(embed));
+                MessageCreateAction messageCreateAction = Objects.requireNonNull(bot.getJda().getTextChannelById(messageChannelId)).sendMessage(MessageCreateData.fromEmbeds(embed));
                 messageCreateAction.submit().whenComplete((message, throwable) -> {
                     // Handle potential errors
-                    if (throwable != null) yoloPluginInstance.getLogger().log(Level.SEVERE, yoloPluginInstance.getPluginResourceBundle().getString("sending.failed").replace("%error%", throwable.toString()));
+                    if (throwable != null) yolo.getLogger().severe(yolo.getPluginResourceBundle().getString("sending.failed").replace("%error%", throwable.toString()));
                 });
             } catch (NullPointerException e) {
-                yoloPluginInstance.getLogger().log(Level.WARNING, yoloPluginInstance.getPluginResourceBundle().getString("sending.null_channel"));
+                yolo.getLogger().severe(yolo.getPluginResourceBundle().getString("sending.null_channel"));
             }
         }
     }
@@ -94,12 +108,40 @@ public class SpicordManager {
      * support.
      */
     void loadSpicord() {
-        SpicordLoader.addStartupListener(spicord -> spicord.getAddonManager().registerAddon(new SimpleAddon("Yolo-Spicord", "yolo-deaths", "eingruenesbeb", "v0.3.0") {
-            @Override
-            public void onLoad(DiscordBot bot) {
-                spicordBotAvailable = bot == null;
-            }
+        spicordBotAvailable = false;
 
+        if (!yolo.getConfig().getBoolean("spicord.send")) return;
+
+        // Get and validate the channel-id:
+        messageChannelId = yolo.getConfig().getString("spicord.message_channel_id");
+        boolean validId = false;
+        if (messageChannelId != null) {
+            if (messageChannelId.matches("[0-9]{18}")) {
+                validId = true;
+            }
+        }
+        if (!validId) {
+            yolo.getLogger().warning(yolo.getPluginResourceBundle().getString("loading.spicord.invalidId"));
+            return;
+        }
+
+        // Load the message template:
+        try {
+            updateDeathMessageTemplate();
+        } catch (IOException e) {
+            // Shouldn't happen
+            yolo.getLogger().severe(
+                    yolo.getPluginResourceBundle()
+                            .getString("loading.spicord.failedMessageTemplate")
+                            .replace("%error%", e.toString())
+            );
+            e.printStackTrace();
+            return;
+        }
+
+        // Up until this point, the field spicordBotAvailable should be false;
+        // Provide the spicord loader an addon for use with this plugin.
+        SpicordLoader.addStartupListener(spicord -> spicord.getAddonManager().registerAddon(new SimpleAddon("Yolo-Spicord", "yolo-deaths", "eingruenesbeb", "v0.3.2") {
             @Override
             public void onReady(DiscordBot bot) {
                 spicordBot = bot;

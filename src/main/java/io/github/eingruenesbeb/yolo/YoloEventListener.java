@@ -62,7 +62,7 @@ public class YoloEventListener implements Listener {
              } else {
                  player.banPlayerFull(reason);
              }
-             if (yoloPluginInstance.getSpicordManager().isSpicordBotAvailable() && yoloPluginInstance.getConfig().getBoolean("send")) {
+             if (yoloPluginInstance.getSpicordManager().isSpicordBotAvailable()) {
                  yoloPluginInstance.getSpicordManager().trySend(player);
              }
          }

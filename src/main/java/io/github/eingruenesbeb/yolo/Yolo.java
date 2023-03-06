@@ -39,9 +39,8 @@ public final class Yolo extends JavaPlugin {
     private final ResourceBundle pluginResourceBundle = ResourceBundle.getBundle("i18n");
     private SpicordManager spicordManager;
     private boolean useAB;
-    private String deathMessageTemplate;
     private Logger logger;
-    private String message_channel_id;
+
 
     /**
      * Accessor for {@link Yolo#spicordManager}
@@ -51,13 +50,6 @@ public final class Yolo extends JavaPlugin {
      */
     public SpicordManager getSpicordManager() {
         return spicordManager;
-    }
-    /**
-     * Accessor for {@link Yolo#message_channel_id}
-     * @return The id of the channel to send the death notifications to.
-     */
-    public String getMessage_channel_id() {
-        return message_channel_id;
     }
 
     /**
@@ -76,15 +68,6 @@ public final class Yolo extends JavaPlugin {
         return useAB;
     }
 
-    /**
-     * Accessor for {@link Yolo#deathMessageTemplate}
-     * @return The template configured in this plugin's data-folder as a String. Can be used to generate an embed from,
-     * whilst replacing supported variables in it. (Currently only supports {@code %player_name%}.)
-     */
-    public String getDeathMessageTemplate() {
-        return deathMessageTemplate;
-    }
-
     @Override
     public void onEnable() {
         try {
@@ -94,12 +77,6 @@ public final class Yolo extends JavaPlugin {
         }
         FileConfiguration config = getConfig();
         useAB = Bukkit.getPluginManager().isPluginEnabled("AdvancedBan");
-        try {
-            deathMessageTemplate = setDeathMessageTemplate();
-        } catch (IOException e) {
-            getLogger().log(Level.SEVERE, pluginResourceBundle.getString("loading.embed.IOException").replace("%error%", e.toString()));
-        }
-        message_channel_id = config.getString("message_channel_id");
         if (Bukkit.getPluginManager().isPluginEnabled("Spicord")) {
             spicordManager = new SpicordManager();
             spicordManager.loadSpicord();
@@ -126,7 +103,9 @@ public final class Yolo extends JavaPlugin {
         saveDefaultConfig();
 
         // (No content checks, no subdir) death_message.json:
-        saveResource("death_message.json", false);
+        if (!new File(getDataFolder().getPath() + "/death_message.json").exists()) {
+            saveResource("death_message.json", false);
+        }
     }
 
     /**

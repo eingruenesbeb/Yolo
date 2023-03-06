@@ -1,3 +1,11 @@
+# You can specify a custom resource pack and turn off forcing the pack onto non-exempt players.
+resource-pack:
+  force: true
+  custom:
+    use: false
+    url: ""
+    sha1: ""  # You can use https://emn178.github.io/online-tools/sha1_checksum.html or a CLI-Tool to obtain the sha1-checksum.
 # Set a channel-id and send to true, if you want to announce a death on a discord channel.
-send: false
-message_channel_id: ""
+spicord:
+  send: false
+  message_channel_id: ""
