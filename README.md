@@ -1,5 +1,11 @@
 # Yolo - A hardcore plugin
 
+---
+
+[![](https://jitpack.io/v/eingruenesbeb/Yolo.svg)](https://jitpack.io/#eingruenesbeb/Yolo)
+
+---
+
 ## 1. What does this plugin do?
 
 You only live once... the name says it all.
