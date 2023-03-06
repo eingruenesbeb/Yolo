@@ -14,7 +14,7 @@
  *     You should have received a copy of the GNU General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
- * You can reach the original autor via e-Mail: agreenbeb@gmail.com
+ * You can reach the original author via e-Mail: agreenbeb@gmail.com
  */
 
 package io.github.eingruenesbeb.yolo;
