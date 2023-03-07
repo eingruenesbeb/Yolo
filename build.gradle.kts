@@ -1,4 +1,4 @@
-import java.net.URI as URI
+import java.net.URI
 
 plugins {
     id("java")
@@ -85,4 +85,13 @@ tasks.test {
 
 tasks.javadoc {
     setDestinationDir(File(projectDir.path + "/docs"))
+}
+
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+        }
+    }
 }
