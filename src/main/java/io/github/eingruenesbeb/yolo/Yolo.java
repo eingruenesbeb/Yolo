@@ -26,7 +26,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
@@ -89,12 +88,13 @@ public final class Yolo extends JavaPlugin {
         }
         validateConfigVersion();
         FileConfiguration config = getConfig();
-        resourcePackManager = new ResourcePackManager();
+
         useAB = Bukkit.getPluginManager().isPluginEnabled("AdvancedBan");
         if (Bukkit.getPluginManager().isPluginEnabled("Spicord")) {
             spicordManager = new SpicordManager();
             spicordManager.loadSpicord();
         }
+        resourcePackManager = new ResourcePackManager();
         getServer().getPluginManager().registerEvents(new YoloEventListener(), this);
     }
 
@@ -156,15 +156,5 @@ public final class Yolo extends JavaPlugin {
                 getLogger().severe(pluginResourceBundle.getString("loading.configUpdateFail"));
             }
         }
-    }
-
-    /**
-     * Private method reading the configured message from the data directory.
-     * @return The contents of the configured message, as a String.
-     * @throws IOException If the file couldn't be read.
-     */
-    private String setDeathMessageTemplate() throws IOException {
-        File file = new File(getDataFolder().getPath() + "/death_message.json");
-        return Files.readString(file.toPath());
     }
 }

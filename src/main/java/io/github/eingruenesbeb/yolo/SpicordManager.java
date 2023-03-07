@@ -116,7 +116,7 @@ public class SpicordManager {
         messageChannelId = yolo.getConfig().getString("spicord.message_channel_id");
         boolean validId = false;
         if (messageChannelId != null) {
-            if (messageChannelId.matches("[0-9]{18}")) {
+            if (messageChannelId.matches("[0-9]+")) {
                 validId = true;
             }
         }

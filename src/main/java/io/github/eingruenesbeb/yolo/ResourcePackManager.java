@@ -25,7 +25,7 @@ public class ResourcePackManager {
     private String packURL;
     private final String packSha1;
     private final boolean force;
-    private final Yolo yolo = Yolo.getPlugin(Yolo.class);
+    private final Yolo yolo;
 
     /**
      * Constructs a new ResourcePackManager sets all important fields from the config or fallback and asynchronously
@@ -33,6 +33,7 @@ public class ResourcePackManager {
      * @see ResourcePackManager#validatePackAsync(String, String)
      */
     public ResourcePackManager() {
+        yolo = Yolo.getPlugin(Yolo.class);
         FileConfiguration config = yolo.getConfig();
         if (config.getBoolean("resource-pack.custom.use")) {
             packURL = config.getString("resource-pack.custom.url", "https://drive.google.com/uc?export=download&id=1UWoiOGFlt2QIyQPVKAv5flLTNeNiI439");
