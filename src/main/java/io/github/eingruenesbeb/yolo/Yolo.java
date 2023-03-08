@@ -133,7 +133,7 @@ public final class Yolo extends JavaPlugin {
             Set<String> embeddedKeys = embedded.getKeys(true);
 
             // Remove redundant keys:
-            for (String key: inFolderKeys) {
+            for (String key : inFolderKeys) {
                 if (embedded.get(key) == null) {
                     inFolder.set(key, null);
                 }
@@ -151,7 +151,7 @@ public final class Yolo extends JavaPlugin {
             inFolder.set("config_version", embeddedVer);
 
             try {
-                inFolder.save( getDataFolder().getPath() + "/config.yml");
+                inFolder.save(getDataFolder().getPath() + "/config.yml");
             } catch (IOException e) {
                 getLogger().severe(pluginResourceBundle.getString("loading.configUpdateFail"));
             }

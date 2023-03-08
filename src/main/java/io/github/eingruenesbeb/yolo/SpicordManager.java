@@ -141,7 +141,7 @@ public class SpicordManager {
 
         // Up until this point, the field spicordBotAvailable should be false;
         // Provide the spicord loader an addon for use with this plugin.
-        SpicordLoader.addStartupListener(spicord -> spicord.getAddonManager().registerAddon(new SimpleAddon("Yolo-Spicord", "yolo-deaths", "eingruenesbeb", "v0.3.2") {
+        SpicordLoader.addStartupListener(spicord -> spicord.getAddonManager().registerAddon(new SimpleAddon("Yolo-Spicord", "yolo-deaths", "eingruenesbeb", "v0.5.0") {
             @Override
             public void onReady(DiscordBot bot) {
                 spicordBot = bot;
