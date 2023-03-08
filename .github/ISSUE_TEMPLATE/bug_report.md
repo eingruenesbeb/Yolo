@@ -29,7 +29,7 @@ If applicable, add screenshots to help explain your problem.
  - Other plugins
 
 **Console-Log (please add a log of your server-console, containing the error)**
-Link to a log shared on [mclogs](mclo.gs)
+Link to a log shared on [mc-logs](https://mclo.gs)
 
 **Additional context**
 Add any other context about the problem like configs here.
