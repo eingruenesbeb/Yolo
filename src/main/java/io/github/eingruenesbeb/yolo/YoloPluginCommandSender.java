@@ -25,7 +25,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.permissions.PermissibleBase;
-import org.bukkit.permissions.ServerOperator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,10 +37,10 @@ public class YoloPluginCommandSender extends PermissibleBase implements CommandS
     /**
      * A singleton instance of this command sender.
      */
-    public static final YoloPluginCommandSender PLUGIN_COMMAND_SENDER = new YoloPluginCommandSender(null);
+    public static final YoloPluginCommandSender PLUGIN_COMMAND_SENDER = new YoloPluginCommandSender();
 
-    private YoloPluginCommandSender(@Nullable ServerOperator opable) {
-        super(opable);
+    private YoloPluginCommandSender() {
+        super(null);
     }
 
     @Override

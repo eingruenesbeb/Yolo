@@ -21,13 +21,20 @@ package io.github.eingruenesbeb.yolo;
 
 import me.leoko.advancedban.bukkit.BukkitMethods;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.Statistic;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityResurrectEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.HashMap;
 
 /**
  * The event listener for this plugin.
@@ -61,7 +68,7 @@ public class YoloEventListener implements Listener {
                  player.banPlayerFull(reason);
              }
              if (yoloPluginInstance.getSpicordManager().isSpicordBotAvailable()) {
-                 yoloPluginInstance.getSpicordManager().trySend(player);
+                 yoloPluginInstance.getSpicordManager().trySend(player, SpicordManager.MessageType.DEATH);
              }
          }
     }
@@ -76,6 +83,29 @@ public class YoloEventListener implements Listener {
         Player player = event.getPlayer();
         if (!player.hasPermission("yolo.exempt") && Bukkit.isHardcore()) {
             yoloPluginInstance.getResourcePackManager().applyPack(player);
+        }
+    }
+
+    /**
+     * Currently used for providing the capability to send a message upon totem use.
+     * @param event The {@link EntityResurrectEvent} passed to the listener.
+     */
+    @EventHandler(ignoreCancelled = true)
+    public void onEntityResurrected(EntityResurrectEvent event) {
+        if (event.getEntity().getType() != EntityType.PLAYER) return;
+        Player player = (Player) event.getEntity();
+        FileConfiguration config = yoloPluginInstance.getConfig();
+        if (!player.hasPermission("yolo.exempt")) {
+            if (config.getBoolean("announcements.totem.discord")) {
+                yoloPluginInstance.getSpicordManager().trySend(player, SpicordManager.MessageType.TOTEM);
+            }
+            if (config.getBoolean("announce.totem.chat")) {
+                HashMap<String, String> toReplace = new HashMap<>();
+                // TODO: provide a global map for replacements.
+                toReplace.put("%player_name%", player.getName());
+                toReplace.put("%totem_uses%", String.valueOf(player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING) + 1));
+                ChatManager.getInstance().trySend("announce.totem", toReplace);
+            }
         }
     }
 }

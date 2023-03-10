@@ -21,6 +21,8 @@ package io.github.eingruenesbeb.yolo;
 
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import org.bukkit.Material;
+import org.bukkit.Statistic;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.jetbrains.annotations.NotNull;
@@ -34,6 +36,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
 
+// TODO: Refactor, to better match the way replacements and message-toggle are handled in the ChatManager.
+
 /**
  * This class is instantiated, when Spicord is also loaded as a Plugin. It manages every aspect regarding functionality
  * for sending Discord messages.
@@ -44,6 +48,12 @@ public class SpicordManager {
     private DiscordBot spicordBot;
     private String messageChannelId;
     private String deathMessageTemplate;
+    private String totemMessageTemplate;
+
+    public enum MessageType {
+        DEATH,
+        TOTEM
+    }
 
     /**
      * Accessor for {@link SpicordManager#spicordBotAvailable}
@@ -63,14 +73,25 @@ public class SpicordManager {
         return spicordBot;
     }
 
-    private void updateDeathMessageTemplate() throws IOException {
+    private void updateMessageTemplates() throws IOException {
+        // Death message:
         try {
-            deathMessageTemplate = Files.readString(Path.of(yolo.getDataFolder().getPath() + "/death_message.json"));
+            deathMessageTemplate = Files.readString(Path.of(yolo.getDataFolder().getPath() + "/discord/death_message.json"));
         } catch (IOException e) {
             // Shouldn't be happening, unless the file was deleted, after the plugin was loaded.
             // Default to the embedded message-config.
             // NPE shouldn't occur on embedded resources.
-            deathMessageTemplate = new String(Objects.requireNonNull(yolo.getResource("death_message.json")).readAllBytes());
+            deathMessageTemplate = new String(Objects.requireNonNull(yolo.getResource("discord/death_message.json")).readAllBytes());
+        }
+
+        // Totem use message:
+        try {
+            totemMessageTemplate = Files.readString(Path.of(yolo.getDataFolder().getPath() + "/discord/totem_use_message.json"));
+        } catch (IOException e) {
+            // Shouldn't be happening, unless the file was deleted, after the plugin was loaded.
+            // Default to the embedded message-config.
+            // NPE shouldn't occur on embedded resources.
+            totemMessageTemplate = new String(Objects.requireNonNull(yolo.getResource("discord/totem_use_message.json")).readAllBytes());
         }
     }
 
@@ -80,25 +101,28 @@ public class SpicordManager {
      *               currently used in the event-listener.
      * @see YoloEventListener#onPlayerDeath(PlayerDeathEvent)
      */
-    public void trySend(@NotNull Player player) {
+    public void trySend(@NotNull Player player, @NotNull MessageType messageType) {
         if (!spicordBotAvailable) return;
         DiscordBot bot = yolo.getSpicordManager().getSpicordBot();
-        String embedFromTemplate;
-        try {
-            embedFromTemplate = deathMessageTemplate.replace("%player_name%", player.getName());
-        } catch (NullPointerException npe){
-            embedFromTemplate = Yolo.getPlugin(Yolo.class).getPluginResourceBundle().getString("sending.no_death_message");
+        String toSend = "{message: \"Yolo (Plugin): Something happened!\n Not sure what though...\"}";
+        switch (messageType) {
+            case TOTEM -> toSend = totemMessageTemplate;
+            case DEATH -> toSend = deathMessageTemplate;
         }
+
+        String embedFromTemplate;
+        embedFromTemplate = toSend.replace("%player_name%", player.getName());
+        embedFromTemplate = embedFromTemplate.replace("%totem_uses%", String.valueOf(player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING) + 1));
         net.dv8tion.jda.api.entities.MessageEmbed embed = EmbedParser.parse(embedFromTemplate).toJdaEmbed();
         if (embed.isSendable()) {
             try {
                 MessageCreateAction messageCreateAction = Objects.requireNonNull(bot.getJda().getTextChannelById(messageChannelId)).sendMessage(MessageCreateData.fromEmbeds(embed));
                 messageCreateAction.submit().whenComplete((message, throwable) -> {
                     // Handle potential errors
-                    if (throwable != null) yolo.getLogger().severe(yolo.getPluginResourceBundle().getString("sending.failed").replace("%error%", throwable.toString()));
+                    if (throwable != null) yolo.getLogger().severe(yolo.getPluginResourceBundle().getString("spicord.sending.failed").replace("%error%", throwable.toString()));
                 });
             } catch (NullPointerException e) {
-                yolo.getLogger().severe(yolo.getPluginResourceBundle().getString("sending.null_channel"));
+                yolo.getLogger().severe(yolo.getPluginResourceBundle().getString("spicord.sending.nullChannel"));
             }
         }
     }
@@ -127,7 +151,7 @@ public class SpicordManager {
 
         // Load the message template:
         try {
-            updateDeathMessageTemplate();
+            updateMessageTemplates();
         } catch (IOException e) {
             // Shouldn't happen
             yolo.getLogger().severe(
