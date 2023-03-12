@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "io.github.eingruenesbeb"
-version = "0.4.0"
+version = "0.5.0da"
 
 repositories {
     mavenCentral()
@@ -85,8 +85,10 @@ tasks.test {
 
 tasks.javadoc {
     setDestinationDir(File(projectDir.path + "/docs"))
+    (options as StandardJavadocDocletOptions)
+        .tags
+        ?.addAll(listOf("apiNote:a:API Note:", "implSpec:a:Implementation Requirements:", "implNote:a:Implementation Note:"))
 }
-
 
 publishing {
     publications {
