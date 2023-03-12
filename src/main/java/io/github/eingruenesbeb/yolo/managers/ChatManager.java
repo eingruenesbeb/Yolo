@@ -17,12 +17,15 @@
  * You can reach the original author via e-Mail: agreenbeb@gmail.com
  */
 
-package io.github.eingruenesbeb.yolo;
+package io.github.eingruenesbeb.yolo.managers;
 
+import io.github.eingruenesbeb.yolo.Yolo;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.bukkit.Bukkit;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -30,9 +33,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 /**
  * The ChatManager class manages chat messages for the Yolo plugin. Chat messages can be configured through a properties file.
@@ -41,7 +42,7 @@ import java.util.Set;
  * This class is a singleton, and can be accessed using the {@link #getInstance()} method.
  * </p>
  * <p>
- * The class also provides a {@link #trySend(String, HashMap)} method to send chat messages based on their configured key.
+ * The class also provides a {@link #trySend(ChatMessageType, HashMap)} method to send chat messages based on their configured key.
  * </p>
  * <p>
  * This class uses the MiniMessage library to parse chat messages.
@@ -57,24 +58,85 @@ public class ChatManager {
     private record RawChatMessage(String rawString, boolean enabled) {
         private static final MiniMessage MINI_MESSAGE_PARSER = MiniMessage.miniMessage();
 
-        public @Nullable Component returnComponent(@Nullable HashMap<String, String> replacements) {
-                String toParse = null;
-                if (replacements != null) {
-                    for (String toReplace : replacements.keySet()) {
-                        toParse = rawString.replace(toReplace, replacements.get(toReplace));
-                    }
-                } else {
-                    toParse = rawString;
+        public @NotNull Component returnComponent(@Nullable HashMap<String, String> replacements) {
+            String toParse = null;
+            if (replacements != null) {
+                for (String toReplace : replacements.keySet()) {
+                    toParse = rawString.replace(toReplace, replacements.get(toReplace));
                 }
-                if (toParse != null) {
-                    return MINI_MESSAGE_PARSER.deserialize(toParse);
-                } else return null;
+            } else {
+                toParse = rawString;
+            }
+            assert toParse != null;
+            return MINI_MESSAGE_PARSER.deserialize(toParse);
+        }
+    }
+
+    /**
+     * This enum represents the different types of chat messages that can be sent by the Yolo plugin.
+     */
+    public enum ChatMessageType {
+        DEATH,
+        TOTEM;
+
+
+        @Contract(pure = true)
+        private @Nullable String getPropertiesKey() {
+            switch (this) {
+                case TOTEM -> {
+                    return "announce.totem";
+                }
+                case DEATH -> {
+                    return "announce.death";
+                }
+                default -> {
+                    return null;
+                }
+            }
+        }
+
+        /**
+         * Returns the key to get the enabled status from the config for this message type.
+         *
+         * @return The key in under which the enabled status for this message type is found, or null if the key is not
+         * defined.
+         */
+        @Contract(pure = true)
+        public @Nullable String getEnabledKey() {
+            switch (this) {
+                case TOTEM, DEATH -> {
+                    return this.getPropertiesKey() + ".chat";
+                }
+                default -> {
+                    return null;
+                }
+            }
+        }
+
+        /**
+         * Returns the chat message type corresponding to the specified properties key.
+         * @param key The properties key to look up.
+         * @return The corresponding chat message type, or null if the key does not match any defined message type.
+         */
+        @Contract(pure = true)
+        public static @Nullable ChatMessageType fromPropertiesKey(@NotNull String key) {
+            switch (key) {
+                case "announce.totem" -> {
+                    return TOTEM;
+                }
+                case "announce.death" -> {
+                    return DEATH;
+                }
+                default -> {
+                    return null;
+                }
+            }
         }
     }
 
     private final Yolo yolo = Yolo.getPlugin(Yolo.class);
-    private final HashMap<String, RawChatMessage> rawMessages = new HashMap<>();
-    private static final ChatManager singleton = new ChatManager();
+    private final EnumMap<ChatMessageType, RawChatMessage> rawMessagesEnumMap = new EnumMap<>(ChatMessageType.class);
+    private static final ChatManager SINGLETON = new ChatManager();
 
     private ChatManager() {
         initMessages();
@@ -86,7 +148,7 @@ public class ChatManager {
      * @return The {@link ChatManager} singleton object.
      */
     public static ChatManager getInstance() {
-        return singleton;
+        return SINGLETON;
     }
 
     private void initMessages() {
@@ -132,8 +194,12 @@ public class ChatManager {
 
             for (String key : (userConfiguredProperties.stringPropertyNames())) {
                 // The config follows this pattern for chat message keys: "[name].chat".
-                boolean isEnabled = yolo.getConfig().getBoolean(key + ".chat", true);
-                rawMessages.put(key, new RawChatMessage(userConfiguredProperties.getProperty(key), isEnabled));
+                ChatMessageType enumRepresentation = ChatMessageType.fromPropertiesKey(key);
+                if (enumRepresentation != null) {
+                    assert enumRepresentation.getEnabledKey() != null;
+                    boolean isEnabled = yolo.getConfig().getBoolean(enumRepresentation.getEnabledKey(), true);
+                    rawMessagesEnumMap.put(enumRepresentation, new RawChatMessage(userConfiguredProperties.getProperty(key), isEnabled));
+                }
             }
         } catch (IOException e) {
             // The file should already be present and readable because of the file check on the plugin being loaded.
@@ -145,8 +211,12 @@ public class ChatManager {
 
             for (String key : (embedded.stringPropertyNames())) {
                 // The config follows this pattern for chat message keys: "[name].chat".
-                boolean isEnabled = yolo.getConfig().getBoolean(key + ".chat", true);
-                rawMessages.put(key, new RawChatMessage(embedded.getProperty(key), isEnabled));
+                ChatMessageType enumRepresentation = ChatMessageType.fromPropertiesKey(key);
+                if (enumRepresentation != null) {
+                    assert enumRepresentation.getEnabledKey() != null;
+                    boolean isEnabled = yolo.getConfig().getBoolean(enumRepresentation.getEnabledKey(), true);
+                    rawMessagesEnumMap.put(enumRepresentation, new RawChatMessage(embedded.getProperty(key), isEnabled));
+                }
             }
         }
     }
@@ -154,11 +224,11 @@ public class ChatManager {
     /**
      * Sends the specified chat message with optional replacements, if the message is enabled and the specified key exists.
      *
-     * @param messageKey The key of the chat message to send.
+     * @param messageType The {@link ChatMessageType} of the chat message to send.
      * @param replacements A mapping of strings to replace in the raw chat message.
      */
-    public void trySend(String messageKey, @Nullable HashMap<String, String> replacements) {
-        RawChatMessage rawMessage = rawMessages.get(messageKey);
+    public void trySend(ChatMessageType messageType, @Nullable HashMap<String, String> replacements) {
+        RawChatMessage rawMessage = rawMessagesEnumMap.get(messageType);
 
         if (rawMessage == null) {
             try {
@@ -173,7 +243,7 @@ public class ChatManager {
 
         // Finally send the message.
         Component toSend = rawMessage.returnComponent(replacements);
-        if (rawMessage.enabled && toSend != null) {
+        if (rawMessage.enabled) {
             Bukkit.getServer().sendMessage(toSend);
         }
     }

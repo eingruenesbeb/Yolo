@@ -19,6 +19,8 @@
 
 package io.github.eingruenesbeb.yolo;
 
+import io.github.eingruenesbeb.yolo.managers.ChatManager;
+import io.github.eingruenesbeb.yolo.managers.SpicordManager;
 import me.leoko.advancedban.bukkit.BukkitMethods;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -55,6 +57,8 @@ public class YoloEventListener implements Listener {
          Player player = event.getPlayer();
          String reason = yoloPluginInstance.getPluginResourceBundle().getString("player.ban.death");
          if (!player.hasPermission("yolo.exempt") && Bukkit.getServer().isHardcore()) {
+             HashMap<String, String> replacementMap = TextReplacements.provideDefaults(player, TextReplacements.ALL);
+
              if (yoloPluginInstance.isUseAB()) {
                  BukkitMethods abMethods = new BukkitMethods();
                  abMethods.loadFiles();
@@ -67,9 +71,10 @@ public class YoloEventListener implements Listener {
              } else {
                  player.banPlayerFull(reason);
              }
-             if (yoloPluginInstance.getSpicordManager().isSpicordBotAvailable()) {
-                 yoloPluginInstance.getSpicordManager().trySend(player, SpicordManager.MessageType.DEATH);
+             if (SpicordManager.getInstance().isSpicordBotAvailable()) {
+                 SpicordManager.getInstance().trySend(SpicordManager.DiscordMessageType.DEATH, replacementMap);
              }
+             ChatManager.getInstance().trySend(ChatManager.ChatMessageType.DEATH, replacementMap);
          }
     }
 
@@ -96,15 +101,13 @@ public class YoloEventListener implements Listener {
         Player player = (Player) event.getEntity();
         FileConfiguration config = yoloPluginInstance.getConfig();
         if (!player.hasPermission("yolo.exempt")) {
+            HashMap<String, String> replacementMap = TextReplacements.provideDefaults(player, TextReplacements.PLAYER_NAME);
+            replacementMap.put(TextReplacements.TOTEM_USES.toString(), String.valueOf(player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING) + 1));
             if (config.getBoolean("announcements.totem.discord")) {
-                yoloPluginInstance.getSpicordManager().trySend(player, SpicordManager.MessageType.TOTEM);
+                SpicordManager.getInstance().trySend(SpicordManager.DiscordMessageType.TOTEM, replacementMap);
             }
             if (config.getBoolean("announce.totem.chat")) {
-                HashMap<String, String> toReplace = new HashMap<>();
-                // TODO: provide a global map for replacements.
-                toReplace.put("%player_name%", player.getName());
-                toReplace.put("%totem_uses%", String.valueOf(player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING) + 1));
-                ChatManager.getInstance().trySend("announce.totem", toReplace);
+                ChatManager.getInstance().trySend(ChatManager.ChatMessageType.TOTEM, replacementMap);
             }
         }
     }

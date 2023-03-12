@@ -1,5 +1,25 @@
-package io.github.eingruenesbeb.yolo;
+/*
+ * This is program is a plugin for Minecraft Servers called "Yolo".
+ * Copyright (C) 2023  eingruenesbeb
+ *
+ *     This program is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or any later version.
+ *
+ *     This program is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * You can reach the original author via e-Mail: agreenbeb@gmail.com
+ */
 
+package io.github.eingruenesbeb.yolo.managers;
+
+import io.github.eingruenesbeb.yolo.Yolo;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -22,17 +42,27 @@ import java.util.concurrent.CompletableFuture;
  * to a player.
  */
 public class ResourcePackManager {
+    private static final ResourcePackManager SINGLETON = new ResourcePackManager();
     private String packURL;
     private final String packSha1;
     private final boolean force;
     private final Yolo yolo;
 
     /**
+     * Gets the singleton instance of this manager.
+     *
+     * @return The singleton instance of this manager.
+     */
+    public static ResourcePackManager getInstance() {
+        return SINGLETON;
+    }
+
+    /**
      * Constructs a new ResourcePackManager sets all important fields from the config or fallback and asynchronously
      * calls for validation of the pack.
      * @see ResourcePackManager#validatePackAsync(String, String)
      */
-    public ResourcePackManager() {
+    private ResourcePackManager() {
         yolo = Yolo.getPlugin(Yolo.class);
         FileConfiguration config = yolo.getConfig();
         if (config.getBoolean("resource-pack.custom.use")) {

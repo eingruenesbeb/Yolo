@@ -19,6 +19,9 @@
 
 package io.github.eingruenesbeb.yolo;
 
+import io.github.eingruenesbeb.yolo.managers.ChatManager;
+import io.github.eingruenesbeb.yolo.managers.ResourcePackManager;
+import io.github.eingruenesbeb.yolo.managers.SpicordManager;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -29,6 +32,8 @@ import java.io.IOException;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Logger;
+
+// May be interesting to implement PAPI support in the future.
 
 /**
  * A Bukkit plugin that adds features related to player deaths and Discord integration.
@@ -85,10 +90,9 @@ public final class Yolo extends JavaPlugin {
 
         useAB = Bukkit.getPluginManager().isPluginEnabled("AdvancedBan");
         if (Bukkit.getPluginManager().isPluginEnabled("Spicord")) {
-            spicordManager = new SpicordManager();
-            spicordManager.loadSpicord();
+            spicordManager = SpicordManager.getInstance();
         }
-        resourcePackManager = new ResourcePackManager();
+        resourcePackManager = ResourcePackManager.getInstance();
         //noinspection ResultOfMethodCallIgnored
         ChatManager.getInstance();
         getServer().getPluginManager().registerEvents(new YoloEventListener(), this);
