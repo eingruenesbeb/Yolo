@@ -24,6 +24,8 @@ hardcore-hearts, on any non-exempt player. (*You can check out the resource-pack
 
 ## 2. Configuration:
 
+### 2.1 `config.yml`
+
 There are currently two configuration sections.\
 The first one is for managing the resource-pack sent to non-exempt players:
 ```yaml
@@ -52,6 +54,29 @@ spicord:
 - `message_channel_id`: The id of the channel to send the message to. You can obtain it using 
 [this method](https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-) (you
 can also obtain the channel-id by itself, by right-clicking the channel on the channel-selection-sidebar).
+
+Lastly, you can individually disable certain messages:
+```yaml
+announce:
+  death:
+    discord: false
+    chat: false
+  totem:
+    discord: false
+    chat: false
+```
+This should be pretty self-explanatory. The listed messages are announcements, that would be sent on their respective 
+occasions and targets. The allowed values are `true` or `false`.
+
+### 2.2 `chat_messages.properties`
+
+The messages defined in this file, are chat messages, that can be customized. There should not be a need to add more. 
+You can also use the MiniMessage format, to make them *special*. How you can use this format, you can read 
+[here](https://docs.advntr.dev/minimessage/format.html).
+
+### 2.3 `discord/[...].json`
+In these files, you can customize the embeds, that are sent by the plugin. You can use 
+[this tool](https://leovoel.github.io/embed-visualizer/), to visualize them and generate the json file.
 
 ## 3. Permissions:
 
@@ -96,4 +121,4 @@ this would mean dropping support for other compatible versions.
 - Have a suggestion? Submit it [here](https://github.com/eingruenesbeb/Yolo/issues/new/choose)!
 
 ---
-*From Version: 0.4.0*
+*From Version: 0.5.0*
