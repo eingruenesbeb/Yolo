@@ -25,11 +25,9 @@ import me.leoko.advancedban.bukkit.BukkitMethods;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Statistic;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityResurrectEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -52,7 +50,7 @@ public class YoloEventListener implements Listener {
      * the configured discord text channel.
      * @param event The {@link PlayerDeathEvent} passed to the listener.
      */
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    @EventHandler(ignoreCancelled = true)
     public void onPlayerDeath(@NotNull PlayerDeathEvent event) {
          Player player = event.getPlayer();
          String reason = yoloPluginInstance.getPluginResourceBundle().getString("player.ban.death");
@@ -71,8 +69,12 @@ public class YoloEventListener implements Listener {
              } else {
                  player.banPlayerFull(reason);
              }
-             if (SpicordManager.getInstance().isSpicordBotAvailable()) {
-                 SpicordManager.getInstance().trySend(SpicordManager.DiscordMessageType.DEATH, replacementMap);
+
+             // It's about sending a message.
+             if (yoloPluginInstance.isUseSpicord()) {
+                 if (SpicordManager.getInstance().isSpicordBotAvailable()) {
+                     SpicordManager.getInstance().trySend(SpicordManager.DiscordMessageType.DEATH, replacementMap);
+                 }
              }
              ChatManager.getInstance().trySend(ChatManager.ChatMessageType.DEATH, replacementMap);
          }
@@ -98,17 +100,16 @@ public class YoloEventListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onEntityResurrected(EntityResurrectEvent event) {
         if (event.getEntity().getType() != EntityType.PLAYER) return;
+        if (!Bukkit.isHardcore()) return;
         Player player = (Player) event.getEntity();
-        FileConfiguration config = yoloPluginInstance.getConfig();
-        if (!player.hasPermission("yolo.exempt")) {
-            HashMap<String, String> replacementMap = TextReplacements.provideDefaults(player, TextReplacements.PLAYER_NAME);
-            replacementMap.put(TextReplacements.TOTEM_USES.toString(), String.valueOf(player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING) + 1));
-            if (config.getBoolean("announcements.totem.discord")) {
-                SpicordManager.getInstance().trySend(SpicordManager.DiscordMessageType.TOTEM, replacementMap);
-            }
-            if (config.getBoolean("announce.totem.chat")) {
-                ChatManager.getInstance().trySend(ChatManager.ChatMessageType.TOTEM, replacementMap);
-            }
+        if (player.hasPermission("yolo.exempt")) return;
+
+        HashMap<String, String> replacementMap = TextReplacements.provideDefaults(player, TextReplacements.PLAYER_NAME);
+        replacementMap.put(TextReplacements.TOTEM_USES.toString(), String.valueOf(player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING) + 1));
+
+        if (yoloPluginInstance.isUseSpicord()) {
+            SpicordManager.getInstance().trySend(SpicordManager.DiscordMessageType.TOTEM, replacementMap);
         }
+        ChatManager.getInstance().trySend(ChatManager.ChatMessageType.TOTEM, replacementMap);
     }
 }

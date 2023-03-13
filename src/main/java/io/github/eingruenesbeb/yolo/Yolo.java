@@ -43,9 +43,11 @@ import java.util.logging.Logger;
 public final class Yolo extends JavaPlugin {
     private final ResourceBundle pluginResourceBundle = ResourceBundle.getBundle("i18n");
     private SpicordManager spicordManager;
+    private boolean useSpicord;
     private boolean useAB;
     private Logger logger;
     private ResourcePackManager resourcePackManager;
+
 
 
     /**
@@ -64,6 +66,16 @@ public final class Yolo extends JavaPlugin {
      */
     public ResourceBundle getPluginResourceBundle() {
         return pluginResourceBundle;
+    }
+
+    /**
+     * Accessor for {@link #useSpicord}
+     *
+     * @return Whether Spicord is available for use.
+     * @apiNote This boolean should ALWAYS be checked, if something is to be done with the {@link SpicordManager}.
+     */
+    public boolean isUseSpicord() {
+        return useSpicord;
     }
 
     /**
@@ -89,6 +101,7 @@ public final class Yolo extends JavaPlugin {
         FileConfiguration config = getConfig();
 
         useAB = Bukkit.getPluginManager().isPluginEnabled("AdvancedBan");
+        useSpicord = Bukkit.getPluginManager().isPluginEnabled("Spicord");
         if (Bukkit.getPluginManager().isPluginEnabled("Spicord")) {
             spicordManager = SpicordManager.getInstance();
         }

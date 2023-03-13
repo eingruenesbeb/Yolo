@@ -59,15 +59,12 @@ public class ChatManager {
         private static final MiniMessage MINI_MESSAGE_PARSER = MiniMessage.miniMessage();
 
         public @NotNull Component returnComponent(@Nullable HashMap<String, String> replacements) {
-            String toParse = null;
+            String toParse = rawString;
             if (replacements != null) {
                 for (String toReplace : replacements.keySet()) {
-                    toParse = rawString.replace(toReplace, replacements.get(toReplace));
+                    toParse = toParse.replace(toReplace, replacements.get(toReplace));
                 }
-            } else {
-                toParse = rawString;
             }
-            assert toParse != null;
             return MINI_MESSAGE_PARSER.deserialize(toParse);
         }
     }

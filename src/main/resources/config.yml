@@ -19,5 +19,5 @@ announce:
     discord: false
     chat: false
 
-### ↓ DO NOT CHANGE! ↓ ###
+### DO NOT CHANGE CONFIG VERSION! ###
 config_version: 3

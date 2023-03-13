@@ -47,16 +47,14 @@ public class SpicordManager {
     private record RawDiscordEmbed(String rawString, boolean enabled) {
         // The replacements could be provided by TextReplacements#provideDefaults
         Embed returnSpicordEmbed(@Nullable HashMap<String, String> replacements) {
-            String toParse = null;
+            String toParse = rawString;
             if (replacements != null) {
                 for (String toReplace : replacements.keySet()) {
-                    toParse = rawString.replace(toReplace, replacements.get(toReplace));
+                    toParse = toParse.replace(toReplace, replacements.get(toReplace));
                 }
-            } else {
-                toParse = rawString;
             }
             // The parsed object being null shouldn't happen, but oh well...
-            return EmbedParser.parse(Objects.requireNonNullElse(toParse, "{message: \"Yolo (Plugin): Something happened!\\nNot sure what though...\"}"));
+            return EmbedParser.parse(toParse);
         }
     }
 
@@ -182,8 +180,10 @@ public class SpicordManager {
      */
     public void trySend(@NotNull DiscordMessageType discordMessageType, @Nullable HashMap<String, String> replacements) {
         if (!spicordBotAvailable) return;
+        RawDiscordEmbed rawDiscordEmbed = rawDiscordEmbedEnumMap.get(discordMessageType);
+        if (!rawDiscordEmbed.enabled) return;
         DiscordBot bot = yolo.getSpicordManager().getSpicordBot();
-        MessageEmbed toSend = rawDiscordEmbedEnumMap.get(discordMessageType).returnSpicordEmbed(replacements).toJdaEmbed();
+        MessageEmbed toSend = rawDiscordEmbed.returnSpicordEmbed(replacements).toJdaEmbed();
         if (toSend.isSendable()) {
             try {
                 MessageCreateAction messageCreateAction = Objects.requireNonNull(bot.getJda().getTextChannelById(messageChannelId)).sendMessage(MessageCreateData.fromEmbeds(toSend));
@@ -235,7 +235,7 @@ public class SpicordManager {
 
         // Up until this point, the field spicordBotAvailable should be false;
         // Provide the spicord loader an addon for use with this plugin.
-        SpicordLoader.addStartupListener(spicord -> spicord.getAddonManager().registerAddon(new SimpleAddon("Yolo-Spicord", "yolo-deaths", "eingruenesbeb", "v0.5.0") {
+        SpicordLoader.addStartupListener(spicord -> spicord.getAddonManager().registerAddon(new SimpleAddon("Yolo-Spicord", "yolo", "eingruenesbeb", "v0.5.0") {
             @Override
             public void onReady(DiscordBot bot) {
                 spicordBot = bot;
