@@ -104,7 +104,7 @@ you have to add it like this:
   command_prefix = "-"
   addons = [
     # Potentially other addons.
-    "yolo-deaths"
+    "yolo"
   ]
 ### ↓ Other irrelevant stuff below ↓ ###
 ```
