@@ -19,6 +19,9 @@
 
 package io.github.eingruenesbeb.yolo;
 
+import io.github.eingruenesbeb.yolo.managers.ChatManager;
+import io.github.eingruenesbeb.yolo.managers.ResourcePackManager;
+import io.github.eingruenesbeb.yolo.managers.SpicordManager;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -28,8 +31,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+
+// May be interesting to implement PAPI support in the future.
 
 /**
  * A Bukkit plugin that adds features related to player deaths and Discord integration.
@@ -39,9 +43,11 @@ import java.util.logging.Logger;
 public final class Yolo extends JavaPlugin {
     private final ResourceBundle pluginResourceBundle = ResourceBundle.getBundle("i18n");
     private SpicordManager spicordManager;
+    private boolean useSpicord;
     private boolean useAB;
     private Logger logger;
     private ResourcePackManager resourcePackManager;
+
 
 
     /**
@@ -63,6 +69,16 @@ public final class Yolo extends JavaPlugin {
     }
 
     /**
+     * Accessor for {@link #useSpicord}
+     *
+     * @return Whether Spicord is available for use.
+     * @apiNote This boolean should ALWAYS be checked, if something is to be done with the {@link SpicordManager}.
+     */
+    public boolean isUseSpicord() {
+        return useSpicord;
+    }
+
+    /**
      * Accessor for {@link Yolo#useAB}
      * @return Whether the plugin can use AdvancedBan for banning players. Should only be true, if AdvancedBan is loaded.
      */
@@ -81,20 +97,17 @@ public final class Yolo extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        try {
-            regenerateMissingFiles();
-        } catch (IOException e) {
-            getLogger().log(Level.SEVERE, pluginResourceBundle.getString("loading.data_IOException").replace("%error%", e.toString()));
-        }
-        validateConfigVersion();
+        regenerateMissingFiles();
         FileConfiguration config = getConfig();
 
         useAB = Bukkit.getPluginManager().isPluginEnabled("AdvancedBan");
+        useSpicord = Bukkit.getPluginManager().isPluginEnabled("Spicord");
         if (Bukkit.getPluginManager().isPluginEnabled("Spicord")) {
-            spicordManager = new SpicordManager();
-            spicordManager.loadSpicord();
+            spicordManager = SpicordManager.getInstance();
         }
-        resourcePackManager = new ResourcePackManager();
+        resourcePackManager = ResourcePackManager.getInstance();
+        //noinspection ResultOfMethodCallIgnored
+        ChatManager.getInstance();
         getServer().getPluginManager().registerEvents(new YoloEventListener(), this);
     }
 
@@ -105,20 +118,28 @@ public final class Yolo extends JavaPlugin {
 
     /**
      * Private method for regenerating any missing file, if it doesn't exist.
-     * @throws IOException Thrown, when the desired path is unavailable or another thing blocks writing to that
-     * location/file.
      */
-    private void regenerateMissingFiles() throws IOException {
+    private void regenerateMissingFiles() {
         // Guarantee the existence of the data folder.
         //noinspection ResultOfMethodCallIgnored
         getDataFolder().mkdirs();
 
-        // (No content checks, no subdir) config.yml:
+        // (With content checks, no subdir) config.yml:
         saveDefaultConfig();
+        validateConfigVersion();
 
-        // (No content checks, no subdir) death_message.json:
-        if (!new File(getDataFolder().getPath() + "/death_message.json").exists()) {
-            saveResource("death_message.json", false);
+        // (No content checks, in subdir) death_message.json:
+        if (!new File(getDataFolder().getPath() + "/discord/death_message.json").exists()) {
+            saveResource("discord/death_message.json", false);
+        }
+        // (No content checks, in subdir)
+        if (!new File(getDataFolder().getPath() + "/discord/totem_use_message.json").exists()) {
+            saveResource("discord/totem_use_message.json", false);
+        }
+
+        // (Deferred content checks, no subdir)
+        if (!new File(getDataFolder().getPath() + "/chat_messages.properties").exists()) {
+            saveResource("chat_messages.properties", false);
         }
     }
 

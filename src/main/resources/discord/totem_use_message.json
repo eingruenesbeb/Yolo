@@ -1,0 +1,13 @@
+{
+  "message": "",
+  "embed": {
+    "title": "Yolo (Plugin) - \uD83D\uDE2C Totem use:",
+    "description": "The player `%player_name%` barely avoided death.",
+    "color": 14329120,
+    "image": {
+      "url": "https://media.tenor.com/dAUri9d0nUsAAAAi/minecraft-minecraft-totem.gif",
+      "height": 318,
+      "width": 240
+    }
+  }
+}

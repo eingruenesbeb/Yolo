@@ -19,15 +19,22 @@
 
 package io.github.eingruenesbeb.yolo;
 
+import io.github.eingruenesbeb.yolo.managers.ChatManager;
+import io.github.eingruenesbeb.yolo.managers.SpicordManager;
 import me.leoko.advancedban.bukkit.BukkitMethods;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.Statistic;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityResurrectEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.HashMap;
 
 /**
  * The event listener for this plugin.
@@ -43,11 +50,13 @@ public class YoloEventListener implements Listener {
      * the configured discord text channel.
      * @param event The {@link PlayerDeathEvent} passed to the listener.
      */
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    @EventHandler(ignoreCancelled = true)
     public void onPlayerDeath(@NotNull PlayerDeathEvent event) {
          Player player = event.getPlayer();
          String reason = yoloPluginInstance.getPluginResourceBundle().getString("player.ban.death");
          if (!player.hasPermission("yolo.exempt") && Bukkit.getServer().isHardcore()) {
+             HashMap<String, String> replacementMap = TextReplacements.provideDefaults(player, TextReplacements.ALL);
+
              if (yoloPluginInstance.isUseAB()) {
                  BukkitMethods abMethods = new BukkitMethods();
                  abMethods.loadFiles();
@@ -60,9 +69,14 @@ public class YoloEventListener implements Listener {
              } else {
                  player.banPlayerFull(reason);
              }
-             if (yoloPluginInstance.getSpicordManager().isSpicordBotAvailable()) {
-                 yoloPluginInstance.getSpicordManager().trySend(player);
+
+             // It's about sending a message.
+             if (yoloPluginInstance.isUseSpicord()) {
+                 if (SpicordManager.getInstance().isSpicordBotAvailable()) {
+                     SpicordManager.getInstance().trySend(SpicordManager.DiscordMessageType.DEATH, replacementMap);
+                 }
              }
+             ChatManager.getInstance().trySend(ChatManager.ChatMessageType.DEATH, replacementMap);
          }
     }
 
@@ -77,5 +91,25 @@ public class YoloEventListener implements Listener {
         if (!player.hasPermission("yolo.exempt") && Bukkit.isHardcore()) {
             yoloPluginInstance.getResourcePackManager().applyPack(player);
         }
+    }
+
+    /**
+     * Currently used for providing the capability to send a message upon totem use.
+     * @param event The {@link EntityResurrectEvent} passed to the listener.
+     */
+    @EventHandler(ignoreCancelled = true)
+    public void onEntityResurrected(EntityResurrectEvent event) {
+        if (event.getEntity().getType() != EntityType.PLAYER) return;
+        if (!Bukkit.isHardcore()) return;
+        Player player = (Player) event.getEntity();
+        if (player.hasPermission("yolo.exempt")) return;
+
+        HashMap<String, String> replacementMap = TextReplacements.provideDefaults(player, TextReplacements.PLAYER_NAME);
+        replacementMap.put(TextReplacements.TOTEM_USES.toString(), String.valueOf(player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING) + 1));
+
+        if (yoloPluginInstance.isUseSpicord()) {
+            SpicordManager.getInstance().trySend(SpicordManager.DiscordMessageType.TOTEM, replacementMap);
+        }
+        ChatManager.getInstance().trySend(ChatManager.ChatMessageType.TOTEM, replacementMap);
     }
 }
