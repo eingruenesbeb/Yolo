@@ -43,6 +43,7 @@ import java.util.HashMap;
  */
 public class YoloEventListener implements Listener {
     private final Yolo yoloPluginInstance = Yolo.getPlugin(Yolo.class);
+    private final boolean isFunctionalityEnabled = Bukkit.isHardcore() || yoloPluginInstance.getConfig().getBoolean("enable_on_non_hc", false);
 
     /**
      * This is the main "attraction" of this plugin, that is triggered everytime a player dies. If the player isn't
@@ -54,7 +55,7 @@ public class YoloEventListener implements Listener {
     public void onPlayerDeath(@NotNull PlayerDeathEvent event) {
          Player player = event.getPlayer();
          String reason = yoloPluginInstance.getPluginResourceBundle().getString("player.ban.death");
-         if (!player.hasPermission("yolo.exempt") && Bukkit.getServer().isHardcore()) {
+         if (!player.hasPermission("yolo.exempt") && isFunctionalityEnabled) {
              HashMap<String, String> replacementMap = TextReplacements.provideDefaults(player, TextReplacements.ALL);
 
              if (yoloPluginInstance.isUseAB()) {
@@ -88,7 +89,7 @@ public class YoloEventListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        if (!player.hasPermission("yolo.exempt") && Bukkit.isHardcore()) {
+        if (!player.hasPermission("yolo.exempt") && isFunctionalityEnabled) {
             yoloPluginInstance.getResourcePackManager().applyPack(player);
         }
     }

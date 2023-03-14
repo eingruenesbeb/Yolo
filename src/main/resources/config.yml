@@ -19,5 +19,7 @@ announce:
     discord: false
     chat: false
 
+enable_on_non_hc: false
+
 ### DO NOT CHANGE CONFIG VERSION! ###
-config_version: 3
+config_version: 4
