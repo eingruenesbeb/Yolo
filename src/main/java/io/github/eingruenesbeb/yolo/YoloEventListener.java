@@ -43,7 +43,6 @@ import java.util.HashMap;
  */
 public class YoloEventListener implements Listener {
     private final Yolo yoloPluginInstance = Yolo.getPlugin(Yolo.class);
-    private final boolean isFunctionalityEnabled = Bukkit.isHardcore() || yoloPluginInstance.getConfig().getBoolean("enable_on_non_hc", false);
 
     /**
      * This is the main "attraction" of this plugin, that is triggered everytime a player dies. If the player isn't
@@ -55,7 +54,7 @@ public class YoloEventListener implements Listener {
     public void onPlayerDeath(@NotNull PlayerDeathEvent event) {
          Player player = event.getPlayer();
          String reason = yoloPluginInstance.getPluginResourceBundle().getString("player.ban.death");
-         if (!player.hasPermission("yolo.exempt") && isFunctionalityEnabled) {
+         if (!player.hasPermission("yolo.exempt") && yoloPluginInstance.isFunctionalityEnabled()) {
              HashMap<String, String> replacementMap = TextReplacements.provideDefaults(player, TextReplacements.ALL);
 
              if (yoloPluginInstance.isUseAB()) {
@@ -89,7 +88,7 @@ public class YoloEventListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        if (!player.hasPermission("yolo.exempt") && isFunctionalityEnabled) {
+        if (!player.hasPermission("yolo.exempt") && yoloPluginInstance.isFunctionalityEnabled()) {
             yoloPluginInstance.getResourcePackManager().applyPack(player);
         }
     }
@@ -99,7 +98,7 @@ public class YoloEventListener implements Listener {
      * @param event The {@link EntityResurrectEvent} passed to the listener.
      */
     @EventHandler(ignoreCancelled = true)
-    public void onEntityResurrected(EntityResurrectEvent event) {
+    public void onEntityResurrected(@NotNull EntityResurrectEvent event) {
         if (event.getEntity().getType() != EntityType.PLAYER) return;
         if (!Bukkit.isHardcore()) return;
         Player player = (Player) event.getEntity();

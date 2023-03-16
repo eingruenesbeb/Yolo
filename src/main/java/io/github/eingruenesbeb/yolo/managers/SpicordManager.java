@@ -152,6 +152,7 @@ public class SpicordManager {
     }
 
     private void updateMessageTemplates() throws IOException {
+        rawDiscordEmbedEnumMap.clear();
         for (DiscordMessageType discordMessageType : DiscordMessageType.values()) {
             String resourceName = discordMessageType.getResourceName();
             if (resourceName == null) {
@@ -182,7 +183,7 @@ public class SpicordManager {
         if (!spicordBotAvailable) return;
         RawDiscordEmbed rawDiscordEmbed = rawDiscordEmbedEnumMap.get(discordMessageType);
         if (!rawDiscordEmbed.enabled) return;
-        DiscordBot bot = yolo.getSpicordManager().getSpicordBot();
+        DiscordBot bot = getInstance().getSpicordBot();
         MessageEmbed toSend = rawDiscordEmbed.returnSpicordEmbed(replacements).toJdaEmbed();
         if (toSend.isSendable()) {
             try {
@@ -195,6 +196,41 @@ public class SpicordManager {
                 yolo.getLogger().severe(yolo.getPluginResourceBundle().getString("spicord.sending.nullChannel"));
             }
         }
+    }
+
+    public void reload() {
+        spicordBotAvailable = false;
+
+        if (!yolo.getConfig().getBoolean("spicord.send")) return;
+
+        // Get and validate the channel-id:
+        messageChannelId = yolo.getConfig().getString("spicord.message_channel_id");
+        boolean validId = false;
+        if (messageChannelId != null) {
+            if (messageChannelId.matches("[0-9]+")) {
+                validId = true;
+            }
+        }
+        if (!validId) {
+            yolo.getLogger().warning(yolo.getPluginResourceBundle().getString("loading.spicord.invalidId"));
+            return;
+        }
+
+        // Load the message templates:
+        try {
+            updateMessageTemplates();
+        } catch (IOException e) {
+            // Shouldn't happen
+            yolo.getLogger().severe(
+                    yolo.getPluginResourceBundle()
+                            .getString("loading.spicord.failedMessageTemplate")
+                            .replace("%error%", e.toString())
+            );
+            e.printStackTrace();
+            return;
+        }
+
+        spicordBotAvailable = spicordBot.isReady();
     }
 
     /**
@@ -219,7 +255,7 @@ public class SpicordManager {
             return;
         }
 
-        // Load the message template:
+        // Load the message templates:
         try {
             updateMessageTemplates();
         } catch (IOException e) {

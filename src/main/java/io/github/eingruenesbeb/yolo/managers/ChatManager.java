@@ -33,7 +33,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * The ChatManager class manages chat messages for the Yolo plugin. Chat messages can be configured through a properties file.
@@ -75,7 +78,6 @@ public class ChatManager {
     public enum ChatMessageType {
         DEATH,
         TOTEM;
-
 
         @Contract(pure = true)
         private @Nullable String getPropertiesKey() {
@@ -148,7 +150,12 @@ public class ChatManager {
         return SINGLETON;
     }
 
+    public void reload() {
+        initMessages();
+    }
+
     private void initMessages() {
+        rawMessagesEnumMap.clear();
         Properties embedded = new Properties();
         try {
             embedded.load(yolo.getResource("chat_messages.properties"));

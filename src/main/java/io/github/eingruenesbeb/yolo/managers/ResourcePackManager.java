@@ -44,8 +44,10 @@ import java.util.concurrent.CompletableFuture;
 public class ResourcePackManager {
     private static final ResourcePackManager SINGLETON = new ResourcePackManager();
     private String packURL;
-    private final String packSha1;
-    private final boolean force;
+    private String packSha1;
+    private final String defaultPackURL = "https://drive.google.com/uc?export=download&id=1UWoiOGFlt2QIyQPVKAv5flLTNeNiI439";
+    private final String defaultPackSha1 = "cc17ee284417acd83536af878dabecab7ca7f3d1";
+    private boolean force;
     private final Yolo yolo;
 
     /**
@@ -66,18 +68,39 @@ public class ResourcePackManager {
         yolo = Yolo.getPlugin(Yolo.class);
         FileConfiguration config = yolo.getConfig();
         if (config.getBoolean("resource-pack.custom.use")) {
-            packURL = config.getString("resource-pack.custom.url", "https://drive.google.com/uc?export=download&id=1UWoiOGFlt2QIyQPVKAv5flLTNeNiI439");
-            packSha1 = config.getString("resource-pack.custom.sha1", "cc17ee284417acd83536af878dabecab7ca7f3d1");
+            packURL = config.getString("resource-pack.custom.url", defaultPackURL);
+            packSha1 = config.getString("resource-pack.custom.sha1", defaultPackSha1);
         } else {
-            packURL = "https://drive.google.com/uc?export=download&id=1UWoiOGFlt2QIyQPVKAv5flLTNeNiI439";
-            packSha1 = "cc17ee284417acd83536af878dabecab7ca7f3d1";
+            packURL = defaultPackURL;
+            packSha1 = defaultPackSha1;
         }
         force = config.getBoolean("resource-pack.force", true);
 
         validatePackAsync(packURL, packSha1).whenComplete((isValid, throwable) -> {
             if (!isValid) {
                 yolo.getLogger().warning(yolo.getPluginResourceBundle().getString("loading.resourcePack.invalid"));
-                packURL = "https://drive.google.com/uc?export=download&id=1UWoiOGFlt2QIyQPVKAv5flLTNeNiI439";
+                packURL = defaultPackURL;
+                packSha1 = defaultPackSha1;
+            }
+        });
+    }
+
+    public void reload() {
+        FileConfiguration config = yolo.getConfig();
+        if (config.getBoolean("resource-pack.custom.use")) {
+            packURL = config.getString("resource-pack.custom.url", defaultPackURL);
+            packSha1 = config.getString("resource-pack.custom.sha1", defaultPackSha1);
+        } else {
+            packURL = defaultPackURL;
+            packSha1 = defaultPackSha1;
+        }
+        force = config.getBoolean("resource-pack.force", true);
+
+        validatePackAsync(packURL, packSha1).whenComplete((isValid, throwable) -> {
+            if (!isValid) {
+                yolo.getLogger().warning(yolo.getPluginResourceBundle().getString("loading.resourcePack.invalid"));
+                packURL = defaultPackURL;
+                packSha1 = defaultPackSha1;
             }
         });
     }

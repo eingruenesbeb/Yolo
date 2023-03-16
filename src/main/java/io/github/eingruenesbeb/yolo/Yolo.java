@@ -42,23 +42,13 @@ import java.util.logging.Logger;
 @SuppressWarnings("unused")
 public final class Yolo extends JavaPlugin {
     private final ResourceBundle pluginResourceBundle = ResourceBundle.getBundle("i18n");
-    private SpicordManager spicordManager;
     private boolean useSpicord;
     private boolean useAB;
+    private boolean isFunctionalityEnabled;
     private Logger logger;
     private ResourcePackManager resourcePackManager;
-
-
-
-    /**
-     * Accessor for {@link Yolo#spicordManager}
-     * @return The SpicordManager for the plugin.
-     *
-     * @see SpicordManager
-     */
-    public SpicordManager getSpicordManager() {
-        return spicordManager;
-    }
+    private ChatManager chatManager;
+    private SpicordManager spicordManager;
 
     /**
      * Accessor for {@link Yolo#pluginResourceBundle}
@@ -86,6 +76,10 @@ public final class Yolo extends JavaPlugin {
         return useAB;
     }
 
+    public boolean isFunctionalityEnabled() {
+        return isFunctionalityEnabled;
+    }
+
     /**
      * Accessor for {@link Yolo#resourcePackManager}
      * @return The plugin's resource pack manager.
@@ -98,22 +92,40 @@ public final class Yolo extends JavaPlugin {
     @Override
     public void onEnable() {
         regenerateMissingFiles();
-        FileConfiguration config = getConfig();
 
+        isFunctionalityEnabled  = Bukkit.isHardcore() || getConfig().getBoolean("enable_on_non_hc", false);
         useAB = Bukkit.getPluginManager().isPluginEnabled("AdvancedBan");
         useSpicord = Bukkit.getPluginManager().isPluginEnabled("Spicord");
-        if (Bukkit.getPluginManager().isPluginEnabled("Spicord")) {
+        if (useSpicord) {
             spicordManager = SpicordManager.getInstance();
         }
         resourcePackManager = ResourcePackManager.getInstance();
-        //noinspection ResultOfMethodCallIgnored
-        ChatManager.getInstance();
+        chatManager = ChatManager.getInstance();
         getServer().getPluginManager().registerEvents(new YoloEventListener(), this);
+
     }
 
     @Override
     public void onDisable() {
         // Plugin shutdown logic
+    }
+
+    public void globalReload() {
+        regenerateMissingFiles();
+        isFunctionalityEnabled  = Bukkit.isHardcore() || getConfig().getBoolean("enable_on_non_hc", false);
+
+        // The availability of some plugins may have changed... (Okay, this might be a little paranoid, but better safe
+        // than sorry.)
+        useAB = Bukkit.getPluginManager().isPluginEnabled("AdvancedBan");
+        useSpicord = Bukkit.getPluginManager().isPluginEnabled("Spicord");
+
+        // May do some fancy shenanigans later, by reloading classes, that implement `Reloadable`, later. For now,
+        // that's just not worth it, with only three classes, that need that.
+        resourcePackManager.reload();
+        chatManager.reload();
+        if (useSpicord) {
+            spicordManager.reload();
+        }
     }
 
     /**
