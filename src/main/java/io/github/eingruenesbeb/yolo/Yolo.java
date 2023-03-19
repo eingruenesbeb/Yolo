@@ -19,6 +19,7 @@
 
 package io.github.eingruenesbeb.yolo;
 
+import io.github.eingruenesbeb.yolo.commands.CommandRegistrar;
 import io.github.eingruenesbeb.yolo.managers.ChatManager;
 import io.github.eingruenesbeb.yolo.managers.ResourcePackManager;
 import io.github.eingruenesbeb.yolo.managers.SpicordManager;
@@ -102,7 +103,8 @@ public final class Yolo extends JavaPlugin {
         resourcePackManager = ResourcePackManager.getInstance();
         chatManager = ChatManager.getInstance();
         getServer().getPluginManager().registerEvents(new YoloEventListener(), this);
-
+        CommandRegistrar commandRegistrar = new CommandRegistrar();
+        commandRegistrar.registerCommands();
     }
 
     @Override
@@ -112,6 +114,8 @@ public final class Yolo extends JavaPlugin {
 
     public void globalReload() {
         regenerateMissingFiles();
+        this.reloadConfig();
+
         isFunctionalityEnabled  = Bukkit.isHardcore() || getConfig().getBoolean("enable_on_non_hc", false);
 
         // The availability of some plugins may have changed... (Okay, this might be a little paranoid, but better safe

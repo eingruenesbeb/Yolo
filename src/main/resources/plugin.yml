@@ -1,13 +1,25 @@
 name: Yolo
+description: This plugin facilitates auto-banning people from hardcore servers, with the ability to specify exceptions.
+authors: [ eingruenesbeb ]
+prefix: Yolo
+
 version: '${version}'
 main: io.github.eingruenesbeb.yolo.Yolo
 api-version: 1.19
-prefix: Yolo
 softdepend: [ AdvancedBan, Spicord ]
+
 default-permission: op
 permissions:
   yolo.exempt:
     default: op
     description: Players with this permission cannot get banned by this plugin, when they die. Usually useful for server staff.
-authors: [ eingruenesbeb ]
-description: This plugin facilitates auto-banning people from hardcore servers, with the ability to specify exceptions.
+  yolo.reload:
+    default: op
+    description: Players with this permission are able to reload the plugin.
+
+commands:
+  yolo-reload:
+    description: Reloads the Yolo Plugin, which enables reconfiguration without restarting.
+    usage: This command does not have any arguments.
+    permission: yolo.reload
+    permission-message: You don't have permission to use that command!
