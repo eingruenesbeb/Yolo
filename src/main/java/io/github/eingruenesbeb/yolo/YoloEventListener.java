@@ -51,7 +51,7 @@ public class YoloEventListener implements Listener {
      * @param event The {@link PlayerDeathEvent} passed to the listener.
      */
     @EventHandler(ignoreCancelled = true)
-    public void onPlayerDeath(@NotNull PlayerDeathEvent event) {
+    public void onPlayerDeath(final @NotNull PlayerDeathEvent event) {
          Player player = event.getPlayer();
          String reason = yoloPluginInstance.getPluginResourceBundle().getString("player.ban.death");
          if (!player.hasPermission("yolo.exempt") && yoloPluginInstance.isFunctionalityEnabled()) {
@@ -86,7 +86,7 @@ public class YoloEventListener implements Listener {
      * @param event The {@link PlayerJoinEvent} passed to the listener.
      */
     @EventHandler(ignoreCancelled = true)
-    public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
+    public void onPlayerJoin(final @NotNull PlayerJoinEvent event) {
         Player player = event.getPlayer();
         if (!player.hasPermission("yolo.exempt") && yoloPluginInstance.isFunctionalityEnabled()) {
             yoloPluginInstance.getResourcePackManager().applyPack(player);
@@ -98,9 +98,9 @@ public class YoloEventListener implements Listener {
      * @param event The {@link EntityResurrectEvent} passed to the listener.
      */
     @EventHandler(ignoreCancelled = true)
-    public void onEntityResurrected(@NotNull EntityResurrectEvent event) {
+    public void onEntityResurrected(final @NotNull EntityResurrectEvent event) {
         if (event.getEntity().getType() != EntityType.PLAYER) return;
-        if (!Bukkit.isHardcore()) return;
+        if (event.getEntity().hasPermission("yolo.exempt") || !yoloPluginInstance.isFunctionalityEnabled()) return;
         Player player = (Player) event.getEntity();
         if (player.hasPermission("yolo.exempt")) return;
 

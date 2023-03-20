@@ -43,10 +43,10 @@ import java.util.Objects;
  * This singleton is instantiated, when Spicord is also loaded as a Plugin. It manages every aspect regarding functionality
  * for sending Discord messages.
  */
-public class SpicordManager {
+public final class SpicordManager {
     private record RawDiscordEmbed(String rawString, boolean enabled) {
         // The replacements could be provided by TextReplacements#provideDefaults
-        Embed returnSpicordEmbed(@Nullable HashMap<String, String> replacements) {
+        Embed returnSpicordEmbed(final @Nullable HashMap<String, String> replacements) {
             String toParse = rawString;
             if (replacements != null) {
                 for (String toReplace : replacements.keySet()) {
@@ -63,11 +63,11 @@ public class SpicordManager {
      */
     public enum DiscordMessageType {
         /**
-         * Defined in the plugins data-folder under "./discord/death_message.json"
+         * Defined in the plugins data-folder under "./discord/death_message.json".
          */
         DEATH,
         /**
-         * Defined in the plugins data-folder under "./discord/totem_use_message.json"
+         * Defined in the plugins data-folder under "./discord/totem_use_message.json".
          */
         TOTEM;
 
@@ -112,14 +112,10 @@ public class SpicordManager {
                 }
             }
         }
+
     }
 
     private static final SpicordManager SINGLETON = new SpicordManager();
-    private final Yolo yolo = Yolo.getPlugin(Yolo.class);
-    private boolean spicordBotAvailable;
-    private DiscordBot spicordBot;
-    private String messageChannelId;
-    private final EnumMap<DiscordMessageType, RawDiscordEmbed> rawDiscordEmbedEnumMap = new EnumMap<>(DiscordMessageType.class);
 
     /**
      * Gets the singleton instance of this Manager.
@@ -130,7 +126,20 @@ public class SpicordManager {
     }
 
     /**
-     * Accessor for {@link SpicordManager#spicordBotAvailable}
+     * This method is used, to update the singleton instance of this manager, based on the current config file.
+     */
+    public static void reload() {
+        SINGLETON.reloadInstance();
+    }
+    private final Yolo yolo = Yolo.getPlugin(Yolo.class);
+    private boolean spicordBotAvailable;
+    private DiscordBot spicordBot;
+    private String messageChannelId;
+
+    private final EnumMap<DiscordMessageType, RawDiscordEmbed> rawDiscordEmbedEnumMap = new EnumMap<>(DiscordMessageType.class);
+
+    /**
+     * This is an accessor for {@link SpicordManager#spicordBotAvailable}.
      * @return If the bot is available for sending a message.
      */
     public boolean isSpicordBotAvailable() {
@@ -138,7 +147,7 @@ public class SpicordManager {
     }
 
     /**
-     * Accessor for {@link SpicordManager#spicordBot}
+     * This is an accessor for {@link SpicordManager#spicordBot}.
      *
      * @return (Spicord version of) The bot, that is used for sending the message, if provided.
      * @see DiscordBot
@@ -149,6 +158,32 @@ public class SpicordManager {
 
     private SpicordManager() {
         loadSpicord();
+    }
+
+    /**
+     * Tries to send a message to Discord created from the configured template, using Spicord and JDA.
+     *
+     * @param discordMessageType The Type of the message to be sent, as defined by {@link DiscordMessageType}.
+     * @param replacements The replacements to perform. (Placeholders typically look like "%example%".)
+     */
+    public void trySend(final @NotNull DiscordMessageType discordMessageType, final @Nullable HashMap<String, String> replacements) {
+        if (!spicordBotAvailable) return;
+        if (!yolo.getConfig().getBoolean("spicord.send")) return;
+        RawDiscordEmbed rawDiscordEmbed = rawDiscordEmbedEnumMap.get(discordMessageType);
+        if (!rawDiscordEmbed.enabled) return;
+        DiscordBot bot = getInstance().getSpicordBot();
+        MessageEmbed toSend = rawDiscordEmbed.returnSpicordEmbed(replacements).toJdaEmbed();
+        if (toSend.isSendable()) {
+            try {
+                MessageCreateAction messageCreateAction = Objects.requireNonNull(bot.getJda().getTextChannelById(messageChannelId)).sendMessage(MessageCreateData.fromEmbeds(toSend));
+                messageCreateAction.submit().whenComplete((message, throwable) -> {
+                    // Handle potential errors
+                    if (throwable != null) yolo.getLogger().severe(yolo.getPluginResourceBundle().getString("spicord.sending.failed").replace("%error%", throwable.toString()));
+                });
+            } catch (NullPointerException e) {
+                yolo.getLogger().severe(yolo.getPluginResourceBundle().getString("spicord.sending.nullChannel"));
+            }
+        }
     }
 
     private void updateMessageTemplates() throws IOException {
@@ -173,35 +208,9 @@ public class SpicordManager {
     }
 
 
-    /**
-     * Tries to send a message to Discord created from the configured template, using Spicord and JDA.
-     *
-     * @param discordMessageType The Type of the message to be sent, as defined by {@link DiscordMessageType}.
-     * @param replacements The replacements to perform. (Placeholders typically look like "%example%".)
-     */
-    public void trySend(@NotNull DiscordMessageType discordMessageType, @Nullable HashMap<String, String> replacements) {
-        if (!spicordBotAvailable) return;
-        RawDiscordEmbed rawDiscordEmbed = rawDiscordEmbedEnumMap.get(discordMessageType);
-        if (!rawDiscordEmbed.enabled) return;
-        DiscordBot bot = getInstance().getSpicordBot();
-        MessageEmbed toSend = rawDiscordEmbed.returnSpicordEmbed(replacements).toJdaEmbed();
-        if (toSend.isSendable()) {
-            try {
-                MessageCreateAction messageCreateAction = Objects.requireNonNull(bot.getJda().getTextChannelById(messageChannelId)).sendMessage(MessageCreateData.fromEmbeds(toSend));
-                messageCreateAction.submit().whenComplete((message, throwable) -> {
-                    // Handle potential errors
-                    if (throwable != null) yolo.getLogger().severe(yolo.getPluginResourceBundle().getString("spicord.sending.failed").replace("%error%", throwable.toString()));
-                });
-            } catch (NullPointerException e) {
-                yolo.getLogger().severe(yolo.getPluginResourceBundle().getString("spicord.sending.nullChannel"));
-            }
-        }
-    }
-
-    public void reload() {
+    private void reloadInstance() {
         spicordBotAvailable = false;
 
-        if (!yolo.getConfig().getBoolean("spicord.send")) return;
 
         // Get and validate the channel-id:
         messageChannelId = yolo.getConfig().getString("spicord.message_channel_id");
@@ -240,8 +249,6 @@ public class SpicordManager {
     private void loadSpicord() {
         spicordBotAvailable = false;
 
-        if (!yolo.getConfig().getBoolean("spicord.send")) return;
-
         // Get and validate the channel-id:
         messageChannelId = yolo.getConfig().getString("spicord.message_channel_id");
         boolean validId = false;
@@ -273,18 +280,18 @@ public class SpicordManager {
         // Provide the spicord loader an addon for use with this plugin.
         SpicordLoader.addStartupListener(spicord -> spicord.getAddonManager().registerAddon(new SimpleAddon("Yolo-Spicord", "yolo", "eingruenesbeb", "v0.5.0") {
             @Override
-            public void onReady(DiscordBot bot) {
+            public void onReady(final DiscordBot bot) {
                 spicordBot = bot;
                 spicordBotAvailable = bot != null;
                 if (!spicordBotAvailable) {
                     yolo.getLogger().warning(yolo.getPluginResourceBundle().getString("loading.spicord.bot_unavailable"));
-                } else {
+                } else if (yolo.getConfig().getBoolean("spicord.send"))  {
                     yolo.getLogger().info(yolo.getPluginResourceBundle().getString("loading.spicord.bot_available"));
                 }
             }
 
             @Override
-            public void onShutdown(DiscordBot bot) {
+            public void onShutdown(final DiscordBot bot) {
                 spicordBotAvailable = false;
             }
 

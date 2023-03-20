@@ -48,11 +48,9 @@ public final class Yolo extends JavaPlugin {
     private boolean isFunctionalityEnabled;
     private Logger logger;
     private ResourcePackManager resourcePackManager;
-    private ChatManager chatManager;
-    private SpicordManager spicordManager;
 
     /**
-     * Accessor for {@link Yolo#pluginResourceBundle}
+     * This is an accessor for {@link Yolo#pluginResourceBundle}.
      * @return The resource bundle used for localizing the plugin's messages.
      */
     public ResourceBundle getPluginResourceBundle() {
@@ -60,7 +58,7 @@ public final class Yolo extends JavaPlugin {
     }
 
     /**
-     * Accessor for {@link #useSpicord}
+     * This is an accessor for {@link #useSpicord}.
      *
      * @return Whether Spicord is available for use.
      * @apiNote This boolean should ALWAYS be checked, if something is to be done with the {@link SpicordManager}.
@@ -70,19 +68,23 @@ public final class Yolo extends JavaPlugin {
     }
 
     /**
-     * Accessor for {@link Yolo#useAB}
+     * This is an accessor for {@link Yolo#useAB}.
      * @return Whether the plugin can use AdvancedBan for banning players. Should only be true, if AdvancedBan is loaded.
      */
     public boolean isUseAB() {
         return useAB;
     }
 
+    /**
+     * This is an accessor for {@link #isFunctionalityEnabled}.
+     * @return Whether the plugin's functionality should be enabled.
+     */
     public boolean isFunctionalityEnabled() {
         return isFunctionalityEnabled;
     }
 
     /**
-     * Accessor for {@link Yolo#resourcePackManager}
+     * This is an accessor for {@link Yolo#resourcePackManager}.
      * @return The plugin's resource pack manager.
      * @see ResourcePackManager
      */
@@ -98,10 +100,10 @@ public final class Yolo extends JavaPlugin {
         useAB = Bukkit.getPluginManager().isPluginEnabled("AdvancedBan");
         useSpicord = Bukkit.getPluginManager().isPluginEnabled("Spicord");
         if (useSpicord) {
-            spicordManager = SpicordManager.getInstance();
+            SpicordManager spicordManager = SpicordManager.getInstance();
         }
         resourcePackManager = ResourcePackManager.getInstance();
-        chatManager = ChatManager.getInstance();
+        ChatManager chatManager = ChatManager.getInstance();
         getServer().getPluginManager().registerEvents(new YoloEventListener(), this);
         CommandRegistrar commandRegistrar = new CommandRegistrar();
         commandRegistrar.registerCommands();
@@ -112,6 +114,9 @@ public final class Yolo extends JavaPlugin {
         // Plugin shutdown logic
     }
 
+    /**
+     * Reloads all configurable parts of this plugin.
+     */
     public void globalReload() {
         regenerateMissingFiles();
         this.reloadConfig();
@@ -125,10 +130,10 @@ public final class Yolo extends JavaPlugin {
 
         // May do some fancy shenanigans later, by reloading classes, that implement `Reloadable`, later. For now,
         // that's just not worth it, with only three classes, that need that.
-        resourcePackManager.reload();
-        chatManager.reload();
+        ResourcePackManager.reload();
+        ChatManager.reload();
         if (useSpicord) {
-            spicordManager.reload();
+            SpicordManager.reload();
         }
     }
 

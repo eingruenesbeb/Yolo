@@ -25,7 +25,18 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * This is the {@link CommandExecutor} for the command {@code yolo-reload}.
+ */
 public class ReloadCommand implements CommandExecutor {
+    /**
+     * Upon this command being executed, this method is called. It calls {@link Yolo#globalReload()}.
+     * @param sender Source of the command
+     * @param command Command which was executed
+     * @param label Alias of the command which was used
+     * @param args Passed command arguments
+     * @return The success of this command. (Always true)
+     */
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         Yolo.getPlugin(Yolo.class).globalReload();

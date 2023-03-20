@@ -41,14 +41,8 @@ import java.util.concurrent.CompletableFuture;
  * be used or the custom resource pack couldn't be validated. It also provides a method to apply the resource pack
  * to a player.
  */
-public class ResourcePackManager {
+public final class ResourcePackManager {
     private static final ResourcePackManager SINGLETON = new ResourcePackManager();
-    private String packURL;
-    private String packSha1;
-    private final String defaultPackURL = "https://drive.google.com/uc?export=download&id=1UWoiOGFlt2QIyQPVKAv5flLTNeNiI439";
-    private final String defaultPackSha1 = "cc17ee284417acd83536af878dabecab7ca7f3d1";
-    private boolean force;
-    private final Yolo yolo;
 
     /**
      * Gets the singleton instance of this manager.
@@ -58,6 +52,21 @@ public class ResourcePackManager {
     public static ResourcePackManager getInstance() {
         return SINGLETON;
     }
+
+    /**
+     * This method is used, to update the singleton instance of this manager, based on the current config file.
+     */
+    public static void reload() {
+        SINGLETON.reloadInstance();
+    }
+
+    private String packURL;
+    private String packSha1;
+    private final String defaultPackURL = "https://drive.google.com/uc?export=download&id=1UWoiOGFlt2QIyQPVKAv5flLTNeNiI439";
+    private final String defaultPackSha1 = "cc17ee284417acd83536af878dabecab7ca7f3d1";
+    private boolean force;
+
+    private final Yolo yolo;
 
     /**
      * Constructs a new ResourcePackManager sets all important fields from the config or fallback and asynchronously
@@ -85,7 +94,16 @@ public class ResourcePackManager {
         });
     }
 
-    public void reload() {
+    /**
+     * Sends a request to the given player, to load the configured resource-pack.
+     * @param player The player to apply this resource-pack to.
+     */
+    public void applyPack(final @NotNull Player player) {
+        TextComponent textComponent = Component.text("You are in hardcore mode. Please accept this ressource pack to reflecting that.");
+        player.setResourcePack(packURL, packSha1, force, textComponent);
+    }
+
+    private void reloadInstance() {
         FileConfiguration config = yolo.getConfig();
         if (config.getBoolean("resource-pack.custom.use")) {
             packURL = config.getString("resource-pack.custom.url", defaultPackURL);
@@ -106,18 +124,9 @@ public class ResourcePackManager {
     }
 
     /**
-     * Sends a request to the given player, to load the configured resource-pack.
-     * @param player The player to apply this resource-pack to.
-     */
-    public void applyPack(@NotNull Player player) {
-        TextComponent textComponent = Component.text("You are in hardcore mode. Please accept this ressource pack to reflecting that.");
-        player.setResourcePack(packURL, packSha1, force, textComponent);
-    }
-
-    /**
      * Helper method to convert a byte array to a hexadecimal string.
      */
-    private static @NotNull String bytesToHex(byte @NotNull [] bytes) {
+    private static @NotNull String bytesToHex(final byte @NotNull [] bytes) {
         StringBuilder sb = new StringBuilder();
         for (byte b : bytes) {
             sb.append(String.format("%02x", b));
@@ -134,13 +143,14 @@ public class ResourcePackManager {
      * can be downloaded, and it's checksum matches the one provided.
      */
     @Contract("_, _ -> new")
-    private @NotNull CompletableFuture<Boolean> validatePackAsync(String url, String expected) {
+    private @NotNull CompletableFuture<Boolean> validatePackAsync(final String url, final String expected) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 // Download the file
                 InputStream inputStream = new URL(url).openStream();
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                byte[] buffer = new byte[4096];
+                final int checksum_length = 4069;
+                byte[] buffer = new byte[checksum_length];
                 int bytesRead;
                 while ((bytesRead = inputStream.read(buffer)) != -1) {
                     outputStream.write(buffer, 0, bytesRead);

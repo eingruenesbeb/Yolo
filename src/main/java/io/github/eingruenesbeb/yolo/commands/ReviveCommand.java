@@ -27,6 +27,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
+/**
+ * Currently not implemented, but is intended to revive a player upon the command {@code revive [player]} being called.
+ */
 public class ReviveCommand implements TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {

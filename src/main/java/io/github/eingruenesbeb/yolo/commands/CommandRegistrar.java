@@ -28,10 +28,14 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 
+/**
+ * This class is responsible for registering all commands of the plugin. It provides a single public method:
+ * {@link #registerCommands()}
+ */
 public class CommandRegistrar {
     private enum Commands {
         RELOAD,
-        REVIVE;
+        REVIVE;  // Currently not implemented
 
         @Override
         public @NotNull String toString() {
@@ -52,13 +56,14 @@ public class CommandRegistrar {
         }
     }
 
+    /**
+     * Registers the commands for this plugin.
+     */
     public void registerCommands() {
         for (Commands command : Commands.values()) {
             PluginCommand pluginCommand = Yolo.getPlugin(Yolo.class).getCommand(command.toString());
-            if (pluginCommand == null) {
-                Yolo.getPlugin(Yolo.class).getLogger().info(String.format("Ahhhhhh!\nSincerely: %s", command));
-                continue;
-            }
+            if (pluginCommand == null) continue;
+
             pluginCommand.setExecutor(command.getCommandInstance());
 
             if (Arrays.stream(command.getClass().getInterfaces()).anyMatch(i -> i == TabExecutor.class)) {

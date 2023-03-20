@@ -20,13 +20,6 @@
 package io.github.eingruenesbeb.yolo.managers;
 
 import io.github.eingruenesbeb.yolo.Yolo;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.bukkit.Bukkit;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,6 +30,14 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.Set;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.bukkit.Bukkit;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The ChatManager class manages chat messages for the Yolo plugin. Chat messages can be configured through a properties file.
@@ -53,7 +54,7 @@ import java.util.Set;
  *
  * @see RawChatMessage
  */
-public class ChatManager {
+public final class ChatManager {
 
     /**
      * A container class for raw chat messages and their enabled status.
@@ -61,7 +62,7 @@ public class ChatManager {
     private record RawChatMessage(String rawString, boolean enabled) {
         private static final MiniMessage MINI_MESSAGE_PARSER = MiniMessage.miniMessage();
 
-        public @NotNull Component returnComponent(@Nullable HashMap<String, String> replacements) {
+        public @NotNull Component returnComponent(final @Nullable HashMap<String, String> replacements) {
             String toParse = rawString;
             if (replacements != null) {
                 for (String toReplace : replacements.keySet()) {
@@ -118,7 +119,7 @@ public class ChatManager {
          * @return The corresponding chat message type, or null if the key does not match any defined message type.
          */
         @Contract(pure = true)
-        public static @Nullable ChatMessageType fromPropertiesKey(@NotNull String key) {
+        public static @Nullable ChatMessageType fromPropertiesKey(final @NotNull String key) {
             switch (key) {
                 case "announce.totem" -> {
                     return TOTEM;
@@ -133,13 +134,7 @@ public class ChatManager {
         }
     }
 
-    private final Yolo yolo = Yolo.getPlugin(Yolo.class);
-    private final EnumMap<ChatMessageType, RawChatMessage> rawMessagesEnumMap = new EnumMap<>(ChatMessageType.class);
     private static final ChatManager SINGLETON = new ChatManager();
-
-    private ChatManager() {
-        initMessages();
-    }
 
     /**
      * Gets the single instance of the ChatManager class.
@@ -150,7 +145,49 @@ public class ChatManager {
         return SINGLETON;
     }
 
-    public void reload() {
+    /**
+     * This method is used, to update the singleton instance of this manager, based on the current config file.
+     */
+    public static void reload() {
+        SINGLETON.reloadInstance();
+    }
+
+    private final Yolo yolo = Yolo.getPlugin(Yolo.class);
+    private final EnumMap<ChatMessageType, RawChatMessage> rawMessagesEnumMap = new EnumMap<>(ChatMessageType.class);
+
+
+    private ChatManager() {
+        initMessages();
+    }
+
+    /**
+     * Sends the specified chat message with optional replacements, if the message is enabled and the specified key exists.
+     *
+     * @param messageType The {@link ChatMessageType} of the chat message to send.
+     * @param replacements A mapping of strings to replace in the raw chat message.
+     */
+    public void trySend(final ChatMessageType messageType, @Nullable final HashMap<String, String> replacements) {
+        RawChatMessage rawMessage = rawMessagesEnumMap.get(messageType);
+
+        if (rawMessage == null) {
+            try {
+                throw new IllegalArgumentException();
+            } catch (IllegalArgumentException e) {
+                yolo.getLogger().severe(yolo.getPluginResourceBundle().getString("chatManager.noMessage")
+                        .replace("%trace%", ExceptionUtils.getStackTrace(e))
+                );
+            }
+            return;
+        }
+
+        // Finally send the message.
+        Component toSend = rawMessage.returnComponent(replacements);
+        if (rawMessage.enabled) {
+            Bukkit.getServer().sendMessage(toSend);
+        }
+    }
+
+    private void reloadInstance() {
         initMessages();
     }
 
@@ -222,33 +259,6 @@ public class ChatManager {
                     rawMessagesEnumMap.put(enumRepresentation, new RawChatMessage(embedded.getProperty(key), isEnabled));
                 }
             }
-        }
-    }
-
-    /**
-     * Sends the specified chat message with optional replacements, if the message is enabled and the specified key exists.
-     *
-     * @param messageType The {@link ChatMessageType} of the chat message to send.
-     * @param replacements A mapping of strings to replace in the raw chat message.
-     */
-    public void trySend(ChatMessageType messageType, @Nullable HashMap<String, String> replacements) {
-        RawChatMessage rawMessage = rawMessagesEnumMap.get(messageType);
-
-        if (rawMessage == null) {
-            try {
-                throw new IllegalArgumentException();
-            } catch (IllegalArgumentException e) {
-                yolo.getLogger().severe(yolo.getPluginResourceBundle().getString("chatManager.noMessage")
-                        .replace("%trace%", ExceptionUtils.getStackTrace(e))
-                );
-            }
-            return;
-        }
-
-        // Finally send the message.
-        Component toSend = rawMessage.returnComponent(replacements);
-        if (rawMessage.enabled) {
-            Bukkit.getServer().sendMessage(toSend);
         }
     }
 }
