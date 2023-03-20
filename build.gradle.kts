@@ -2,12 +2,12 @@ import java.net.URI
 
 plugins {
     id("java")
-    id("com.rikonardo.papermake") version "1.0.5"
+    id("com.rikonardo.papermake") version "1.0.6"
     id("maven-publish")
 }
 
 group = "io.github.eingruenesbeb"
-version = "0.5.0"
+version = "0.6.0"
 
 repositories {
     mavenCentral()
@@ -34,7 +34,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.19.3-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.19.4-R0.1-SNAPSHOT")
     compileOnly("com.github.DevLeoko:AdvancedBan:v2.3.0")
     compileOnly("net.dv8tion:JDA:5.0.0-beta.5")
     compileOnly("com.github.Spicord.Spicord:spicord-common:v5-SNAPSHOT")
