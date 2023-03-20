@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"io.github.eingruenesbeb.yolo"},{"l":"io.github.eingruenesbeb.yolo.managers"}];updateSearchResults();
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"io.github.eingruenesbeb.yolo"},{"l":"io.github.eingruenesbeb.yolo.commands"},{"l":"io.github.eingruenesbeb.yolo.managers"}];updateSearchResults();
