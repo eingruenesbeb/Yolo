@@ -19,9 +19,12 @@
 
 package io.github.eingruenesbeb.yolo.commands;
 
+import io.github.eingruenesbeb.yolo.managers.PlayerManager;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,12 +35,20 @@ import java.util.List;
  */
 public class ReviveCommand implements TabExecutor {
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        return false;
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+        final String targetName = args[0];
+        final @Nullable Player targetPlayer = Bukkit.getPlayer(targetName);
+
+        if (targetPlayer == null) {
+            return false;
+        }
+
+        PlayerManager.getInstance().setReviveOnUser(targetPlayer.getUniqueId(), true);
+        return true;
     }
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        return null;
+        return PlayerManager.getInstance().provideRevivable();
     }
 }

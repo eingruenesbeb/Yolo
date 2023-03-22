@@ -20,6 +20,7 @@
 package io.github.eingruenesbeb.yolo;
 
 import io.github.eingruenesbeb.yolo.managers.ChatManager;
+import io.github.eingruenesbeb.yolo.managers.PlayerManager;
 import io.github.eingruenesbeb.yolo.managers.SpicordManager;
 import me.leoko.advancedban.bukkit.BukkitMethods;
 import org.bukkit.Bukkit;
@@ -55,8 +56,9 @@ public class YoloEventListener implements Listener {
          Player player = event.getPlayer();
          String reason = yoloPluginInstance.getPluginResourceBundle().getString("player.ban.death");
          if (!player.hasPermission("yolo.exempt") && yoloPluginInstance.isFunctionalityEnabled()) {
-             HashMap<String, String> replacementMap = TextReplacements.provideDefaults(player, TextReplacements.ALL);
+             PlayerManager.getInstance().actionsOnDeath(player);
 
+             HashMap<String, String> replacementMap = TextReplacements.provideDefaults(player, TextReplacements.ALL);
              if (yoloPluginInstance.isUseAB()) {
                  BukkitMethods abMethods = new BukkitMethods();
                  abMethods.loadFiles();
@@ -66,8 +68,11 @@ public class YoloEventListener implements Listener {
                  } else {
                      Bukkit.dispatchCommand(YoloPluginCommandSender.PLUGIN_COMMAND_SENDER, String.format("ban -s %s %s", player.getName(), reason));
                  }
+                 // Here players will not retain their inventory.
              } else {
-                 player.banPlayerFull(reason);
+                 player.banPlayer(reason);
+                 // Players will retain their inventory but still drop it (essentially duping it) after death, when
+                 // banned the instant they die (somehow). Therefore, it has to be removed explicitly.
              }
 
              // It's about sending a message.

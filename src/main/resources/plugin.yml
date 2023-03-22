@@ -20,6 +20,11 @@ permissions:
 commands:
   yolo-reload:
     description: Reloads the Yolo Plugin, which enables reconfiguration without restarting.
-    usage: This command does not have any arguments.
+    usage: /yolo-reload
     permission: yolo.reload
+    permission-message: You don't have permission to use that command!
+  revive:
+    description: Revives a player, that has died, whilst trying to restore the player's inventory and position.
+    usage: /revive [player name]
+    permission: yolo.revive
     permission-message: You don't have permission to use that command!
