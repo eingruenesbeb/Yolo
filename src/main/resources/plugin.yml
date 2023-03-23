@@ -7,6 +7,8 @@ version: '${version}'
 main: io.github.eingruenesbeb.yolo.Yolo
 api-version: 1.19
 softdepend: [ AdvancedBan, Spicord ]
+libraries:
+  - "org.jetbrains.kotlin:kotlin-stdlib:1.8.20-RC"
 
 default-permission: op
 permissions:
