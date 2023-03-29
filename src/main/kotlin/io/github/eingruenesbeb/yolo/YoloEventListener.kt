@@ -86,7 +86,7 @@ class YoloEventListener : Listener {
                     SpicordManager.instance.trySend(DiscordMessageType.DEATH, replacementMap)
                 }
             }
-            ChatManager.instance.trySend(ChatManager.ChatMessageType.DEATH, replacementMap)
+            ChatManager.instance.trySend(Bukkit.getServer(), ChatManager.ChatMessageType.DEATH, replacementMap)
         }
     }
 
@@ -120,6 +120,6 @@ class YoloEventListener : Listener {
         if (yoloPluginInstance.isUseSpicord) {
             SpicordManager.instance.trySend(DiscordMessageType.TOTEM, replacementMap)
         }
-        ChatManager.instance.trySend(ChatManager.ChatMessageType.TOTEM, replacementMap)
+        ChatManager.instance.trySend(Bukkit.getServer(), ChatManager.ChatMessageType.TOTEM, replacementMap)
     }
 }

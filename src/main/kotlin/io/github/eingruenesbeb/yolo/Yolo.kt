@@ -87,6 +87,7 @@ class Yolo : JavaPlugin() {
 
     override fun onDisable() {
         // Plugin shutdown logic
+        PlayerManager.instance.onDisable()
     }
 
     /**

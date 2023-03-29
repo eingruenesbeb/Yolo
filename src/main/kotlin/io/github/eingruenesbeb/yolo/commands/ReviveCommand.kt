@@ -27,9 +27,11 @@ import org.bukkit.command.*
  */
 class ReviveCommand : TabExecutor {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
-        val targetName = args[0]
-        val targetPlayer = Bukkit.getPlayer(targetName) ?: return false
-        PlayerManager.instance.setReviveOnUser(targetPlayer.uniqueId, true)
+        try {
+            PlayerManager.instance.setReviveOnUser(args[0], true)
+        } catch (e: IllegalArgumentException) {
+            return false
+        }
         return true
     }
 

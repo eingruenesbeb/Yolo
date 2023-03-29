@@ -7,6 +7,7 @@ plugins {
     id("maven-publish")
     kotlin("jvm") version "1.8.20-RC"
     id("org.jetbrains.dokka") version "1.8.10"
+    kotlin("plugin.serialization") version "1.8.10"
 }
 
 group = "io.github.eingruenesbeb"
@@ -41,6 +42,8 @@ dependencies {
     compileOnly("com.github.DevLeoko:AdvancedBan:v2.3.0")
     compileOnly("net.dv8tion:JDA:5.0.0-beta.5")
     compileOnly("com.github.Spicord.Spicord:spicord-common:v5-SNAPSHOT")
+    compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
+    compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 
     // Manually test functionality on PaperMake-dev-server for now.
     /*

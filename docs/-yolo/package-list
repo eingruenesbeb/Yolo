@@ -50,13 +50,13 @@ $dokka.location:io.github.eingruenesbeb.yolo.managers/SpicordManager///PointingT
 $dokka.location:io.github.eingruenesbeb.yolo.managers/SpicordManager/isSpicordBotAvailable/#/PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo.managers/-spicord-manager/is-spicord-bot-available.html
 $dokka.location:io.github.eingruenesbeb.yolo.managers/SpicordManager/spicordBot/#/PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo.managers/-spicord-manager/spicord-bot.html
 $dokka.location:io.github.eingruenesbeb.yolo.managers/SpicordManager/trySend/#io.github.eingruenesbeb.yolo.managers.SpicordManager.DiscordMessageType#java.util.HashMap[kotlin.String?,kotlin.String?]?/PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo.managers/-spicord-manager/try-send.html
-$dokka.location:io.github.eingruenesbeb.yolo.utilities////PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo.utilities/index.html
-$dokka.location:io.github.eingruenesbeb.yolo.utilities/BooleanPersistentDataType///PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo.utilities/-boolean-persistent-data-type/index.html
-$dokka.location:io.github.eingruenesbeb.yolo.utilities/BooleanPersistentDataType/BooleanPersistentDataType/#/PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo.utilities/-boolean-persistent-data-type/-boolean-persistent-data-type.html
-$dokka.location:io.github.eingruenesbeb.yolo.utilities/BooleanPersistentDataType/fromPrimitive/#kotlin.Boolean#org.bukkit.persistence.PersistentDataAdapterContext/PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo.utilities/-boolean-persistent-data-type/from-primitive.html
-$dokka.location:io.github.eingruenesbeb.yolo.utilities/BooleanPersistentDataType/getComplexType/#/PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo.utilities/-boolean-persistent-data-type/get-complex-type.html
-$dokka.location:io.github.eingruenesbeb.yolo.utilities/BooleanPersistentDataType/getPrimitiveType/#/PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo.utilities/-boolean-persistent-data-type/get-primitive-type.html
-$dokka.location:io.github.eingruenesbeb.yolo.utilities/BooleanPersistentDataType/toPrimitive/#kotlin.Boolean#org.bukkit.persistence.PersistentDataAdapterContext/PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo.utilities/-boolean-persistent-data-type/to-primitive.html
+$dokka.location:io.github.eingruenesbeb.yolo.serialize////PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo.serialize/index.html
+$dokka.location:io.github.eingruenesbeb.yolo.serialize/BooleanPersistentDataType///PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo.serialize/-boolean-persistent-data-type/index.html
+$dokka.location:io.github.eingruenesbeb.yolo.serialize/BooleanPersistentDataType/BooleanPersistentDataType/#/PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo.serialize/-boolean-persistent-data-type/-boolean-persistent-data-type.html
+$dokka.location:io.github.eingruenesbeb.yolo.serialize/BooleanPersistentDataType/fromPrimitive/#kotlin.Boolean#org.bukkit.persistence.PersistentDataAdapterContext/PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo.serialize/-boolean-persistent-data-type/from-primitive.html
+$dokka.location:io.github.eingruenesbeb.yolo.serialize/BooleanPersistentDataType/getComplexType/#/PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo.serialize/-boolean-persistent-data-type/get-complex-type.html
+$dokka.location:io.github.eingruenesbeb.yolo.serialize/BooleanPersistentDataType/getPrimitiveType/#/PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo.serialize/-boolean-persistent-data-type/get-primitive-type.html
+$dokka.location:io.github.eingruenesbeb.yolo.serialize/BooleanPersistentDataType/toPrimitive/#kotlin.Boolean#org.bukkit.persistence.PersistentDataAdapterContext/PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo.serialize/-boolean-persistent-data-type/to-primitive.html
 $dokka.location:io.github.eingruenesbeb.yolo////PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo/index.html
 $dokka.location:io.github.eingruenesbeb.yolo/TextReplacements.ALL///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}-yolo/io.github.eingruenesbeb.yolo/-text-replacements/-a-l-l/index.html
 $dokka.location:io.github.eingruenesbeb.yolo/TextReplacements.Companion///PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo/-text-replacements/-companion/index.html
@@ -97,5 +97,5 @@ $dokka.location:io.github.eingruenesbeb.yolo/YoloPluginCommandSender/spigot/#/Po
 io.github.eingruenesbeb.yolo
 io.github.eingruenesbeb.yolo.commands
 io.github.eingruenesbeb.yolo.managers
-io.github.eingruenesbeb.yolo.utilities
+io.github.eingruenesbeb.yolo.serialize
 

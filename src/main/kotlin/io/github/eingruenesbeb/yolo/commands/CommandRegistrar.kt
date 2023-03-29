@@ -30,7 +30,7 @@ import java.util.*
  */
 class CommandRegistrar {
     private enum class Commands {
-        RELOAD, REVIVE;
+        RELOAD, REVIVE, CHECKOUT_DEATH_LOCATION;
 
         // Currently not implemented
         override fun toString(): String {
@@ -49,6 +49,10 @@ class CommandRegistrar {
                     REVIVE -> {
                         ReviveCommand()
                     }
+
+                    CHECKOUT_DEATH_LOCATION -> {
+                        CheckoutDeathLocationCommand()
+                    }
                 }
             }
     }
@@ -62,7 +66,7 @@ class CommandRegistrar {
                 ?: continue
             pluginCommand.setExecutor(command.commandInstance)
             if (Arrays.stream(command.javaClass.interfaces).anyMatch { i: Class<*> -> i == TabExecutor::class.java }) {
-                pluginCommand.tabCompleter = command.commandInstance as TabExecutor?
+                pluginCommand.tabCompleter = command.commandInstance as? TabExecutor
             }
         }
     }

@@ -20,10 +20,10 @@ package io.github.eingruenesbeb.yolo.managers
 
 import io.github.eingruenesbeb.yolo.Yolo
 import io.github.eingruenesbeb.yolo.managers.ChatManager.RawChatMessage
+import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 import org.jetbrains.annotations.Contract
 import java.io.IOException
@@ -74,7 +74,7 @@ class ChatManager private constructor() {
      * This enum represents the different types of chat messages that can be sent by the Yolo plugin.
      */
     enum class ChatMessageType {
-        DEATH, TOTEM;
+        DEATH, TOTEM, PLAYER_ONLY_COMMAND;
 
         @get:Contract(pure = true)
         private val propertiesKey: String
@@ -87,10 +87,13 @@ class ChatManager private constructor() {
                     "announce.death"
                 }
 
+                PLAYER_ONLY_COMMAND -> {
+                    "system.playerOnlyCommand"
+                }
             }
 
         @get:Contract(pure = true)
-        val enabledKey: String
+        val enabledKey: String?
             /**
              * Returns the key to get the enabled status from the config for this message type.
              *
@@ -100,6 +103,10 @@ class ChatManager private constructor() {
             get() = when (this) {
                 TOTEM, DEATH -> {
                     "$propertiesKey.chat"
+                }
+
+                else -> {
+                    null
                 }
             }
 
@@ -118,6 +125,10 @@ class ChatManager private constructor() {
 
                     "announce.death" -> {
                         DEATH
+                    }
+
+                    "system.playerOnlyCommand" -> {
+                        PLAYER_ONLY_COMMAND
                     }
 
                     else -> {
@@ -143,7 +154,7 @@ class ChatManager private constructor() {
      * @param messageType The [ChatMessageType] of the chat message to send.
      * @param replacements A mapping of strings to replace in the raw chat message.
      */
-    fun trySend(messageType: ChatMessageType, replacements: HashMap<String?, String?>?) {
+    fun trySend(targetAudience: Audience, messageType: ChatMessageType, replacements: HashMap<String?, String?>?) {
         val rawMessage = rawMessagesEnumMap[messageType]
         if (rawMessage == null) {
             try {
@@ -160,7 +171,7 @@ class ChatManager private constructor() {
         // Finally send the message.
         val toSend = rawMessage.returnComponent(replacements)
         if (rawMessage.enabled) {
-            Bukkit.getServer().sendMessage(toSend)
+            targetAudience.sendMessage(toSend)
         }
     }
 
@@ -216,7 +227,7 @@ class ChatManager private constructor() {
                 // The config follows this pattern for chat message keys: "[name].chat".
                 val enumRepresentation = ChatMessageType.fromPropertiesKey(key)
                 if (enumRepresentation != null) {
-                    val isEnabled = yolo.config.getBoolean(enumRepresentation.enabledKey, true)
+                    val isEnabled = enumRepresentation.enabledKey?.let { yolo.config.getBoolean(it, true) } ?: true
                     rawMessagesEnumMap[enumRepresentation] =
                         RawChatMessage(userConfiguredProperties.getProperty(key), isEnabled)
                 }
@@ -231,7 +242,7 @@ class ChatManager private constructor() {
                 // The config follows this pattern for chat message keys: "[name].chat".
                 val enumRepresentation = ChatMessageType.fromPropertiesKey(key)
                 if (enumRepresentation != null) {
-                    val isEnabled = yolo.config.getBoolean(enumRepresentation.enabledKey, true)
+                    val isEnabled = enumRepresentation.enabledKey?.let { yolo.config.getBoolean(it, true) } ?: true
                     rawMessagesEnumMap[enumRepresentation] = RawChatMessage(embedded.getProperty(key), isEnabled)
                 }
             }
