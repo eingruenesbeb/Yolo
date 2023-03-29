@@ -34,6 +34,7 @@ import org.bukkit.event.entity.EntityResurrectEvent
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.plugin.java.JavaPlugin
+import java.io.File
 
 /**
  * The event listener for this plugin.
@@ -53,7 +54,15 @@ class YoloEventListener : Listener {
     @EventHandler(ignoreCancelled = true)
     fun onPlayerDeath(event: PlayerDeathEvent) {
         val player = event.player
-        val reason = yoloPluginInstance.pluginResourceBundle.getString("player.ban.death")
+        var banMessage = ""
+        val banMessageFile = File(yoloPluginInstance.dataFolder.path.plus("/ban_message.txt"))
+        runCatching {
+            if (!banMessageFile.exists()) banMessageFile.createNewFile()
+            banMessage = banMessageFile.readText()
+        }.onFailure {
+            banMessage = yoloPluginInstance.getResource("ban_message.txt")!!.bufferedReader().readText()
+        }
+
         if (!player.hasPermission("yolo.exempt") && yoloPluginInstance.isFunctionalityEnabled) {
             PlayerManager.instance.actionsOnDeath(player)
             val replacementMap: HashMap<String?, String?> =
@@ -70,12 +79,12 @@ class YoloEventListener : Listener {
                 } else {
                     Bukkit.dispatchCommand(
                         YoloPluginCommandSender.PLUGIN_COMMAND_SENDER,
-                        String.format("ban -s %s %s", player.name, reason)
+                        String.format("ban -s %s %s", player.name, banMessage)
                     )
                 }
                 // Here players will not retain their inventory.
             } else {
-                player.banPlayer(reason)
+                player.banPlayer(banMessage)
                 // Players will retain their inventory but still drop it (essentially duping it) after death, when
                 // banned the instant they die (somehow). Therefore, it has to be removed explicitly.
             }

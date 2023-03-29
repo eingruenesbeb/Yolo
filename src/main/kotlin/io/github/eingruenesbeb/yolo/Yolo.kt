@@ -71,7 +71,7 @@ class Yolo : JavaPlugin() {
 
     override fun onEnable() {
         regenerateMissingFiles()
-        isFunctionalityEnabled = Bukkit.isHardcore() || config.getBoolean("enable_on_non_hc", false)
+        isFunctionalityEnabled = (Bukkit.isHardcore() || config.getBoolean("enable_on_non_hc", false)) && !config.getBoolean("easy_disable", false)
         isUseAB = Bukkit.getPluginManager().isPluginEnabled("AdvancedBan")
         isUseSpicord = Bukkit.getPluginManager().isPluginEnabled("Spicord")
         if (isUseSpicord) {
@@ -96,7 +96,7 @@ class Yolo : JavaPlugin() {
     fun globalReload() {
         regenerateMissingFiles()
         reloadConfig()
-        isFunctionalityEnabled = Bukkit.isHardcore() || config.getBoolean("enable_on_non_hc", false)
+        isFunctionalityEnabled = (Bukkit.isHardcore() || config.getBoolean("enable_on_non_hc", false)) && !config.getBoolean("easy_disable", false)
 
         // The availability of some plugins may have changed... (Okay, this might be a little paranoid, but better safe
         // than sorry.)
@@ -135,6 +135,11 @@ class Yolo : JavaPlugin() {
         // (Deferred content checks, no subdir)
         if (!File(dataFolder.path + "/chat_messages.properties").exists()) {
             saveResource("chat_messages.properties", false)
+        }
+
+        // (No content checks, no subdir)
+        if(!File(dataFolder.path + "ban_message.txt").exists()) {
+            saveResource("ban_message.txt", false)
         }
     }
 
