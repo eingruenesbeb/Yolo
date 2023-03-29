@@ -151,6 +151,7 @@ class ChatManager private constructor() {
     /**
      * Sends the specified chat message with optional replacements, if the message is enabled and the specified key exists.
      *
+     * @param targetAudience The [Audience], that should see the message.
      * @param messageType The [ChatMessageType] of the chat message to send.
      * @param replacements A mapping of strings to replace in the raw chat message.
      */

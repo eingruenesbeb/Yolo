@@ -27,6 +27,12 @@ import kotlinx.serialization.encoding.*
 import org.bukkit.Bukkit
 import org.bukkit.Location
 
+/**
+ * This class is a serializer designed to be used with the Kotlin serialization library. It serialized and deserializes
+ * [Location] data, as it's defined by Bukkit.
+ *
+ * @see KSerializer
+ */
 object LocationSerializer : KSerializer<Location?> {
     // The location will look like this, when serialized to json:
     // {world:}

@@ -26,6 +26,14 @@ import org.bukkit.command.CommandSender
 import org.bukkit.command.TabExecutor
 import org.bukkit.entity.Player
 
+/**
+ * Represents the executor for the command `checkout_death_location`. On tab-completion, it supplies all revivable
+ * players. When executed by a player, the command teleports the command sender to the death location of the target, if
+ * available.
+ *
+ * @see TabExecutor
+ * @see PlayerManager.teleportToRevivable
+ */
 class CheckoutDeathLocationCommand : TabExecutor {
     override fun onTabComplete(
         sender: CommandSender,

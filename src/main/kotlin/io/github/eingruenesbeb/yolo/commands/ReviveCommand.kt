@@ -19,11 +19,17 @@
 package io.github.eingruenesbeb.yolo.commands
 
 import io.github.eingruenesbeb.yolo.managers.PlayerManager
-import org.bukkit.*
-import org.bukkit.command.*
+import org.bukkit.command.Command
+import org.bukkit.command.CommandSender
+import org.bukkit.command.TabExecutor
 
 /**
- * Currently not implemented, but is intended to revive a player upon the command `revive [player]` being called.
+ * This is the command executor, registered for the command `revive`. On tab completion, it provides a list of revivable
+ * players. If successfully executed, the targeted player will be unbanned and revived upon their next join.
+ *
+ * @see TabExecutor
+ * @see PlayerManager.setReviveOnUser
+ * @see PlayerManager.provideRevivable
  */
 class ReviveCommand : TabExecutor {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {

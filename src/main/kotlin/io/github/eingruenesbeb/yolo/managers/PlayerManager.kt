@@ -23,6 +23,8 @@ package io.github.eingruenesbeb.yolo.managers
 
 import com.destroystokyo.paper.event.player.PlayerPostRespawnEvent
 import io.github.eingruenesbeb.yolo.Yolo
+import io.github.eingruenesbeb.yolo.managers.PlayerManager.PlayerStatus
+import io.github.eingruenesbeb.yolo.managers.PlayerManager.YoloPlayer
 import io.github.eingruenesbeb.yolo.serialize.ItemStackArrayPersistentDataType
 import io.github.eingruenesbeb.yolo.serialize.LocationSerializer
 import kotlinx.serialization.*
@@ -45,6 +47,12 @@ import java.nio.file.Files
 import java.nio.file.StandardOpenOption
 import java.util.*
 
+/**
+ * This class is responsible for managing player data and actions related to death and revival.
+ * It includes a nested class [YoloPlayer], which contains the player's UUID and their [PlayerStatus] data.
+ *
+ * @constructor Creates a new instance of `PlayerManager`. This is a private constructor since this class is a singleton.
+ */
 @OptIn(ExperimentalSerializationApi::class)
 class PlayerManager private constructor() {
     @Serializable
@@ -166,6 +174,9 @@ class PlayerManager private constructor() {
         }
     }
 
+    /**
+     * A specialized [Listener] for this class. Handles [PlayerJoinEvent] and [PlayerPostRespawnEvent].
+     */
     class PlayerManagerEvents : Listener {
         @EventHandler(ignoreCancelled = true)
         fun onPlayerJoin(event: PlayerJoinEvent) {
@@ -213,6 +224,17 @@ class PlayerManager private constructor() {
         // (There's also probably no need to reload this manager, as nothing is config dependent.)
     }
 
+    /**
+     * This method is used for setting a revivable (meaning that the player is dead and isn't already queued for
+     * revival) up to be revived upon the next join.
+     * The revival process is setting the player's gamemode to [GameMode.SURVIVAL], teleporting them to the location of
+     * their death, if it's safe, and finally restoring their inventory.
+     *
+     * @param targetName The name of the player.
+     * @param reviveOnJoin Whether to set `isToRevive` to true.
+     *
+     * @throws IllegalArgumentException If the player is not in the [playerRegistry], this exception is thrown.
+     */
     @Throws(IllegalArgumentException::class)
     fun setReviveOnUser(targetName: String, reviveOnJoin: Boolean) {
         val target = playerRegistry[Bukkit.getOfflinePlayer(targetName).uniqueId] ?: throw IllegalArgumentException("Player isn't in the registry!")
@@ -224,6 +246,12 @@ class PlayerManager private constructor() {
         }
     }
 
+    /**
+     * Provides a list of the names of every player, that is dead and isn't already set to be revived. Useful for
+     * command tab-completions.
+     *
+     * @return A list of every revivable player.
+     */
     fun provideRevivable(): List<String> {
         val listOfRevivable = ArrayList<String>()
         playerRegistry.forEach { (uuid: UUID?, yoloPlayer: YoloPlayer) ->
@@ -235,15 +263,28 @@ class PlayerManager private constructor() {
         return listOfRevivable
     }
 
-    fun teleportToRevivable(executor: Player, targetName: String): Boolean {
+    /**
+     * Teleports the player [toTeleport] to the location of the specified revivable player.
+     *
+     * @param toTeleport The player to teleport.
+     * @param targetName The name of the player, that the death location belongs to.
+     *
+     * @return Whether the action was a success
+     */
+    fun teleportToRevivable(toTeleport: Player, targetName: String): Boolean {
         if (targetName == "") return false
         val targetLocation = instance.playerRegistry[Bukkit.getOfflinePlayer(targetName).uniqueId]?.playerStatus?.latestDeathPos
         targetLocation ?: return false
         targetLocation.chunk.load()
-        return executor.teleport(targetLocation)
+        return toTeleport.teleport(targetLocation)
     }
 
-    fun actionsOnDeath(player: Player) {
+    /**
+     * Executes everything, that needs to be, when a player has died.
+     *
+     * @param player The player, that has died
+     */
+    internal fun actionsOnDeath(player: Player) {
         val playerFromRegistry = playerRegistry[player.uniqueId]
         playerFromRegistry!!.playerStatus.isDead = true
         playerFromRegistry.saveReviveInventory()
@@ -254,7 +295,10 @@ class PlayerManager private constructor() {
         player.inventory.contents = arrayOf()
     }
 
-    fun onDisable() {
+    /**
+     * Is to be called, when the plugin is disabled. Ensures, that every important bit of data is saved.
+     */
+    internal fun onDisable() {
         val toSerializeMap = mutableMapOf<String, PlayerStatus>()
         playerRegistry.forEach { (uuid, yoloPlayer) ->
             toSerializeMap[uuid.toString()] = yoloPlayer.playerStatus

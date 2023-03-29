@@ -33,6 +33,10 @@ import java.io.IOException
 import java.io.Serializable
 import java.util.*
 
+/**
+ * This class represents a [PersistentDataType], that is used to save an indexed array of [ItemStack]s to be saved to a
+ * [PersistentDataContainer]. Useful for storing data about an inventory.
+ */
 class ItemStackArrayPersistentDataType : PersistentDataType<Array<PersistentDataContainer>, Array<ItemStack?>> {
     private data class IndexedItemStackData(val index: Int, val itemStackData: ByteArray) : Serializable {
         companion object {
