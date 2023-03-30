@@ -23,6 +23,7 @@ import io.github.eingruenesbeb.yolo.managers.PlayerManager
 import io.github.eingruenesbeb.yolo.managers.SpicordManager
 import io.github.eingruenesbeb.yolo.managers.SpicordManager.DiscordMessageType
 import me.leoko.advancedban.bukkit.BukkitMethods
+import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.Statistic
@@ -54,14 +55,16 @@ class YoloEventListener : Listener {
     @EventHandler(ignoreCancelled = true)
     fun onPlayerDeath(event: PlayerDeathEvent) {
         val player = event.player
-        var banMessage = ""
+        var rawBanMessage = ""
         val banMessageFile = File(yoloPluginInstance.dataFolder.path.plus("/ban_message.txt"))
         runCatching {
             if (!banMessageFile.exists()) banMessageFile.createNewFile()
-            banMessage = banMessageFile.readText()
+            rawBanMessage = banMessageFile.readText()
         }.onFailure {
-            banMessage = yoloPluginInstance.getResource("ban_message.txt")!!.bufferedReader().readText()
+            rawBanMessage = yoloPluginInstance.getResource("ban_message.txt")!!.bufferedReader().readText()
         }
+
+        val banMessage = Component.text(rawBanMessage)
 
         if (!player.hasPermission("yolo.exempt") && yoloPluginInstance.isFunctionalityEnabled) {
             PlayerManager.instance.actionsOnDeath(player)
@@ -84,7 +87,7 @@ class YoloEventListener : Listener {
                 }
                 // Here players will not retain their inventory.
             } else {
-                player.banPlayer(banMessage)
+                player.send
                 // Players will retain their inventory but still drop it (essentially duping it) after death, when
                 // banned the instant they die (somehow). Therefore, it has to be removed explicitly.
             }

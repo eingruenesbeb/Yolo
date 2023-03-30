@@ -22,6 +22,7 @@
 package io.github.eingruenesbeb.yolo.managers
 
 import com.destroystokyo.paper.event.player.PlayerPostRespawnEvent
+import io.github.eingruenesbeb.yolo.TeleportationUtils.safeTeleport
 import io.github.eingruenesbeb.yolo.Yolo
 import io.github.eingruenesbeb.yolo.managers.PlayerManager.PlayerStatus
 import io.github.eingruenesbeb.yolo.managers.PlayerManager.YoloPlayer
@@ -38,9 +39,6 @@ import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
-import org.bukkit.potion.PotionEffect
-import org.bukkit.potion.PotionEffectType
-import org.jetbrains.annotations.Contract
 import java.io.File
 import java.io.FileNotFoundException
 import java.nio.file.Files
@@ -114,63 +112,6 @@ class PlayerManager private constructor() {
                     playerStatus.isToRevive = false
                 }
             }
-        }
-
-        private fun safeTeleport(player: Player, targetLocation: Location) {
-            // Despite the check, the location may still be dangerous.
-            val effectsOnTeleport = listOf(
-                PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 600, 6),
-                PotionEffect(PotionEffectType.INVISIBILITY, 600, 1)
-            )
-
-            if (checkTeleportSafety(targetLocation)) {
-                player.addPotionEffects(effectsOnTeleport)
-                targetLocation.chunk.load()
-                player.teleport(targetLocation)
-            } else if (checkTeleportSafety(targetLocation.toHighestLocation())) {
-                player.addPotionEffects(effectsOnTeleport)
-                targetLocation.chunk.load()
-                player.teleport(targetLocation.toHighestLocation())
-            } else {
-                // Give up
-                JavaPlugin.getPlugin(Yolo::class.java).getLogger().info(
-                    JavaPlugin.getPlugin(
-                        Yolo::class.java
-                    ).pluginResourceBundle
-                        .getString("player.revive.unsafeTeleport")
-                        .replace("%player_name%", player.name)
-                )
-            }
-        }
-
-        @Contract(pure = true)
-        private fun checkTeleportSafety(teleportLocation: Location): Boolean {
-            // Player may suffocate, when teleported into a solid block.
-            if (teleportLocation.block.isSolid) return false
-
-            // The location may be in the void.
-            if (teleportLocation.block.type == Material.VOID_AIR) return false
-
-            // Or it may be above void or other dangerous blocks below.
-            val iterateLocation = teleportLocation.clone()
-            val hazardousMaterials = ArrayList(
-                listOf(
-                    Material.LAVA,
-                    Material.FIRE,
-                    Material.SOUL_FIRE,
-                    Material.CAMPFIRE,
-                    Material.SOUL_CAMPFIRE,
-                    Material.MAGMA_BLOCK,
-                    Material.VOID_AIR
-                )
-            )
-            for (i in iterateLocation.blockY downTo -64) {
-                iterateLocation.y = i.toDouble()
-                if (hazardousMaterials.contains(iterateLocation.block.type)) return false
-                if (iterateLocation.block.type.isCollidable) break
-                if (i == -64) return false
-            }
-            return true
         }
     }
 
