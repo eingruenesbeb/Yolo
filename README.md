@@ -4,6 +4,7 @@
 
 [![Discord](https://img.shields.io/discord/1085932576197316629?color=7289da&label=Support&logo=discord&style=for-the-badge)](https://discord.gg/zMqkeRseME)
 [![GitHub all releases](https://img.shields.io/github/downloads/eingruenesbeb/Yolo/total?logo=github&style=for-the-badge)](https://github.com/eingruenesbeb/Yolo/releases/)
+[![Modrinth downloads](https://img.shields.io/modrinth/dt/ExWUwvY3?logo=modrinth&style=for-the-badge)](https://modrinth.com/plugin/yolo)
 [![JitPack](https://img.shields.io/jitpack/version/io.github.eingruenesbeb/Yolo?color=green&style=for-the-badge)](https://jitpack.io/#eingruenesbeb/Yolo/v0.5.0)
 [![GitHub](https://img.shields.io/github/license/eingruenesbeb/Yolo?style=for-the-badge)](https://github.com/eingruenesbeb/Yolo/blob/master/COPYING)
 
