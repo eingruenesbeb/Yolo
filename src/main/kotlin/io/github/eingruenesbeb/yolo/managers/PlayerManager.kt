@@ -146,6 +146,10 @@ class PlayerManager private constructor() {
         @EventHandler(ignoreCancelled = true)
         fun onPlayerJoin(event: PlayerJoinEvent) {
             instance.playerRegistry.putIfAbsent(event.player.uniqueId, YoloPlayer(event.player.uniqueId))
+
+            // Players may have been set to be revived, after they have respawned, when they have respawned during the
+            // plugin's death ban functionality being disabled.
+            instance.playerRegistry[event.player.uniqueId]!!.revivePlayer()
         }
 
         @EventHandler(ignoreCancelled = true)
