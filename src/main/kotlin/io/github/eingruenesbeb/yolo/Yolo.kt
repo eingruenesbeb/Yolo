@@ -145,7 +145,7 @@ class Yolo : JavaPlugin() {
         }
 
         // (No content checks, no subdir)
-        if(!File(dataFolder.path + "ban_message.txt").exists()) {
+        if(!File(dataFolder.path + "/ban_message.txt").exists()) {
             saveResource("ban_message.txt", false)
         }
     }

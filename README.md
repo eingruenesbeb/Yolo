@@ -3,7 +3,6 @@
 ---
 
 [![Discord](https://img.shields.io/discord/1085932576197316629?color=7289da&label=Support&logo=discord&style=for-the-badge)](https://discord.gg/zMqkeRseME)
-[![](https://modrinth-utils.vercel.app/api/badge/downloads/?id=ExWUwvY3&logo=true&style=for-the-badge)](https://modrinth.com/plugin/yolo)
 [![GitHub all releases](https://img.shields.io/github/downloads/eingruenesbeb/Yolo/total?logo=github&style=for-the-badge)](https://github.com/eingruenesbeb/Yolo/releases/)
 [![JitPack](https://img.shields.io/jitpack/version/io.github.eingruenesbeb/Yolo?color=green&style=for-the-badge)](https://jitpack.io/#eingruenesbeb/Yolo/v0.5.0)
 [![GitHub](https://img.shields.io/github/license/eingruenesbeb/Yolo?style=for-the-badge)](https://github.com/eingruenesbeb/Yolo/blob/master/COPYING)
@@ -18,9 +17,7 @@ This plugin is meant for hardcore survival servers, that implements, but also ex
 mechanics for a player's death on a server.\
 Upon death players usually get banned off of a server, if (and only if) the setting for hardcore was enabled in
 `server.properties` before world generation. That is not the case, if this setting was set to true retroactively. And
-here is, where this plugin comes into play, by implementing this behaviour regardless of when hardcore was enabled. If
-you also have [AdvancedBan](https://www.spigotmc.org/resources/advancedban.8695/) installed, this plugin will
-automatically use this for banning players.
+here is, where this plugin comes into play, by implementing this behaviour regardless of when hardcore was enabled. 
 Additionally, you can exempt players from this rule and send a customized message to a Discord-server upon occurrence of
 a (non-exempt) player-death. The plugin can also force a resource-pack of your choice, with the default one replacing
 the normal health-bar with hardcore-hearts, on any non-exempt player. (*You can check out the resource-pack
@@ -79,8 +76,10 @@ announce:
 This should be pretty self-explanatory. The listed messages are announcements, that would be sent on their respective
 occasions and targets. The allowed values are `true` or `false`.
 
-Lastly we have a single option `enable-on-non-hc`, which lets you enable this plugin's functionality even on a
-non-hardcore server. Yet again acceptable values are `true` and `false`.
+The option `enable-on-non-hc` lets you enable this plugin's functionality even on a non-hardcore server, while the last
+option `easy-disable` lets you disable the death-ban functionality, if it's `true` (previously dead players can join, if
+this is enabled). It may take a while, before banned players can join, if this option is true. Yet again acceptable 
+values (for both) are `true` and `false`.
 
 ### 2.2 `chat_messages.properties`
 
@@ -114,6 +113,9 @@ If for example you'd like to customize the discord message, that gets send upon 
 
 ```
 
+### 2.4 `ban_message.txt`
+This is, where you can customize the ban message, players see, when they are dead.
+
 ## 3. Permissions
 
 One permission is `yolo.exempt`, which excludes any players having it from the plugin's effects. There are also two
@@ -128,16 +130,18 @@ There are currently two commands available:
 
 - `/yolo-reload`: This command is useful for reloading all configuration dependent features of this plugin, without
   having to restart the whole server. It requires the `yolo.reload` permission.
-- `/revive [player]`: This command lets you revive a player who has died, attempting to restore their inventory and
-  teleporting them to their death location (if safe). It requires the `yolo.revive` permission.
+- `/revive [revivable player] <restore inventory> <safe teleport to death location>`: This command lets you revive a
+player who has died, attempting to restore their inventory and teleporting them to their death location (if safe). It
+requires the `yolo.revive` permission. You can also disable restoring their inventory and the teleportation, by setting
+the arguments to `false`. (If you only want to disable the teleport, you need to explicitly set the inventory restoring
+to `true`.)
+- `/checkout_death_location` This command lets you teleport to a dead player's death location. This is useful for
+checking for traps and duplicate items. It requires the `yolo.revive` permission.
 
 ## 5. Further considerations
 
 - If hardcore is enabled in `server.properties`, the resource pack is always forced upon players by default. (
   configurable since: 0.4.0)
-- If you use AdvancedBan, you can customize the message-layout, by creating one called "Hardcore_death". Please refer
-  to [the Spigot page of AdvancedBan](https://www.spigotmc.org/resources/advancedban.8695/#Configuration) to find out,
-  how to do that.
 - In order to use Spicord, you have to configure it correctly. In order to register this plugin as an addon for a bot,
   you have to add it like this:
 
@@ -156,20 +160,21 @@ addons = [
 ### ↓ Other irrelevant stuff below ↓ ###
 ```
 
-- **This plugin was made for PaperMC-1.19.3.** Other versions and platforms haven't been tested *yet*, but this is
+- **This plugin was made for PaperMC-1.19.4.** Other versions and platforms haven't been tested *yet*, but this is
   planned
   to be completed until the full release. Issues for incompatibility can
   be [submitted](https://github.com/eingruenesbeb/Yolo/issues/new/choose), but will not be resolved, if
   this would mean dropping support for other compatible versions.
+- Reviving a player with inventory restoring enabled, can lead to item duplication, as players still drop their items.
+You may want to check out the teleport location with `/checkout_death_location` first, in order to check for duplicates.
 - This is a pre-release version, so bugs or glitches may be encountered more often.
 
 ## 6. Planned features
 
-- Config option to enable on servers, that aren't explicitly set to hardcore
-- `/revive` command to undo a player-ban by this plugin
-- `/reload` command to reload this plugin on its own
-- Support for more ban-manager-plugins
-- Death location marker on Dynmap, Bluemap and co. (maybe in 2.0)
+- Commands to undo a player's revive
+- GUI for the revive system (planned for 2.0)
+- Full support for PlaceholderAPI (planned for 2.0)
+- Death location marker on Dynmap, Bluemap and co. (planned for in 2.0)
 - Have a suggestion? Submit it [here](https://github.com/eingruenesbeb/Yolo/issues/new/choose)!
 
 ---
