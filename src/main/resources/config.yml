@@ -14,12 +14,13 @@ spicord:
 announce:
   death:
     discord: false
-    chat: false
+    chat: true
   totem:
     discord: false
-    chat: false
+    chat: true
 
 enable_on_non_hc: false
+easy_disable: false
 
 ### DO NOT CHANGE CONFIG VERSION! ###
-config_version: 4
+config_version: 5

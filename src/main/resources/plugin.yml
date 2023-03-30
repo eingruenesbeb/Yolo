@@ -7,6 +7,9 @@ version: '${version}'
 main: io.github.eingruenesbeb.yolo.Yolo
 api-version: 1.19
 softdepend: [ AdvancedBan, Spicord ]
+libraries:
+  - "org.jetbrains.kotlin:kotlin-stdlib:1.8.20-RC"
+  - "org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0"
 
 default-permission: op
 permissions:
@@ -24,7 +27,12 @@ commands:
     permission: yolo.reload
     permission-message: You don't have permission to use that command!
   revive:
-    description: Revives a player, that has died, whilst trying to restore the player's inventory and position.
-    usage: /revive [player name]
+    description: Revives a player, that has died, whilst potentially trying to restore the player's inventory and position.
+    usage: "Usage: `/revive [revivable player's name] <restore inventory (true (default) | false)> <restore location (true (default) | false)>`"
     permission: yolo.revive
     permission-message: You don't have permission to use that command!
+  checkout_death_location:
+    description: Teleports you to the death location, of a revivable player. Useful for checking for duplicate items.
+    usage: "Usage: `/checkout_death_location [player name]` (player must be revivable!)"
+    permission: yolo.revive
+    permission-message: You don't have the permission to use that command!
