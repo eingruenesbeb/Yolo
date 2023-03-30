@@ -27,8 +27,8 @@ commands:
     permission: yolo.reload
     permission-message: You don't have permission to use that command!
   revive:
-    description: Revives a player, that has died, whilst trying to restore the player's inventory and position.
-    usage: "Usage: `/revive [player name]` (make sure, that the player-name is valid!)"
+    description: Revives a player, that has died, whilst potentially trying to restore the player's inventory and position.
+    usage: "Usage: `/revive [revivable player's name] <restore inventory (true (default) | false)> <restore location (true (default) | false)>`"
     permission: yolo.revive
     permission-message: You don't have permission to use that command!
   checkout_death_location:

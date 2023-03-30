@@ -19,6 +19,7 @@
 package io.github.eingruenesbeb.yolo.commands
 
 import io.github.eingruenesbeb.yolo.Yolo
+import net.kyori.adventure.text.Component
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
@@ -38,6 +39,7 @@ class ReloadCommand : CommandExecutor {
      */
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
         JavaPlugin.getPlugin(Yolo::class.java).globalReload()
+        sender.sendMessage(Component.text(JavaPlugin.getPlugin(Yolo::class.java).pluginResourceBundle.getString("system.reloaded")))
         return true
     }
 }

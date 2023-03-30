@@ -23,19 +23,19 @@ import io.github.eingruenesbeb.yolo.managers.ChatManager
 import io.github.eingruenesbeb.yolo.managers.PlayerManager
 import io.github.eingruenesbeb.yolo.managers.ResourcePackManager
 import io.github.eingruenesbeb.yolo.managers.SpicordManager
-import org.bukkit.*
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.minimessage.MiniMessage
+import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 import java.io.IOException
 import java.util.*
-import java.util.logging.Logger
 
 // May be interesting to implement PAPI support in the future.
 /**
  * A Bukkit plugin that adds features related to player deaths and Discord integration.
  * This is the main class of that plugin.
  */
-@Suppress("unused")
 class Yolo : JavaPlugin() {
     /**
      * This is the [ResourceBundle] to use for translating cli messages.
@@ -50,17 +50,10 @@ class Yolo : JavaPlugin() {
         private set
 
     /**
-     * Indicates whether the plugin can use AdvancedBan for banning players. Should only be true, if AdvancedBan is loaded.
-     */
-    var isUseAB = false
-        private set
-
-    /**
      * Indicates, whether the functionality of this plugin should be enabled.
      */
     var isFunctionalityEnabled = false
         private set
-    private val logger: Logger? = null
 
     /**
      * Holds a reference resource pack manager for this plugin.
@@ -69,14 +62,29 @@ class Yolo : JavaPlugin() {
     var resourcePackManager: ResourcePackManager? = null
         private set
 
+    var banMessage: Component? = null
+        private set
+
     override fun onEnable() {
         regenerateMissingFiles()
+
+        var rawBanMessage: String
+        val banMessageFile = File(dataFolder.path.plus("/ban_message.txt"))
+        runCatching {
+            if (!banMessageFile.exists()) banMessageFile.createNewFile()
+            rawBanMessage = banMessageFile.readText()
+            banMessage = MiniMessage.miniMessage().deserialize(rawBanMessage)
+        }.onFailure {
+            rawBanMessage = getResource("ban_message.txt")!!.bufferedReader().readText()
+            banMessage = MiniMessage.miniMessage().deserialize(rawBanMessage)
+        }
+
         isFunctionalityEnabled = (Bukkit.isHardcore() || config.getBoolean("enable_on_non_hc", false)) && !config.getBoolean("easy_disable", false)
-        isUseAB = Bukkit.getPluginManager().isPluginEnabled("AdvancedBan")
         isUseSpicord = Bukkit.getPluginManager().isPluginEnabled("Spicord")
         if (isUseSpicord) {
             SpicordManager.instance
         }
+
         resourcePackManager = ResourcePackManager.instance
         ChatManager.instance
         server.pluginManager.registerEvents(YoloEventListener(), this)
@@ -100,7 +108,6 @@ class Yolo : JavaPlugin() {
 
         // The availability of some plugins may have changed... (Okay, this might be a little paranoid, but better safe
         // than sorry.)
-        isUseAB = Bukkit.getPluginManager().isPluginEnabled("AdvancedBan")
         isUseSpicord = Bukkit.getPluginManager().isPluginEnabled("Spicord")
 
         // May do some fancy shenanigans later, by reloading classes, that implement `Reloadable`, later. For now,

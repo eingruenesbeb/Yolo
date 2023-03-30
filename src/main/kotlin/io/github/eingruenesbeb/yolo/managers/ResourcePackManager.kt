@@ -46,8 +46,7 @@ class ResourcePackManager private constructor() {
 
     /**
      * Constructs a new ResourcePackManager sets all important fields from the config or fallback and asynchronously
-     * calls for validation of the pack.
-     * @see [validatePackAsync]
+     * calls for validation of the pack. For details see `ResourcePackManager#validatePackAsync`.
      */
     init {
         val config = yolo.config

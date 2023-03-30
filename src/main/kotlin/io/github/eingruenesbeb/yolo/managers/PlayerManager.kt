@@ -36,6 +36,7 @@ import org.bukkit.*
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
@@ -56,11 +57,17 @@ class PlayerManager private constructor() {
     @Serializable
     private data class YoloPlayerData(val data: Map<String, PlayerStatus>)
     @Serializable
-    private data class PlayerStatus(var isDead: Boolean, var isToRevive: Boolean, var latestDeathPos: Location?)
+    private data class PlayerStatus(
+        var latestDeathPos: Location?,
+        var isDead: Boolean = false,
+        var isToRevive: Boolean = false,
+        var isTeleportToDeathPos: Boolean = true,
+        var isRestoreInventory: Boolean = true
+    )
 
     private class YoloPlayer(
         val uuid: UUID,
-        var playerStatus: PlayerStatus = PlayerStatus(isDead = false, isToRevive = false, null)
+        var playerStatus: PlayerStatus = PlayerStatus(null)
     ) {
         private val yolo = JavaPlugin.getPlugin(Yolo::class.java)
         private val reviveInventoryKey = NamespacedKey(yolo, "reviveInventory")
@@ -103,11 +110,14 @@ class PlayerManager private constructor() {
             with(Bukkit.getPlayer(uuid)) {
                 this ?: return yolo.getLogger().warning(yolo.pluginResourceBundle.getString("player.revive.notOnline"))
                 if (playerStatus.isDead && playerStatus.isToRevive) {
-                    yolo.getLogger()
-                        .info("Attempting to revive a player:\n\tdead: ${this.isDead}\n\tGamemode: ${this.gameMode}")
+                    yolo.logger.info(yolo.pluginResourceBundle.getString("player.revive.attempt").replace("%player_name%", this.name))
                     this.gameMode = GameMode.SURVIVAL
-                    restoreReviveInventory()
-                    playerStatus.latestDeathPos?.let { safeTeleport(this, it) }
+                    if (playerStatus.isRestoreInventory) restoreReviveInventory()
+                    if (playerStatus.isTeleportToDeathPos) playerStatus.latestDeathPos.runCatching {
+                        if (!safeTeleport(this@with, this!!)) throw Exception("Player couldn't be teleported!")
+                    }.onFailure {
+                        yolo.logger.warning(yolo.pluginResourceBundle.getString("player.revive.invalidTeleport"))
+                    }
                     playerStatus.isDead = false
                     playerStatus.isToRevive = false
                 }
@@ -120,12 +130,27 @@ class PlayerManager private constructor() {
      */
     class PlayerManagerEvents : Listener {
         @EventHandler(ignoreCancelled = true)
+        fun onPlayerPreLoginAsync(event: AsyncPlayerPreLoginEvent) {
+            // Don't kick players, if the death-ban functionality is disabled.
+            if (!JavaPlugin.getPlugin(Yolo::class.java).isFunctionalityEnabled) return
+
+            // Pseudo-ban players, if they are dead:
+            instance.playerRegistry[event.uniqueId]?.let {
+                if (it.playerStatus.isDead && !it.playerStatus.isToRevive) {
+                    // The ban message component is guaranteed to be set after the plugin has loaded.
+                    event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, JavaPlugin.getPlugin(Yolo::class.java).banMessage!!)
+                }
+            }
+        }
+
+        @EventHandler(ignoreCancelled = true)
         fun onPlayerJoin(event: PlayerJoinEvent) {
             instance.playerRegistry.putIfAbsent(event.player.uniqueId, YoloPlayer(event.player.uniqueId))
         }
 
         @EventHandler(ignoreCancelled = true)
         fun onPlayerPostRespawn(event: PlayerPostRespawnEvent) {
+            // Players may be revived, even if death-ban functionality is disabled.
             Bukkit.getScheduler().runTaskLater(
                 JavaPlugin.getPlugin(Yolo::class.java),
                 Runnable { instance.playerRegistry[event.player.uniqueId]?.revivePlayer() },
@@ -173,18 +198,21 @@ class PlayerManager private constructor() {
      *
      * @param targetName The name of the player.
      * @param reviveOnJoin Whether to set `isToRevive` to true.
+     * @param setIsRestoreInventory Whether the inventory should be restored (Default: `true`)
+     * @param setIsTeleportToDeathPos Whether to teleport the player to their last death location (Default: `true`)
      *
      * @throws IllegalArgumentException If the player is not in the [playerRegistry], this exception is thrown.
      */
     @Throws(IllegalArgumentException::class)
-    fun setReviveOnUser(targetName: String, reviveOnJoin: Boolean) {
+    fun setReviveOnUser(targetName: String,
+                        reviveOnJoin: Boolean,
+                        setIsRestoreInventory: Boolean = true,
+                        setIsTeleportToDeathPos: Boolean = true
+    ) {
         val target = playerRegistry[Bukkit.getOfflinePlayer(targetName).uniqueId] ?: throw IllegalArgumentException("Player isn't in the registry!")
         target.setIsToReviveOnDead(reviveOnJoin)
-        if (reviveOnJoin) {
-            Bukkit.getBanList(BanList.Type.NAME).pardon(targetName)
-        } else if (!Bukkit.getBanList(BanList.Type.NAME).isBanned(targetName)) {
-            Bukkit.getOfflinePlayer(target.uuid).banPlayer(yolo.pluginResourceBundle.getString("player.ban.death"))
-        }
+        target.playerStatus.isRestoreInventory = setIsRestoreInventory
+        target.playerStatus.isTeleportToDeathPos = setIsTeleportToDeathPos
     }
 
     /**
