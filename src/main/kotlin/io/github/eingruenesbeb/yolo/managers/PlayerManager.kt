@@ -110,13 +110,13 @@ class PlayerManager private constructor() {
             with(Bukkit.getPlayer(uuid)) {
                 this ?: return yolo.getLogger().warning(yolo.pluginResourceBundle.getString("player.revive.notOnline"))
                 if (playerStatus.isDead && playerStatus.isToRevive) {
-                    yolo.logger.info(yolo.pluginResourceBundle.getString("player.revive.attempt").replace("%player_name%", this.name))
+                    yolo.getLogger().info(yolo.pluginResourceBundle.getString("player.revive.attempt").replace("%player_name%", this.name))
                     this.gameMode = GameMode.SURVIVAL
                     if (playerStatus.isRestoreInventory) restoreReviveInventory()
                     if (playerStatus.isTeleportToDeathPos) playerStatus.latestDeathPos.runCatching {
                         if (!safeTeleport(this@with, this!!)) throw Exception("Player couldn't be teleported!")
                     }.onFailure {
-                        yolo.logger.warning(yolo.pluginResourceBundle.getString("player.revive.invalidTeleport"))
+                        yolo.getLogger().warning(yolo.pluginResourceBundle.getString("player.revive.invalidTeleport"))
                     }
                     playerStatus.isDead = false
                     playerStatus.isToRevive = false
@@ -149,7 +149,7 @@ class PlayerManager private constructor() {
 
             // Players may have been set to be revived, after they have respawned, when they have respawned during the
             // plugin's death ban functionality being disabled.
-            instance.playerRegistry[event.player.uniqueId]!!.revivePlayer()
+            if (!event.player.isDead) { instance.playerRegistry[event.player.uniqueId]!!.revivePlayer() }
         }
 
         @EventHandler(ignoreCancelled = true)
