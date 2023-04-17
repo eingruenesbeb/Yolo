@@ -27,6 +27,7 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
+import org.bukkit.scheduler.BukkitRunnable
 import java.io.File
 import java.io.IOException
 import java.util.*
@@ -91,11 +92,19 @@ class Yolo : JavaPlugin() {
         server.pluginManager.registerEvents(PlayerManager.PlayerManagerEvents(), this)
         val commandRegistrar = CommandRegistrar()
         commandRegistrar.registerCommands()
+
+        // Setup automatic and asynchronous saving of player data, to make it less prone to data loss, after an
+        // unexpected crashes.
+        object : BukkitRunnable() {
+            override fun run() {
+                PlayerManager.instance.savePlayerData()
+            }
+        }.runTaskTimerAsynchronously(this, 6000, 6000)  // Every 5 minutes at 20TPS
     }
 
     override fun onDisable() {
         // Plugin shutdown logic
-        PlayerManager.instance.onDisable()
+        PlayerManager.instance.savePlayerData()
     }
 
     /**

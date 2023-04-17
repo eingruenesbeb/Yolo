@@ -110,13 +110,13 @@ class PlayerManager private constructor() {
             with(Bukkit.getPlayer(uuid)) {
                 this ?: return yolo.getLogger().warning(yolo.pluginResourceBundle.getString("player.revive.notOnline"))
                 if (playerStatus.isDead && playerStatus.isToRevive) {
-                    yolo.logger.info(yolo.pluginResourceBundle.getString("player.revive.attempt").replace("%player_name%", this.name))
+                    yolo.getLogger().info(yolo.pluginResourceBundle.getString("player.revive.attempt").replace("%player_name%", this.name))
                     this.gameMode = GameMode.SURVIVAL
                     if (playerStatus.isRestoreInventory) restoreReviveInventory()
                     if (playerStatus.isTeleportToDeathPos) playerStatus.latestDeathPos.runCatching {
                         if (!safeTeleport(this@with, this!!)) throw Exception("Player couldn't be teleported!")
                     }.onFailure {
-                        yolo.logger.warning(yolo.pluginResourceBundle.getString("player.revive.invalidTeleport"))
+                        yolo.getLogger().warning(yolo.pluginResourceBundle.getString("player.revive.invalidTeleport"))
                     }
                     playerStatus.isDead = false
                     playerStatus.isToRevive = false
@@ -149,7 +149,7 @@ class PlayerManager private constructor() {
 
             // Players may have been set to be revived, after they have respawned, when they have respawned during the
             // plugin's death ban functionality being disabled.
-            instance.playerRegistry[event.player.uniqueId]!!.revivePlayer()
+            if (!event.player.isDead) { instance.playerRegistry[event.player.uniqueId]!!.revivePlayer() }
         }
 
         @EventHandler(ignoreCancelled = true)
@@ -271,7 +271,8 @@ class PlayerManager private constructor() {
     /**
      * Is to be called, when the plugin is disabled. Ensures, that every important bit of data is saved.
      */
-    internal fun onDisable() {
+    internal fun savePlayerData() {
+        yolo.getLogger().info(yolo.pluginResourceBundle.getString("player.saveData.start"))
         val toSerializeMap = mutableMapOf<String, PlayerStatus>()
         playerRegistry.forEach { (uuid, yoloPlayer) ->
             toSerializeMap[uuid.toString()] = yoloPlayer.playerStatus
@@ -291,7 +292,9 @@ class PlayerManager private constructor() {
                 os.close()
             } else throw Exception()
         }.onFailure {
-            yolo.getLogger().severe(yolo.pluginResourceBundle.getString("player.unload.failure"))
+            yolo.getLogger().severe(yolo.pluginResourceBundle.getString("player.saveData.failure"))
+        }.onSuccess {
+            yolo.getLogger().info(yolo.pluginResourceBundle.getString("player.saveData.success"))
         }
     }
 
