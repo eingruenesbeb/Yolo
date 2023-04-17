@@ -271,7 +271,8 @@ class PlayerManager private constructor() {
     /**
      * Is to be called, when the plugin is disabled. Ensures, that every important bit of data is saved.
      */
-    internal fun onDisable() {
+    internal fun savePlayerData() {
+        yolo.getLogger().info(yolo.pluginResourceBundle.getString("player.saveData.start"))
         val toSerializeMap = mutableMapOf<String, PlayerStatus>()
         playerRegistry.forEach { (uuid, yoloPlayer) ->
             toSerializeMap[uuid.toString()] = yoloPlayer.playerStatus
@@ -291,7 +292,9 @@ class PlayerManager private constructor() {
                 os.close()
             } else throw Exception()
         }.onFailure {
-            yolo.getLogger().severe(yolo.pluginResourceBundle.getString("player.unload.failure"))
+            yolo.getLogger().severe(yolo.pluginResourceBundle.getString("player.saveData.failure"))
+        }.onSuccess {
+            yolo.getLogger().info(yolo.pluginResourceBundle.getString("player.saveData.success"))
         }
     }
 

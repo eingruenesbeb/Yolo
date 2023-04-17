@@ -47,7 +47,7 @@ class ReviveCommand : TabExecutor {
                 true
             }
             PlayerManager.instance.setReviveOnUser(args[0], true, restoreInventory, teleportToDeathPos)
-            sender.sendMessage(JavaPlugin.getPlugin(Yolo::class.java).pluginResourceBundle.getString("system.setRevive").replace("%player_name%", args[0]))
+            sender.sendMessage(JavaPlugin.getPlugin(Yolo::class.java).pluginResourceBundle.getString("player.setRevive").replace("%player_name%", args[0]))
         } catch (e: IllegalArgumentException) {
             return false
         } catch (e: IndexOutOfBoundsException) {
