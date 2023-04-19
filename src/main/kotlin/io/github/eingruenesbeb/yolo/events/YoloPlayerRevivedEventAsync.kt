@@ -41,7 +41,7 @@ import java.util.*
  * @see PlayerStatus
  * @see ReviveResult
  */
-@Suppress("unused", "MemberVisibilityCanBePrivate")
+@Suppress("unused")
 class YoloPlayerRevivedEventAsync internal constructor(override val yoloPlayerInformation: Pair<UUID, PlayerStatus>, val finalResult: ReviveResult): Event(true), YoloPlayerEvent {
     companion object {
         private val handlerList = HandlerList()

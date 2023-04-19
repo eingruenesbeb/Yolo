@@ -20,6 +20,7 @@
 package io.github.eingruenesbeb.yolo.managers.spicord
 
 import io.github.eingruenesbeb.yolo.managers.spicord.SpicordManager.RawDiscordEmbed
+
 import org.jetbrains.annotations.Contract
 
 /**

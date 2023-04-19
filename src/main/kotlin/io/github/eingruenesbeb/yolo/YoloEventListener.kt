@@ -24,6 +24,7 @@ import io.github.eingruenesbeb.yolo.managers.PlayerManager
 import io.github.eingruenesbeb.yolo.managers.ResourcePackManager
 import io.github.eingruenesbeb.yolo.managers.spicord.DiscordMessageType
 import io.github.eingruenesbeb.yolo.managers.spicord.safeSpicordManager
+
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.entity.EntityType

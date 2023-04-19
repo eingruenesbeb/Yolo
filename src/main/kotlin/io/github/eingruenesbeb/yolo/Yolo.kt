@@ -193,7 +193,7 @@ class Yolo : JavaPlugin() {
             try {
                 inFolder.save(dataFolder.path + "/config.yml")
             } catch (e: IOException) {
-                getLogger().severe(pluginResourceBundle.getString("loading.configUpdateFail"))
+                logger.severe(pluginResourceBundle.getString("loading.configUpdateFail"))
             }
         }
     }

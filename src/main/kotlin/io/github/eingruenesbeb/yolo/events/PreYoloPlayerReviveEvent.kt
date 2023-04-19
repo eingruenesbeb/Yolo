@@ -84,7 +84,7 @@ class PreYoloPlayerReviveEvent internal constructor(override val yoloPlayerInfor
     fun changeOutcome(isToRevive: Boolean, isTeleportToDeathPos: Boolean, isRestoreInventory: Boolean, by: Plugin, isSilent: Boolean = false, reason: String? = null) {
         targetOutcome = ReviveResult(isToRevive, isTeleportToDeathPos, isRestoreInventory)
         if (isSilent) return
-        JavaPlugin.getPlugin(Yolo::class.java).getLogger().also { logger ->
+        JavaPlugin.getPlugin(Yolo::class.java).logger.also { logger ->
             logger.info(
                 Yolo.pluginResourceBundle.getString("player.revive.outcome.changed")
                     .replace("%original_outcome%", originalTargetOutcome.toString())

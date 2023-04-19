@@ -31,7 +31,6 @@ import org.bukkit.util.io.BukkitObjectInputStream
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.Serializable
-import java.util.*
 
 // Leave public, as other plugins may want to (de)serialize this ones data.
 

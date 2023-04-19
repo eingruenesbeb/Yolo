@@ -166,10 +166,10 @@ internal object ChatManager : ReloadableManager {
             try {
                 throw IllegalArgumentException()
             } catch (e: IllegalArgumentException) {
-                yolo.getLogger().severe(
+                yolo.logger.severe {
                     Yolo.pluginResourceBundle.getString("chatManager.noMessage")
                         .replace("%trace%", ExceptionUtils.getStackTrace(e))
-                )
+                }
             }
             return
         }
@@ -242,7 +242,7 @@ internal object ChatManager : ReloadableManager {
             // The file should already be present and readable because of the file check on the plugin being loaded.
             // But just in case...
             // No need for a content check here.
-            yolo.getLogger().severe(Yolo.pluginResourceBundle.getString("chatManager.initFailedUserProvided"))
+            yolo.logger.severe { Yolo.pluginResourceBundle.getString("chatManager.initFailedUserProvided") }
             yolo.saveResource("chat_messages.properties", true)
             for (key in embedded.stringPropertyNames()) {
                 // The config follows this pattern for chat message keys: "[name].chat".
