@@ -22,9 +22,8 @@ import io.github.eingruenesbeb.yolo.managers.ChatManager
 import io.github.eingruenesbeb.yolo.managers.PlayerManager
 import io.github.eingruenesbeb.yolo.managers.SpicordManager
 import io.github.eingruenesbeb.yolo.managers.SpicordManager.DiscordMessageType
+import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
-import org.bukkit.Material
-import org.bukkit.Statistic
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -55,20 +54,33 @@ class YoloEventListener : Listener {
         val player = event.player
 
         if (!player.hasPermission("yolo.exempt") && yoloPluginInstance.isFunctionalityEnabled) {
-            PlayerManager.instance.actionsOnDeath(player)
-            val replacementMap: HashMap<String?, String?> =
-                TextReplacements.provideDefaults(player, TextReplacements.ALL)
+            PlayerManager.actionsOnDeath(event)
+            val stringReplacementMap: HashMap<String?, String?> =
+                TextReplacements.provideStringDefaults(event, TextReplacements.ALL)
+            val componentReplacementMap: HashMap<String?, Component?> =
+                TextReplacements.provideComponentDefaults(event, TextReplacements.ALL)
 
+            var dynamicBanMessage = yoloPluginInstance.banMessage
+            componentReplacementMap.forEach { replacement ->
+                replacement.key?.let {  key ->
+                    replacement.value?.let {  value ->
+                        dynamicBanMessage = dynamicBanMessage?.replaceText {
+                            it.matchLiteral(key)
+                            it.replacement(value)
+                        }
+                    }
+                }
+            }
             // Pseudo-ban players:
-            player.kick(yoloPluginInstance.banMessage, PlayerKickEvent.Cause.BANNED)
+            player.kick(dynamicBanMessage ?: Component.text("You have died on hardcore-mode :("), PlayerKickEvent.Cause.BANNED)
 
             // It's about sending a message.
             if (yoloPluginInstance.isUseSpicord) {
                 if (SpicordManager.instance.isSpicordBotAvailable) {
-                    SpicordManager.instance.trySend(DiscordMessageType.DEATH, replacementMap)
+                    SpicordManager.instance.trySend(DiscordMessageType.DEATH, stringReplacementMap)
                 }
             }
-            ChatManager.instance.trySend(Bukkit.getServer(), ChatManager.ChatMessageType.DEATH, replacementMap)
+            ChatManager.instance.trySend(Bukkit.getServer(), ChatManager.ChatMessageType.DEATH, componentReplacementMap)
         }
     }
 
@@ -95,13 +107,13 @@ class YoloEventListener : Listener {
         if (event.entity.hasPermission("yolo.exempt") || !yoloPluginInstance.isFunctionalityEnabled) return
         val player = event.entity as Player
         if (player.hasPermission("yolo.exempt")) return
-        val replacementMap: HashMap<String?, String?> =
-            TextReplacements.provideDefaults(player, TextReplacements.PLAYER_NAME)
-        replacementMap[TextReplacements.TOTEM_USES.toString()] =
-            (player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING) + 1).toString()
+        val stringReplacementMap: HashMap<String?, String?> =
+            TextReplacements.provideStringDefaults(event, TextReplacements.PLAYER_NAME)
+        val componentReplacementMap: HashMap<String?, Component?> =
+            TextReplacements.provideComponentDefaults(event, TextReplacements.PLAYER_NAME)
         if (yoloPluginInstance.isUseSpicord) {
-            SpicordManager.instance.trySend(DiscordMessageType.TOTEM, replacementMap)
+            SpicordManager.instance.trySend(DiscordMessageType.TOTEM, stringReplacementMap)
         }
-        ChatManager.instance.trySend(Bukkit.getServer(), ChatManager.ChatMessageType.TOTEM, replacementMap)
+        ChatManager.instance.trySend(Bukkit.getServer(), ChatManager.ChatMessageType.TOTEM, componentReplacementMap)
     }
 }

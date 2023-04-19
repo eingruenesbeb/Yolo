@@ -19,6 +19,7 @@
 package io.github.eingruenesbeb.yolo.managers
 
 import io.github.eingruenesbeb.yolo.Yolo
+import io.github.eingruenesbeb.yolo.managers.ChatManager.Companion.instance
 import io.github.eingruenesbeb.yolo.managers.ChatManager.RawChatMessage
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component
@@ -37,11 +38,11 @@ import java.util.*
  * Messages can be enabled or disabled in the config, and can contain placeholders that can be replaced with values.
  *
  *
- * This class is a singleton, and can be accessed using the [.getInstance] method.
+ * This class is a singleton, and can be accessed via the [instance].
  *
  *
  *
- * The class also provides a [.trySend] method to send chat messages based on their configured key.
+ * The class also provides a [trySend] method to send chat messages based on their configured key.
  *
  *
  *
@@ -55,14 +56,17 @@ class ChatManager private constructor() {
      * A container class for raw chat messages and their enabled status.
      */
     private data class RawChatMessage(val rawString: String, val enabled: Boolean) {
-        fun returnComponent(replacements: HashMap<String?, String?>?): Component {
-            var toParse = rawString
-            if (replacements != null) {
-                for (toReplace in replacements.keys) {
-                    toParse = toParse.replace(toReplace!!, replacements[toReplace]!!)
+        fun returnComponent(replacements: HashMap<String?, Component?>?): Component {
+            val toReturn = MINI_MESSAGE_PARSER.deserialize(rawString)
+            replacements?.forEach { replacement ->
+                toReturn.replaceText {
+                    replacement.key?.let { replaceKey ->
+                        it.matchLiteral(replaceKey)
+                        it.replacement(replacement.value)
+                    }
                 }
             }
-            return MINI_MESSAGE_PARSER.deserialize(toParse)
+            return toReturn
         }
 
         companion object {
@@ -155,7 +159,7 @@ class ChatManager private constructor() {
      * @param messageType The [ChatMessageType] of the chat message to send.
      * @param replacements A mapping of strings to replace in the raw chat message.
      */
-    fun trySend(targetAudience: Audience, messageType: ChatMessageType, replacements: HashMap<String?, String?>?) {
+    fun trySend(targetAudience: Audience, messageType: ChatMessageType, replacements: HashMap<String?, Component?>?) {
         val rawMessage = rawMessagesEnumMap[messageType]
         if (rawMessage == null) {
             try {

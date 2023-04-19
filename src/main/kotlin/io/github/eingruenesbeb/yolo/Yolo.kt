@@ -73,10 +73,10 @@ class Yolo : JavaPlugin() {
         val banMessageFile = File(dataFolder.path.plus("/ban_message.txt"))
         runCatching {
             if (!banMessageFile.exists()) banMessageFile.createNewFile()
-            rawBanMessage = banMessageFile.readText()
+            rawBanMessage = banMessageFile.readText().replace("\r", "")
             banMessage = MiniMessage.miniMessage().deserialize(rawBanMessage)
         }.onFailure {
-            rawBanMessage = getResource("ban_message.txt")!!.bufferedReader().readText()
+            rawBanMessage = getResource("ban_message.txt")!!.bufferedReader().readText().replace("\r", "")
             banMessage = MiniMessage.miniMessage().deserialize(rawBanMessage)
         }
 
@@ -97,14 +97,14 @@ class Yolo : JavaPlugin() {
         // unexpected crashes.
         object : BukkitRunnable() {
             override fun run() {
-                PlayerManager.instance.savePlayerData()
+                PlayerManager.savePlayerData()
             }
         }.runTaskTimerAsynchronously(this, 6000, 6000)  // Every 5 minutes at 20TPS
     }
 
     override fun onDisable() {
         // Plugin shutdown logic
-        PlayerManager.instance.savePlayerData()
+        PlayerManager.savePlayerData()
     }
 
     /**
@@ -125,6 +125,17 @@ class Yolo : JavaPlugin() {
         ChatManager.reload()
         if (isUseSpicord) {
             SpicordManager.reload()
+        }
+
+        var rawBanMessage: String
+        val banMessageFile = File(dataFolder.path.plus("/ban_message.txt"))
+        runCatching {
+            if (!banMessageFile.exists()) banMessageFile.createNewFile()
+            rawBanMessage = banMessageFile.readText().replace("\r", "")
+            banMessage = MiniMessage.miniMessage().deserialize(rawBanMessage)
+        }.onFailure {
+            rawBanMessage = getResource("ban_message.txt")!!.bufferedReader().readText().replace("\r", "")
+            banMessage = MiniMessage.miniMessage().deserialize(rawBanMessage)
         }
     }
 

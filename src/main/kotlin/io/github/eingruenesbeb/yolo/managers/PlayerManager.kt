@@ -17,27 +17,32 @@
  * You can reach the original author via e-Mail: agreenbeb@gmail.com
  */
 
-@file:UseSerializers(LocationSerializer::class)
+@file:UseSerializers(LocationSerializer::class, MiniMessageSerializer::class)
 
 package io.github.eingruenesbeb.yolo.managers
 
 import com.destroystokyo.paper.event.player.PlayerPostRespawnEvent
 import io.github.eingruenesbeb.yolo.TeleportationUtils.safeTeleport
+import io.github.eingruenesbeb.yolo.TextReplacements
 import io.github.eingruenesbeb.yolo.Yolo
 import io.github.eingruenesbeb.yolo.managers.PlayerManager.PlayerStatus
 import io.github.eingruenesbeb.yolo.managers.PlayerManager.YoloPlayer
 import io.github.eingruenesbeb.yolo.serialize.ItemStackArrayPersistentDataType
 import io.github.eingruenesbeb.yolo.serialize.LocationSerializer
+import io.github.eingruenesbeb.yolo.serialize.MiniMessageSerializer
 import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
+import net.kyori.adventure.text.Component
 import org.bukkit.*
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent
 import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerKickEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
@@ -53,7 +58,7 @@ import java.util.*
  * @constructor Creates a new instance of `PlayerManager`. This is a private constructor since this class is a singleton.
  */
 @OptIn(ExperimentalSerializationApi::class)
-class PlayerManager private constructor() {
+object PlayerManager {
     @Serializable
     private data class YoloPlayerData(val data: Map<String, PlayerStatus>)
     @Serializable
@@ -62,7 +67,8 @@ class PlayerManager private constructor() {
         var isDead: Boolean = false,
         var isToRevive: Boolean = false,
         var isTeleportToDeathPos: Boolean = true,
-        var isRestoreInventory: Boolean = true
+        var isRestoreInventory: Boolean = true,
+        var banMessage: Component = Component.text("")
     )
 
     private class YoloPlayer(
@@ -135,21 +141,18 @@ class PlayerManager private constructor() {
             if (!JavaPlugin.getPlugin(Yolo::class.java).isFunctionalityEnabled) return
 
             // Pseudo-ban players, if they are dead:
-            instance.playerRegistry[event.uniqueId]?.let {
-                if (it.playerStatus.isDead && !it.playerStatus.isToRevive) {
-                    // The ban message component is guaranteed to be set after the plugin has loaded.
-                    event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, JavaPlugin.getPlugin(Yolo::class.java).banMessage!!)
-                }
+            playerRegistry[event.uniqueId]?.let {
+                if (it.playerStatus.isDead && !it.playerStatus.isToRevive) pseudoBanPlayer(event.uniqueId, event)
             }
         }
 
         @EventHandler(ignoreCancelled = true)
         fun onPlayerJoin(event: PlayerJoinEvent) {
-            instance.playerRegistry.putIfAbsent(event.player.uniqueId, YoloPlayer(event.player.uniqueId))
+            playerRegistry.putIfAbsent(event.player.uniqueId, YoloPlayer(event.player.uniqueId))
 
             // Players may have been set to be revived, after they have respawned, when they have respawned during the
             // plugin's death ban functionality being disabled.
-            if (!event.player.isDead) { instance.playerRegistry[event.player.uniqueId]!!.revivePlayer() }
+            if (!event.player.isDead) { playerRegistry[event.player.uniqueId]!!.revivePlayer() }
         }
 
         @EventHandler(ignoreCancelled = true)
@@ -157,7 +160,7 @@ class PlayerManager private constructor() {
             // Players may be revived, even if death-ban functionality is disabled.
             Bukkit.getScheduler().runTaskLater(
                 JavaPlugin.getPlugin(Yolo::class.java),
-                Runnable { instance.playerRegistry[event.player.uniqueId]?.revivePlayer() },
+                Runnable { playerRegistry[event.player.uniqueId]?.revivePlayer() },
                 1
             )
         }
@@ -171,11 +174,11 @@ class PlayerManager private constructor() {
         // get revived. This step is fine during the initial load, but NOT TO BE REPEATED DURING A RELOAD of the plugin.
         val allPlayers = Bukkit.getOfflinePlayers()
         val dataFile = File(yolo.dataFolder.path.plus("/data/yolo_player_data.json"))
-        var userData = YoloPlayerData(mapOf())
+        var userData: YoloPlayerData
 
-        dataFile.runCatching {
+        dataFile.run {
             userData = Json.decodeFromStream(this.inputStream())
-        }.recoverCatching {
+        }/*.recoverCatching {
             if (it is SerializationException || it is IllegalArgumentException) {
                 yolo.getLogger().severe(yolo.pluginResourceBundle.getString("player.load.corrupted"))
                 throw Exception()
@@ -185,7 +188,7 @@ class PlayerManager private constructor() {
             userData = Json.decodeFromString(dataFile.readText())
         }.onFailure {
             yolo.getLogger().severe(yolo.pluginResourceBundle.getString("player.load.fail"))
-        }
+        }*/
 
         Arrays.stream(allPlayers).forEach { offlinePlayer: OfflinePlayer ->
             val recoveredStatus = userData.data[offlinePlayer.uniqueId.toString()]
@@ -246,7 +249,7 @@ class PlayerManager private constructor() {
      */
     fun teleportToRevivable(toTeleport: Player, targetName: String): Boolean {
         if (targetName == "") return false
-        val targetLocation = instance.playerRegistry[Bukkit.getOfflinePlayer(targetName).uniqueId]?.playerStatus?.latestDeathPos
+        val targetLocation = playerRegistry[Bukkit.getOfflinePlayer(targetName).uniqueId]?.playerStatus?.latestDeathPos
         targetLocation ?: return false
         targetLocation.chunk.load()
         return toTeleport.teleport(targetLocation)
@@ -255,17 +258,41 @@ class PlayerManager private constructor() {
     /**
      * Executes everything, that needs to be, when a player has died.
      *
-     * @param player The player, that has died
+     * @param  deathEvent The death event.
      */
-    internal fun actionsOnDeath(player: Player) {
-        val playerFromRegistry = playerRegistry[player.uniqueId]
+    internal fun actionsOnDeath(deathEvent: PlayerDeathEvent) {
+        val playerFromRegistry = playerRegistry[deathEvent.player.uniqueId]
         playerFromRegistry!!.playerStatus.isDead = true
         playerFromRegistry.saveReviveInventory()
-        playerFromRegistry.playerStatus.latestDeathPos = player.location
+        playerFromRegistry.playerStatus.latestDeathPos = deathEvent.player.location
+
+        val componentReplacementMap: HashMap<String?, Component?> = TextReplacements.provideComponentDefaults(deathEvent, TextReplacements.ALL)
+
+        var dynamicBanMessage = JavaPlugin.getPlugin(Yolo::class.java).banMessage
+        componentReplacementMap.forEach { replacement ->
+            replacement.key?.let {  key ->
+                replacement.value?.let {  value ->
+                    dynamicBanMessage = dynamicBanMessage?.replaceText {
+                        it.matchLiteral(key)
+                        it.replacement(value)
+                    }
+                }
+            }
+        }
+
+        playerFromRegistry.playerStatus.banMessage = dynamicBanMessage ?: Component.text("[<red>Yolo</red>] » You have died and therefore can no longer play on this hardcore server. :(")
 
         // This may be necessary, if the player was banned by this plugin directly. (See the comment in
         // YoloEventListener#onPlayerDeath)
-        player.inventory.contents = arrayOf()
+        deathEvent.player.inventory.contents = arrayOf()
+    }
+
+    internal fun pseudoBanPlayer(playerUUID: UUID, preLoginEvent: AsyncPlayerPreLoginEvent?) {
+        playerRegistry[playerUUID]?.let {
+            val message = it.playerStatus.banMessage
+
+            preLoginEvent?.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, message) ?: Bukkit.getServer().getPlayer(playerUUID)?.kick(message, PlayerKickEvent.Cause.BANNED)
+        }
     }
 
     /**
@@ -296,9 +323,5 @@ class PlayerManager private constructor() {
         }.onSuccess {
             yolo.getLogger().info(yolo.pluginResourceBundle.getString("player.saveData.success"))
         }
-    }
-
-    companion object {
-        val instance = PlayerManager()
     }
 }

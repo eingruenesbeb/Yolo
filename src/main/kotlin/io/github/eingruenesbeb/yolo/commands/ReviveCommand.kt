@@ -46,8 +46,8 @@ class ReviveCommand : TabExecutor {
             } catch (e: IndexOutOfBoundsException) {
                 true
             }
-            PlayerManager.instance.setReviveOnUser(args[0], true, restoreInventory, teleportToDeathPos)
-            sender.sendMessage(JavaPlugin.getPlugin(Yolo::class.java).pluginResourceBundle.getString("player.setRevive").replace("%player_name%", args[0]))
+            PlayerManager.setReviveOnUser(args[0], true, restoreInventory, teleportToDeathPos)
+            sender.sendPlainMessage(JavaPlugin.getPlugin(Yolo::class.java).pluginResourceBundle.getString("player.setRevive").replace("%player_name%", args[0]))
         } catch (e: IllegalArgumentException) {
             return false
         } catch (e: IndexOutOfBoundsException) {
@@ -63,6 +63,6 @@ class ReviveCommand : TabExecutor {
         label: String,
         args: Array<String>
     ): List<String> {
-        return PlayerManager.instance.provideRevivable()
+        return PlayerManager.provideRevivable()
     }
 }

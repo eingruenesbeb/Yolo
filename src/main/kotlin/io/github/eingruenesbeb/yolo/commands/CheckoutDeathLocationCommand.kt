@@ -41,7 +41,7 @@ class CheckoutDeathLocationCommand : TabExecutor {
         label: String,
         args: Array<out String>?
     ): List<String> {
-        return PlayerManager.instance.provideRevivable()
+        return PlayerManager.provideRevivable()
     }
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>?): Boolean {
@@ -50,6 +50,6 @@ class CheckoutDeathLocationCommand : TabExecutor {
             return false
         }
 
-        return PlayerManager.instance.teleportToRevivable(sender, args?.get(0) ?: "")
+        return PlayerManager.teleportToRevivable(sender, args?.get(0) ?: "")
     }
 }
