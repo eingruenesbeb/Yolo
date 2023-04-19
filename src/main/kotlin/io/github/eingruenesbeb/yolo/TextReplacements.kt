@@ -18,9 +18,16 @@
  */
 package io.github.eingruenesbeb.yolo
 
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.ComponentIteratorType
+import net.kyori.adventure.text.TextComponent
+import net.kyori.adventure.text.TranslatableComponent
+import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.Material
 import org.bukkit.Statistic
-import org.bukkit.entity.Player
+import org.bukkit.event.Event
+import org.bukkit.event.entity.PlayerDeathEvent
+import org.bukkit.event.player.PlayerEvent
 import java.util.*
 
 /**
@@ -51,6 +58,12 @@ enum class TextReplacements {
     PLAYER_NAME, TOTEM_USES,
 
     /**
+     * Provides either a [TranslatableComponent] via the [provideComponentDefaults] method or an attempt at a translated
+     * string version via [provideStringDefaults]
+     */
+    DEATH_MESSAGE,
+
+    /**
      * A stand-in for all possible replacements. May not be used for actual replacements, but rather in conjunction with
      * [.provideDefaults].
      */
@@ -72,10 +85,10 @@ enum class TextReplacements {
          * Provides a prefilled `HashMap` of specified replacements, given the necessary other parameters. The
          * returned map can be directly used, as it is a text-placeholder (String) keyed version.
          *
-         * @param player        The player for whom the replacements should be generated. If null, player-based replacements
-         * will not be included in the returned map.
+         * @param event        An optional event, that can provide context-based replacements. If null, context-based
+         * replacements will not be included in the returned map.
          * @param replacements  The replacements that should be included in the returned map. If null, an empty map will be returned.
-         * If the [.ALL] constant is included in this array, it will include all predefined replacements,
+         * If the [ALL] constant is included in this array, it will include all predefined replacements,
          * but should not be used in combination with others.
          * @return A prefilled map of replacements.
          *
@@ -83,30 +96,82 @@ enum class TextReplacements {
          * For example, if the player parameter is null, player-based replacements will not be included in the returned map.
          * If the replacements array is null, an empty map will be returned.
          */
-        fun provideDefaults(player: Player?, vararg replacements: TextReplacements?): HashMap<String?, String?> {
+        fun provideStringDefaults(event: Event?, vararg replacements: TextReplacements?): HashMap<String?, String?> {
             val toReturn = HashMap<String?, String?>()
             for (replacement in replacements) {
                 if (replacement != null) {
                     when (replacement) {
                         ALL -> {
-                            if (player != null) {
-                                toReturn[PLAYER_NAME.toString()] = player.name
+                            if (event as? PlayerEvent != null) {
+                                toReturn[PLAYER_NAME.toString()] = event.player.name
                                 toReturn[TOTEM_USES.toString()] =
-                                    player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING).toString()
+                                    event.player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING).toString()
                             }
                             return toReturn
                         }
 
                         PLAYER_NAME -> {
-                            if (player != null) {
-                                toReturn[PLAYER_NAME.toString()] = player.name
+                            if (event as? PlayerEvent != null) {
+                                toReturn[PLAYER_NAME.toString()] = event.player.name
                             }
                         }
 
                         TOTEM_USES -> {
-                            if (player != null) {
+                            if (event as? PlayerEvent != null) {
                                 toReturn[TOTEM_USES.toString()] =
-                                    player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING).toString()
+                                    event.player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING).toString()
+                            }
+                        }
+
+                        DEATH_MESSAGE -> {
+                            val componentAsString = ""
+                            if (event as? PlayerDeathEvent != null) {
+                                event.deathMessage()?.let { GlobalTranslator.render(it, Locale.getDefault()) }?.iterator(
+                                    ComponentIteratorType.BREADTH_FIRST)?.forEach {
+                                    if (it as? TextComponent != null) {
+                                        componentAsString.plus(it.content())
+                                    }
+                                }
+
+                                toReturn[DEATH_MESSAGE.toString()] = componentAsString
+                            }
+                        }
+                    }
+                }
+            }
+            return toReturn
+        }
+
+        fun provideComponentDefaults(event: Event?, vararg replacements: TextReplacements?): HashMap<String?, Component?> {
+            val toReturn = HashMap<String?, Component?>()
+            for (replacement in replacements) {
+                if (replacement != null) {
+                    when (replacement) {
+                        ALL -> {
+                            if (event as? PlayerEvent != null) {
+                                toReturn[PLAYER_NAME.toString()] = event.player.displayName()
+                                toReturn[TOTEM_USES.toString()] =
+                                    Component.text(event.player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING))
+                            }
+                            return toReturn
+                        }
+
+                        PLAYER_NAME -> {
+                            if (event as? PlayerEvent != null) {
+                                toReturn[PLAYER_NAME.toString()] = event.player.displayName()
+                            }
+                        }
+
+                        TOTEM_USES -> {
+                            if (event as? PlayerEvent != null) {
+                                toReturn[TOTEM_USES.toString()] =
+                                    Component.text(event.player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING))
+                            }
+                        }
+
+                        DEATH_MESSAGE -> {
+                            if (event as? PlayerDeathEvent != null) {
+                                toReturn[DEATH_MESSAGE.toString()] = event.deathMessage()
                             }
                         }
                     }

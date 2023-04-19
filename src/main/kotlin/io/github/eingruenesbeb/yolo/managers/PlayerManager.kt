@@ -23,6 +23,7 @@ package io.github.eingruenesbeb.yolo.managers
 
 import com.destroystokyo.paper.event.player.PlayerPostRespawnEvent
 import io.github.eingruenesbeb.yolo.TeleportationUtils.safeTeleport
+import io.github.eingruenesbeb.yolo.TextReplacements
 import io.github.eingruenesbeb.yolo.Yolo
 import io.github.eingruenesbeb.yolo.managers.PlayerManager.PlayerStatus
 import io.github.eingruenesbeb.yolo.managers.PlayerManager.YoloPlayer
@@ -32,6 +33,7 @@ import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
+import net.kyori.adventure.text.Component
 import org.bukkit.*
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -135,10 +137,25 @@ class PlayerManager private constructor() {
             if (!JavaPlugin.getPlugin(Yolo::class.java).isFunctionalityEnabled) return
 
             // Pseudo-ban players, if they are dead:
-            instance.playerRegistry[event.uniqueId]?.let {
-                if (it.playerStatus.isDead && !it.playerStatus.isToRevive) {
+            instance.playerRegistry[event.uniqueId]?.let { yoloPlayer ->
+                if (yoloPlayer.playerStatus.isDead && !yoloPlayer.playerStatus.isToRevive) {
+                    val componentReplacementMap: HashMap<String?, Component?> =
+                        TextReplacements.provideComponentDefaults(event, TextReplacements.ALL)
+
+                    var dynamicBanMessage = JavaPlugin.getPlugin(Yolo::class.java).banMessage
+                    componentReplacementMap.forEach { replacement ->
+                        replacement.key?.let {  key ->
+                            replacement.value?.let {  value ->
+                                dynamicBanMessage = dynamicBanMessage?.replaceText {
+                                    it.matchLiteral(key)
+                                    it.replacement(value)
+                                }
+                            }
+                        }
+                    }
+
                     // The ban message component is guaranteed to be set after the plugin has loaded.
-                    event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, JavaPlugin.getPlugin(Yolo::class.java).banMessage!!)
+                    event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, dynamicBanMessage ?: JavaPlugin.getPlugin(Yolo::class.java).banMessage!!)
                 }
             }
         }
