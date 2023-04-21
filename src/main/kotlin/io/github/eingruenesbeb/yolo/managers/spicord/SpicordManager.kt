@@ -49,9 +49,9 @@ internal object SpicordManager : ReloadableManager {
          * provided by [io.github.eingruenesbeb.yolo.TextReplacements.provideStringDefaults]-.
          */
         fun returnSpicordEmbed(replacements: HashMap<String, String?>?): Embed {
-            val toParse = rawString
+            var toParse = rawString
             replacements?.keys?.forEach { replacementKey ->
-                replacements[replacementKey]?.let { toParse.replace(replacementKey, it) }
+                replacements[replacementKey]?.let { toParse = toParse.replace(replacementKey, it) }
             }
             return EmbedParser.parse(toParse)
         }

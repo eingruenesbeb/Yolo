@@ -27,14 +27,19 @@ import org.jetbrains.annotations.Contract
  */
 internal enum class DiscordMessageType {
     /**
-     * Defined in the plugins data-folder under "./discord/death_message.json".
+     * Defined in the plugin's data-folder under "./discord/death_message.json".
      */
     DEATH,
 
     /**
-     * Defined in the plugins data-folder under "./discord/totem_use_message.json".
+     * Defined in the plugin's data-folder under "./discord/totem_use_message.json".
      */
-    TOTEM;
+    TOTEM,
+
+    /**
+     * Defined in the plugin's data-folder under "./discord/player_revive.json"
+     */
+    PLAYER_REVIVE;
 
     @get:Contract(pure = true)
     val enabledKey: String
@@ -51,6 +56,10 @@ internal enum class DiscordMessageType {
 
             TOTEM -> {
                 "announce.totem.discord"
+            }
+
+            PLAYER_REVIVE -> {
+                "announce.revive.discord"
             }
         }
 
@@ -69,6 +78,10 @@ internal enum class DiscordMessageType {
 
             TOTEM -> {
                 "discord/totem_use_message.json"
+            }
+
+            PLAYER_REVIVE -> {
+                "discord/player_revive.json"
             }
         }
 }

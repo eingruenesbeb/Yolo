@@ -148,6 +148,11 @@ class Yolo : JavaPlugin() {
             saveResource("discord/totem_use_message.json", false)
         }
 
+        // (No content checks, in subdir)
+        if (!File(dataFolder.path + "/discord/player_revive.json").exists()) {
+            saveResource("discord/player_revive.json", false)
+        }
+
         // (Deferred content checks, no subdir)
         if (!File(dataFolder.path + "/chat_messages.properties").exists()) {
             saveResource("chat_messages.properties", false)

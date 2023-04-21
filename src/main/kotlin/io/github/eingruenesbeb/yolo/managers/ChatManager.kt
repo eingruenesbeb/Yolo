@@ -71,7 +71,7 @@ internal object ChatManager : ReloadableManager {
      * This enum represents the different types of chat messages that can be sent by the Yolo plugin.
      */
     enum class ChatMessageType {
-        DEATH, TOTEM, PLAYER_ONLY_COMMAND;
+        DEATH, TOTEM, PLAYER_ONLY_COMMAND, PLAYER_REVIVED;
 
         companion object {
             /**
@@ -94,6 +94,10 @@ internal object ChatManager : ReloadableManager {
                         PLAYER_ONLY_COMMAND
                     }
 
+                    "announce.revive" -> {
+                        PLAYER_REVIVED
+                    }
+
                     else -> {
                         null
                     }
@@ -110,7 +114,7 @@ internal object ChatManager : ReloadableManager {
              * defined.
              */
             get() = when (this) {
-                TOTEM, DEATH -> {
+                TOTEM, DEATH, PLAYER_REVIVED -> {
                     "$propertiesKey.chat"
                 }
 
@@ -128,6 +132,10 @@ internal object ChatManager : ReloadableManager {
 
                 DEATH -> {
                     "announce.death"
+                }
+
+                PLAYER_REVIVED -> {
+                    "announce.revive"
                 }
 
                 PLAYER_ONLY_COMMAND -> {

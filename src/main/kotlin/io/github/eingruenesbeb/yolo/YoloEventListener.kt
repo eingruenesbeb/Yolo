@@ -18,6 +18,7 @@
  */
 package io.github.eingruenesbeb.yolo
 
+import io.github.eingruenesbeb.yolo.events.YoloPlayerRevivedEventAsync
 import io.github.eingruenesbeb.yolo.managers.ChatManager
 import io.github.eingruenesbeb.yolo.managers.PlayerManager
 import io.github.eingruenesbeb.yolo.managers.ResourcePackManager
@@ -93,5 +94,15 @@ internal class YoloEventListener : Listener {
         val componentReplacementMap: HashMap<String, Component?> = TextReplacements.provideComponentDefaults(event, TextReplacements.PLAYER_NAME)
         safeSpicordManager()?.trySend(DiscordMessageType.TOTEM, stringReplacementMap)
         ChatManager.trySend(Bukkit.getServer(), ChatManager.ChatMessageType.TOTEM, componentReplacementMap)
+    }
+
+    @EventHandler
+    fun onPlayerRevivedAsync(event: YoloPlayerRevivedEventAsync) {
+        if (event.finalResult.successful) {
+            val stringReplacementMap: HashMap<String, String?> = TextReplacements.provideStringDefaults(event, TextReplacements.ALL)
+            val componentReplacementMap: HashMap<String, Component?> = TextReplacements.provideComponentDefaults(event, TextReplacements.ALL)
+            ChatManager.trySend(Bukkit.getServer(), ChatManager.ChatMessageType.PLAYER_REVIVED, componentReplacementMap)
+            safeSpicordManager()?.trySend(DiscordMessageType.PLAYER_REVIVE, stringReplacementMap)
+        }
     }
 }

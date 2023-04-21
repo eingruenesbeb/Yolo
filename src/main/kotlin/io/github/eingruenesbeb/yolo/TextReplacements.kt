@@ -18,6 +18,7 @@
  */
 package io.github.eingruenesbeb.yolo
 
+import io.github.eingruenesbeb.yolo.events.YoloPlayerEvent
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TranslatableComponent
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
@@ -94,6 +95,14 @@ enum class TextReplacements {
                                 toReturn[TOTEM_USES.toString()] =
                                     Component.text(event.player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING))
                             }
+                            if (event is YoloPlayerEvent) {
+                                toReturn[PLAYER_NAME.toString()] =
+                                    event.player?.displayName() ?:
+                                    event.offlinePlayer.playerProfile.name?.let { Component.text(it) } ?:
+                                    Component.text(event.offlinePlayer.uniqueId.toString())
+                                toReturn[TOTEM_USES.toString()] =
+                                    event.player?.let { Component.text(it.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING)) }
+                            }
                             if (event is PlayerDeathEvent) {
                                 toReturn[DEATH_MESSAGE.toString()] = event.deathMessage()
                                 toReturn[PLAYER_NAME.toString()] = event.player.displayName()
@@ -110,6 +119,12 @@ enum class TextReplacements {
                             if (event is PlayerEvent) {
                                 toReturn[PLAYER_NAME.toString()] = event.player.displayName()
                             }
+                            if (event is YoloPlayerEvent) {
+                                toReturn[PLAYER_NAME.toString()] =
+                                    event.player?.displayName() ?:
+                                    event.offlinePlayer.playerProfile.name?.let { Component.text(it) } ?:
+                                    Component.text(event.offlinePlayer.uniqueId.toString())
+                            }
                             if (event is PlayerDeathEvent) {
                                 toReturn[PLAYER_NAME.toString()] = event.player.displayName()
                             }
@@ -119,6 +134,10 @@ enum class TextReplacements {
                             if (event is PlayerEvent) {
                                 toReturn[TOTEM_USES.toString()] =
                                     Component.text(event.player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING))
+                            }
+                            if (event is YoloPlayerEvent) {
+                                toReturn[TOTEM_USES.toString()] =
+                                    event.player?.let { Component.text(it.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING)) }
                             }
                             if (event is PlayerDeathEvent) {
                                 toReturn[TOTEM_USES.toString()] =
@@ -168,6 +187,13 @@ enum class TextReplacements {
                                     event.player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING).toString()
                             }
 
+                            if (event is YoloPlayerEvent) {
+                                toReturn[PLAYER_NAME.toString()] = event.offlinePlayer.playerProfile.name
+                                toReturn[TOTEM_USES.toString()] =
+                                    event.player?.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING)?.toString()
+                                        ?: event.offlinePlayer.playerProfile.name
+                            }
+
                             if (event is PlayerDeathEvent) {
                                 // Apparently this event is not a PlayerEvent (WHY?!)
                                 toReturn[PLAYER_NAME.toString()] = event.player.name
@@ -186,6 +212,9 @@ enum class TextReplacements {
                             if (event is PlayerEvent) {
                                 toReturn[PLAYER_NAME.toString()] = event.player.name
                             }
+                            if (event is YoloPlayerEvent) {
+                                toReturn[PLAYER_NAME.toString()] = event.offlinePlayer.playerProfile.name
+                            }
                             if (event is PlayerDeathEvent) {
                                 toReturn[PLAYER_NAME.toString()] = event.player.name
                             }
@@ -195,6 +224,10 @@ enum class TextReplacements {
                             if (event is PlayerEvent) {
                                 toReturn[TOTEM_USES.toString()] =
                                     event.player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING).toString()
+                            }
+                            if (event is YoloPlayerEvent) {
+                                toReturn[TOTEM_USES.toString()] =
+                                    event.player?.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING).toString()
                             }
                             if (event is PlayerDeathEvent) {
                                 toReturn[TOTEM_USES.toString()] =

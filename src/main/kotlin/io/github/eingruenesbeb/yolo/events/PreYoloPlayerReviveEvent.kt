@@ -92,8 +92,9 @@ class PreYoloPlayerReviveEvent internal constructor(override val yoloPlayerInfor
                     .replace("%plugin%", by.name)
             )
             reason?.let {
-                Yolo.pluginResourceBundle.getString("player.revive.outcome.reason")
-                    .replace("%reason%", reason)
+                logger.info(Yolo.pluginResourceBundle.getString("player.revive.outcome.reason")
+                    .replace("%reason%", it)
+                )
             }
         }
     }
