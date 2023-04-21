@@ -175,11 +175,11 @@ internal object PlayerManager {
         // get revived. This step is fine during the initial load, but NOT TO BE REPEATED DURING A RELOAD of the plugin.
         val allPlayers = Bukkit.getOfflinePlayers()
         val dataFile = File(yolo.dataFolder.path.plus("/data/yolo_player_data.json"))
-        var userData: YoloPlayerData
+        var userData = YoloPlayerData(mapOf())
 
-        dataFile.run {
+        dataFile.runCatching {
             userData = Json.decodeFromStream(this.inputStream())
-        }/*.recoverCatching {
+        }.recoverCatching {
             if (it is SerializationException || it is IllegalArgumentException) {
                 yolo.getLogger().severe(Yolo.pluginResourceBundle.getString("player.load.corrupted"))
                 throw Exception()
@@ -189,7 +189,7 @@ internal object PlayerManager {
             userData = Json.decodeFromString(dataFile.readText())
         }.onFailure {
             yolo.getLogger().severe(Yolo.pluginResourceBundle.getString("player.load.fail"))
-        }*/
+        }
 
         Arrays.stream(allPlayers).forEach { offlinePlayer: OfflinePlayer ->
             val recoveredStatus = userData.data[offlinePlayer.uniqueId.toString()]
