@@ -84,10 +84,13 @@ In the `announce` section you can individually toggle messages:
 announce:
   death:
     discord: false
-    chat: false
+    chat: true
   totem:
     discord: false
-    chat: false
+    chat: true
+  revive:
+    discord: false
+    chat: true
 ```
 
 This should be pretty self-explanatory. The listed messages are announcements, that would be sent on their respective
@@ -218,8 +221,7 @@ depend: [  # Or "softdepend"
 #### ↓ other stuff ↓ ###
 ```
 
-Note, that this plugin has no official API, but provides public access to some elements. Most of these are documented 
-[here](https://eingruenesbeb.github.io/Yolo/).
+You can find the documentation [here](https://eingruenesbeb.github.io/Yolo/).
 
 ---
 
