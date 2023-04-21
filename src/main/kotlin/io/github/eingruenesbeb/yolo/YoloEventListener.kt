@@ -40,7 +40,7 @@ import org.bukkit.plugin.java.JavaPlugin
  *
  * @see org.bukkit.event.Event
  */
-class YoloEventListener : Listener {
+internal class YoloEventListener : Listener {
     private val yoloPluginInstance = JavaPlugin.getPlugin(Yolo::class.java)
 
     /**
