@@ -1,13 +1,19 @@
 {
-  "message": "",
   "embed": {
     "title": "Yolo (Plugin) - \uD83E\uDEA6 Death:",
     "description": "The player `%player_name%` died and was therefore banished to the shadow realm.",
     "color": 16711680,
     "image": {
-      "url": "https://media.tenor.com/HlPw6nSDrF8AAAAC/shadowrealm-get-out.gif",
-      "height": 318,
-      "width": 240
+      "url": "https://media.tenor.com/HlPw6nSDrF8AAAAC/shadowrealm-get-out.gif"
+    },
+    "fields": [
+      {
+        "name": "Death message:",
+        "value": "%death_message%"
+      }
+    ],
+    "footer": {
+      "text": "powered by Yolo %plugin_version% using Spicord"
     }
   }
 }

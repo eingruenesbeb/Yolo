@@ -38,6 +38,11 @@ import java.util.*
  * This is the main class of that plugin.
  */
 class Yolo : JavaPlugin() {
+    companion object {
+        // Meta:
+        const val version = "v0.7.0"
+    }
+
     /**
      * This is the [ResourceBundle] to use for translating cli messages.
      */

@@ -9,6 +9,22 @@
 [![GitHub](https://img.shields.io/github/license/eingruenesbeb/Yolo?style=for-the-badge)](https://github.com/eingruenesbeb/Yolo/blob/master/COPYING)
 
 ---
+## Content
+
+1. [What does this plugin do?](#1-what-does-this-plugin-do)
+2. [Configuration](#2-configuration)
+   1. [`config.yml`](#21-configyml)
+   2. [`chat_messages.properties`](#22-chatmessagesproperties)
+   3. [`discord/[...].json`](#23-discordjson)
+   4. [`ban_message.txt`](#24-banmessagetxt)
+   5. [Text replacements](#25-text-replacements)
+3. [Permissions](#3-permissions)
+4. [Commands](#4-commands)
+5. [Further considerations](#5-further-considerations)
+6. [Planned features](#6-planned-features)
+7. [For developers](#7-for-developers)
+
+---
 
 ## 1. What does this plugin do?
 
@@ -117,6 +133,14 @@ If for example you'd like to customize the discord message, that gets send upon 
 ### 2.4 `ban_message.txt`
 This is, where you can customize the ban message, players see, when they are dead.
 
+### 2.5 Text replacements
+Every message, that gets sent by the Plugin can use the following replacements:
+- `%player_name%` - The name of the affected player
+- `%totem_uses%` - The amount of totems the subject player of the message has used.
+- `%death_message%` - The death message, if the player has died. (only available in messages, sent upon a 
+player's death.)
+- `%version%` - The current version of the plugin.
+
 ## 3. Permissions
 
 One permission is `yolo.exempt`, which excludes any players having it from the plugin's effects. There are also two
@@ -178,6 +202,25 @@ You may want to check out the teleport location with `/checkout_death_location` 
 - Death location marker on Dynmap, Bluemap and co. (planned for in 2.0)
 - Have a suggestion? Submit it [here](https://github.com/eingruenesbeb/Yolo/issues/new/choose)!
 
+## 7. For developers
+To add this project as a dependency for yours, follow [this link](https://jitpack.io/#eingruenesbeb/Yolo) and select 
+your desired version (go to *branches* → *master-SNAPSHOT* for the most recent version). Then follow the instructions
+below.
+
+To avoid inflating your jar-file, you can change the scope to `compileOnly`.
+
+Additionally, you'll need to declare the dependency in your `plugin.yml`-file like this:
+```yml
+#### ↑ other stuff ↑ ###
+depend: [  # Or "softdepend"
+  Yolo
+]
+#### ↓ other stuff ↓ ###
+```
+
+Note, that this plugin has no official API, but provides public access to some elements. Most of these are documented 
+[here](https://eingruenesbeb.github.io/Yolo/).
+
 ---
 
-*From Version: 0.6.0*
+*From Version: 0.7.0*

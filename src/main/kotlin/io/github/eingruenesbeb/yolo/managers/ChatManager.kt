@@ -57,12 +57,14 @@ class ChatManager private constructor() {
      */
     private data class RawChatMessage(val rawString: String, val enabled: Boolean) {
         fun returnComponent(replacements: HashMap<String?, Component?>?): Component {
-            val toReturn = MINI_MESSAGE_PARSER.deserialize(rawString)
+            var toReturn = MINI_MESSAGE_PARSER.deserialize(rawString)
             replacements?.forEach { replacement ->
-                toReturn.replaceText {
-                    replacement.key?.let { replaceKey ->
-                        it.matchLiteral(replaceKey)
-                        it.replacement(replacement.value)
+                replacement.key?.let {  key ->
+                    replacement.value?.let {  value ->
+                        toReturn = toReturn.replaceText {
+                            it.matchLiteral(key)
+                            it.replacement(value)
+                        }
                     }
                 }
             }
