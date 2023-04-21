@@ -31,18 +31,18 @@ import java.security.NoSuchAlgorithmException
 import java.util.concurrent.CompletableFuture
 
 /**
- * This is a utility class, that manages setting up a resource pack, as it is described in the plugin's config. It
- * provides asynchronous validation of the provided resource-pack and a fallback, if no custom resource pack should
- * be used or the custom resource pack couldn't be validated. It also provides a method to apply the resource pack
- * to a player.
+ * This is a utility object, that manages setting up a resource pack, as it is described in the plugin's config. It
+ * provides asynchronous validation of the provided resource-pack and a fallback, if no custom resource pack should be
+ * used or the custom resource pack couldn't be validated. It also provides a method to apply the resource pack to a
+ * player.
  */
-class ResourcePackManager private constructor() {
+internal object ResourcePackManager : ReloadableManager {
+    private const val defaultPackURL = "https://drive.google.com/uc?export=download&id=1UWoiOGFlt2QIyQPVKAv5flLTNeNiI439"
+    private const val defaultPackSha1 = "cc17ee284417acd83536af878dabecab7ca7f3d1"
+    private val yolo: Yolo = JavaPlugin.getPlugin(Yolo::class.java)
     private var packURL: String? = null
     private var packSha1: String? = null
-    private val defaultPackURL = "https://drive.google.com/uc?export=download&id=1UWoiOGFlt2QIyQPVKAv5flLTNeNiI439"
-    private val defaultPackSha1 = "cc17ee284417acd83536af878dabecab7ca7f3d1"
     private var force: Boolean
-    private val yolo: Yolo = JavaPlugin.getPlugin(Yolo::class.java)
 
     /**
      * Constructs a new ResourcePackManager sets all important fields from the config or fallback and asynchronously
@@ -60,7 +60,7 @@ class ResourcePackManager private constructor() {
         force = config.getBoolean("resource-pack.force", true)
         validatePackAsync(packURL, packSha1).whenComplete { isValid: Boolean?, _: Throwable? ->
             if (!isValid!!) {
-                yolo.getLogger().warning(yolo.pluginResourceBundle.getString("loading.resourcePack.invalid"))
+                yolo.getLogger().warning(Yolo.pluginResourceBundle.getString("loading.resourcePack.invalid"))
                 packURL = defaultPackURL
                 packSha1 = defaultPackSha1
             }
@@ -77,7 +77,7 @@ class ResourcePackManager private constructor() {
         player.setResourcePack(packURL!!, packSha1!!, force, textComponent)
     }
 
-    private fun reloadInstance() {
+    override fun reload() {
         val config = yolo.config
         if (config.getBoolean("resource-pack.custom.use")) {
             packURL = config.getString("resource-pack.custom.url", defaultPackURL)
@@ -89,7 +89,7 @@ class ResourcePackManager private constructor() {
         force = config.getBoolean("resource-pack.force", true)
         validatePackAsync(packURL, packSha1).whenComplete { isValid: Boolean?, _: Throwable? ->
             if (!isValid!!) {
-                yolo.getLogger().warning(yolo.pluginResourceBundle.getString("loading.resourcePack.invalid"))
+                yolo.getLogger().warning(Yolo.pluginResourceBundle.getString("loading.resourcePack.invalid"))
                 packURL = defaultPackURL
                 packSha1 = defaultPackSha1
             }
@@ -135,31 +135,12 @@ class ResourcePackManager private constructor() {
             }
         }
     }
-
-    companion object {
-        /**
-         * Gets the singleton instance of this manager.
-         *
-         * @return The singleton instance of this manager.
-         */
-        val instance = ResourcePackManager()
-
-        /**
-         * This method is used, to update the singleton instance of this manager, based on the current config file.
-         */
-        fun reload() {
-            instance.reloadInstance()
+    
+    private fun bytesToHex(bytes: ByteArray): String {
+        val sb = StringBuilder()
+        for (b in bytes) {
+            sb.append(String.format("%02x", b))
         }
-
-        /**
-         * Helper method to convert a byte array to a hexadecimal string.
-         */
-        private fun bytesToHex(bytes: ByteArray): String {
-            val sb = StringBuilder()
-            for (b in bytes) {
-                sb.append(String.format("%02x", b))
-            }
-            return sb.toString()
-        }
+        return sb.toString()
     }
 }

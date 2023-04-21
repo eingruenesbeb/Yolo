@@ -20,8 +20,9 @@ package io.github.eingruenesbeb.yolo
 
 import io.github.eingruenesbeb.yolo.managers.ChatManager
 import io.github.eingruenesbeb.yolo.managers.PlayerManager
-import io.github.eingruenesbeb.yolo.managers.SpicordManager
-import io.github.eingruenesbeb.yolo.managers.SpicordManager.DiscordMessageType
+import io.github.eingruenesbeb.yolo.managers.ResourcePackManager
+import io.github.eingruenesbeb.yolo.managers.spicord.DiscordMessageType
+import io.github.eingruenesbeb.yolo.managers.spicord.safeSpicordManager
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.entity.EntityType
@@ -31,7 +32,6 @@ import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityResurrectEvent
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.PlayerJoinEvent
-import org.bukkit.event.player.PlayerKickEvent
 import org.bukkit.plugin.java.JavaPlugin
 
 /**
@@ -55,32 +55,14 @@ class YoloEventListener : Listener {
 
         if (!player.hasPermission("yolo.exempt") && yoloPluginInstance.isFunctionalityEnabled) {
             PlayerManager.actionsOnDeath(event)
-            val stringReplacementMap: HashMap<String?, String?> =
-                TextReplacements.provideStringDefaults(event, TextReplacements.ALL)
-            val componentReplacementMap: HashMap<String?, Component?> =
-                TextReplacements.provideComponentDefaults(event, TextReplacements.ALL)
-
-            var dynamicBanMessage = yoloPluginInstance.banMessage
-            componentReplacementMap.forEach { replacement ->
-                replacement.key?.let {  key ->
-                    replacement.value?.let {  value ->
-                        dynamicBanMessage = dynamicBanMessage?.replaceText {
-                            it.matchLiteral(key)
-                            it.replacement(value)
-                        }
-                    }
-                }
-            }
-            // Pseudo-ban players:
-            player.kick(dynamicBanMessage ?: Component.text("You have died on hardcore-mode :("), PlayerKickEvent.Cause.BANNED)
+            val stringReplacementMap: HashMap<String, String?> = TextReplacements.provideStringDefaults(event, TextReplacements.ALL)
+            val componentReplacementMap: HashMap<String, Component?> = TextReplacements.provideComponentDefaults(event, TextReplacements.ALL)
 
             // It's about sending a message.
-            if (yoloPluginInstance.isUseSpicord) {
-                if (SpicordManager.instance.isSpicordBotAvailable) {
-                    SpicordManager.instance.trySend(DiscordMessageType.DEATH, stringReplacementMap)
-                }
+            if (safeSpicordManager()?.isSpicordBotAvailable == true) {
+                safeSpicordManager()?.trySend(DiscordMessageType.DEATH, stringReplacementMap)
             }
-            ChatManager.instance.trySend(Bukkit.getServer(), ChatManager.ChatMessageType.DEATH, componentReplacementMap)
+            ChatManager.trySend(Bukkit.getServer(), ChatManager.ChatMessageType.DEATH, componentReplacementMap)
         }
     }
 
@@ -93,7 +75,7 @@ class YoloEventListener : Listener {
     fun onPlayerJoin(event: PlayerJoinEvent) {
         val player = event.player
         if (!player.hasPermission("yolo.exempt") && yoloPluginInstance.isFunctionalityEnabled) {
-            yoloPluginInstance.resourcePackManager?.applyPack(player)
+            ResourcePackManager.applyPack(player)
         }
     }
 
@@ -107,13 +89,9 @@ class YoloEventListener : Listener {
         if (event.entity.hasPermission("yolo.exempt") || !yoloPluginInstance.isFunctionalityEnabled) return
         val player = event.entity as Player
         if (player.hasPermission("yolo.exempt")) return
-        val stringReplacementMap: HashMap<String?, String?> =
-            TextReplacements.provideStringDefaults(event, TextReplacements.PLAYER_NAME)
-        val componentReplacementMap: HashMap<String?, Component?> =
-            TextReplacements.provideComponentDefaults(event, TextReplacements.PLAYER_NAME)
-        if (yoloPluginInstance.isUseSpicord) {
-            SpicordManager.instance.trySend(DiscordMessageType.TOTEM, stringReplacementMap)
-        }
-        ChatManager.instance.trySend(Bukkit.getServer(), ChatManager.ChatMessageType.TOTEM, componentReplacementMap)
+        val stringReplacementMap: HashMap<String, String?> = TextReplacements.provideStringDefaults(event, TextReplacements.PLAYER_NAME)
+        val componentReplacementMap: HashMap<String, Component?> = TextReplacements.provideComponentDefaults(event, TextReplacements.PLAYER_NAME)
+        safeSpicordManager()?.trySend(DiscordMessageType.TOTEM, stringReplacementMap)
+        ChatManager.trySend(Bukkit.getServer(), ChatManager.ChatMessageType.TOTEM, componentReplacementMap)
     }
 }

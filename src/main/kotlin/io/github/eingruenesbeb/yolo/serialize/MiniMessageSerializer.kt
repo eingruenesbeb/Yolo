@@ -27,6 +27,8 @@ import kotlinx.serialization.encoding.*
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
 
+// Leave public, as other plugins may want to (de)serialize this ones data.
+
 object MiniMessageSerializer : KSerializer<Component> {
     override val descriptor: SerialDescriptor
         get() = buildClassSerialDescriptor("MiniMessage") {

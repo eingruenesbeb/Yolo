@@ -22,7 +22,7 @@ import io.github.eingruenesbeb.yolo.commands.CommandRegistrar
 import io.github.eingruenesbeb.yolo.managers.ChatManager
 import io.github.eingruenesbeb.yolo.managers.PlayerManager
 import io.github.eingruenesbeb.yolo.managers.ResourcePackManager
-import io.github.eingruenesbeb.yolo.managers.SpicordManager
+import io.github.eingruenesbeb.yolo.managers.spicord.safeSpicordManager
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Bukkit
@@ -41,19 +41,12 @@ class Yolo : JavaPlugin() {
     companion object {
         // Meta:
         const val version = "v0.7.0"
+
+        /**
+         * This is the [ResourceBundle] to use for translating cli messages.
+         */
+        val pluginResourceBundle: ResourceBundle = ResourceBundle.getBundle("i18n")
     }
-
-    /**
-     * This is the [ResourceBundle] to use for translating cli messages.
-     */
-    val pluginResourceBundle: ResourceBundle = ResourceBundle.getBundle("i18n")
-
-    /**
-     * Is true, whenever Spicord is also loaded.
-     * @apiNote This boolean should **ALWAYS** be checked, if something is to be done with the [SpicordManager].
-     */
-    var isUseSpicord = false
-        private set
 
     /**
      * Indicates, whether the functionality of this plugin should be enabled.
@@ -62,13 +55,10 @@ class Yolo : JavaPlugin() {
         private set
 
     /**
-     * Holds a reference resource pack manager for this plugin.
-     * @see ResourcePackManager
+     * Contains the configured ban-message, to be shown to players, banned by this plugin, without any replacements
+     * preformed.
      */
-    var resourcePackManager: ResourcePackManager? = null
-        private set
-
-    var banMessage: Component? = null
+    internal var banMessage: Component? = null
         private set
 
     override fun onEnable() {
@@ -86,13 +76,7 @@ class Yolo : JavaPlugin() {
         }
 
         isFunctionalityEnabled = (Bukkit.isHardcore() || config.getBoolean("enable_on_non_hc", false)) && !config.getBoolean("easy_disable", false)
-        isUseSpicord = Bukkit.getPluginManager().isPluginEnabled("Spicord")
-        if (isUseSpicord) {
-            SpicordManager.instance
-        }
 
-        resourcePackManager = ResourcePackManager.instance
-        ChatManager.instance
         server.pluginManager.registerEvents(YoloEventListener(), this)
         server.pluginManager.registerEvents(PlayerManager.PlayerManagerEvents(), this)
         val commandRegistrar = CommandRegistrar()
@@ -115,22 +99,16 @@ class Yolo : JavaPlugin() {
     /**
      * Reloads all configurable parts of this plugin.
      */
-    fun globalReload() {
+    internal fun globalReload() {
         regenerateMissingFiles()
         reloadConfig()
         isFunctionalityEnabled = (Bukkit.isHardcore() || config.getBoolean("enable_on_non_hc", false)) && !config.getBoolean("easy_disable", false)
 
-        // The availability of some plugins may have changed... (Okay, this might be a little paranoid, but better safe
-        // than sorry.)
-        isUseSpicord = Bukkit.getPluginManager().isPluginEnabled("Spicord")
-
-        // May do some fancy shenanigans later, by reloading classes, that implement `Reloadable`, later. For now,
-        // that's just not worth it, with only three classes, that need that.
+        // May do some fancy shenanigans later, by reloading classes, that implement `ReloadableManager`, later. For
+        // now, that's just not worth it, with only three classes, that need that.
         ResourcePackManager.reload()
         ChatManager.reload()
-        if (isUseSpicord) {
-            SpicordManager.reload()
-        }
+        safeSpicordManager()?.reload()
 
         var rawBanMessage: String
         val banMessageFile = File(dataFolder.path.plus("/ban_message.txt"))
@@ -179,7 +157,6 @@ class Yolo : JavaPlugin() {
         val inFolder = config
         val embedded = config.defaults
         val inFolderVer = config.getInt("config_version", 0)
-        assert(embedded != null)
         val embeddedVer = embedded!!.getInt("config_version")
         if (inFolderVer != embeddedVer) {
             val inFolderKeys = inFolder.getKeys(true)

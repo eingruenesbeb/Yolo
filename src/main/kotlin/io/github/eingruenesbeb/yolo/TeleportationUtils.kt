@@ -19,6 +19,7 @@
 
 package io.github.eingruenesbeb.yolo
 
+import io.github.eingruenesbeb.yolo.TeleportationUtils.safeTeleport
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Block
@@ -28,6 +29,8 @@ import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.jetbrains.annotations.Contract
+
+// Leave public, because it's just very convenient.
 
 /**
  * Contains functions useful for teleporting players.\
@@ -82,9 +85,7 @@ object TeleportationUtils {
         } else {
             // Give up
             JavaPlugin.getPlugin(Yolo::class.java).getLogger().info(
-                JavaPlugin.getPlugin(
-                    Yolo::class.java
-                ).pluginResourceBundle
+                Yolo.pluginResourceBundle
                     .getString("player.unsafeTeleport")
                     .replace("%player_name%", player.name)
             )

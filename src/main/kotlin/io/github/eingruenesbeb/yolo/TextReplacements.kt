@@ -67,17 +67,80 @@ enum class TextReplacements {
      */
     ALL;
 
-    /**
-     * Turns the constant name into it's corresponding text-placeholder. (Example: [.PLAYER_NAME] →
-     * `%player_name%`)
-     *
-     * @return The text-placeholder representation of the constant.
-     */
-    override fun toString(): String {
-        return "%" + name.lowercase(Locale.getDefault()) + "%"
-    }
-
     companion object {
+        /**
+         * Similar to [provideStringDefaults], but rather than strings this returns [Component] equivalents. These can
+         * be used for (almost) everything text related in Minecraft.
+         *
+         * @param event        An optional event, that can provide context-based replacements. If null, context-based
+         * replacements will not be included in the returned map.
+         * @param replacements  The replacements that should be included in the returned map. If null, an empty map will be returned.
+         * If the [ALL] constant is included in this array, it will include all predefined replacements,
+         * but should not be used in combination with others.
+         * @return A prefilled map of replacements.
+         *
+         * @implNote If any necessary reference parameter is not given, replacements referencing it will not be present in the final map.
+         * For example, if the player parameter is null, player-based replacements will not be included in the returned map.
+         * If the replacements array is null, an empty map will be returned.
+         */
+        fun provideComponentDefaults(event: Event?, vararg replacements: TextReplacements?): HashMap<String, Component?> {
+            val toReturn = HashMap<String, Component?>()
+            for (replacement in replacements) {
+                if (replacement != null) {
+                    when (replacement) {
+                        ALL -> {
+                            if (event is PlayerEvent) {
+                                toReturn[PLAYER_NAME.toString()] = event.player.displayName()
+                                toReturn[TOTEM_USES.toString()] =
+                                    Component.text(event.player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING))
+                            }
+                            if (event is PlayerDeathEvent) {
+                                toReturn[DEATH_MESSAGE.toString()] = event.deathMessage()
+                                toReturn[PLAYER_NAME.toString()] = event.player.displayName()
+                                toReturn[TOTEM_USES.toString()] =
+                                    Component.text(event.player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING))
+                            }
+
+                            toReturn[PLUGIN_VERSION.toString()] = Component.text(Yolo.version)
+
+                            return toReturn
+                        }
+
+                        PLAYER_NAME -> {
+                            if (event is PlayerEvent) {
+                                toReturn[PLAYER_NAME.toString()] = event.player.displayName()
+                            }
+                            if (event is PlayerDeathEvent) {
+                                toReturn[PLAYER_NAME.toString()] = event.player.displayName()
+                            }
+                        }
+
+                        TOTEM_USES -> {
+                            if (event is PlayerEvent) {
+                                toReturn[TOTEM_USES.toString()] =
+                                    Component.text(event.player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING))
+                            }
+                            if (event is PlayerDeathEvent) {
+                                toReturn[TOTEM_USES.toString()] =
+                                    Component.text(event.player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING))
+                            }
+                        }
+
+                        DEATH_MESSAGE -> {
+                            if (event is PlayerDeathEvent) {
+                                toReturn[DEATH_MESSAGE.toString()] = event.deathMessage()
+                            }
+                        }
+
+                        PLUGIN_VERSION -> {
+                            toReturn[PLUGIN_VERSION.toString()] = Component.text(Yolo.version)
+                        }
+                    }
+                }
+            }
+            return toReturn
+        }
+
         /**
          * Provides a prefilled `HashMap` of specified replacements, given the necessary other parameters. The
          * returned map can be directly used, as it is a text-placeholder (String) keyed version.
@@ -154,78 +217,15 @@ enum class TextReplacements {
             }
             return toReturn
         }
+    }
 
-        /**
-         * Similar to [provideStringDefaults], but rather than strings this returns [Component] equivalents. These can
-         * be used for (almost) everything text related in Minecraft.
-         *
-         * @param event        An optional event, that can provide context-based replacements. If null, context-based
-         * replacements will not be included in the returned map.
-         * @param replacements  The replacements that should be included in the returned map. If null, an empty map will be returned.
-         * If the [ALL] constant is included in this array, it will include all predefined replacements,
-         * but should not be used in combination with others.
-         * @return A prefilled map of replacements.
-         *
-         * @implNote If any necessary reference parameter is not given, replacements referencing it will not be present in the final map.
-         * For example, if the player parameter is null, player-based replacements will not be included in the returned map.
-         * If the replacements array is null, an empty map will be returned.
-         */
-        fun provideComponentDefaults(event: Event?, vararg replacements: TextReplacements?): HashMap<String, Component?> {
-            val toReturn = HashMap<String, Component?>()
-            for (replacement in replacements) {
-                if (replacement != null) {
-                    when (replacement) {
-                        ALL -> {
-                            if (event is PlayerEvent) {
-                                toReturn[PLAYER_NAME.toString()] = event.player.displayName()
-                                toReturn[TOTEM_USES.toString()] =
-                                    Component.text(event.player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING))
-                            }
-                            if (event is PlayerDeathEvent) {
-                                toReturn[DEATH_MESSAGE.toString()] = event.deathMessage()
-                                toReturn[PLAYER_NAME.toString()] = event.player.displayName()
-                                toReturn[TOTEM_USES.toString()] =
-                                    Component.text(event.player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING))
-                            }
-
-                            toReturn[PLUGIN_VERSION.toString()] = Component.text(Yolo.version)
-
-                            return toReturn
-                        }
-
-                        PLAYER_NAME -> {
-                            if (event is PlayerEvent) {
-                                toReturn[PLAYER_NAME.toString()] = event.player.displayName()
-                            }
-                            if (event is PlayerDeathEvent) {
-                                toReturn[PLAYER_NAME.toString()] = event.player.displayName()
-                            }
-                        }
-
-                        TOTEM_USES -> {
-                            if (event is PlayerEvent) {
-                                toReturn[TOTEM_USES.toString()] =
-                                    Component.text(event.player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING))
-                            }
-                            if (event is PlayerDeathEvent) {
-                                toReturn[TOTEM_USES.toString()] =
-                                    Component.text(event.player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING))
-                            }
-                        }
-
-                        DEATH_MESSAGE -> {
-                            if (event is PlayerDeathEvent) {
-                                toReturn[DEATH_MESSAGE.toString()] = event.deathMessage()
-                            }
-                        }
-
-                        PLUGIN_VERSION -> {
-                            toReturn[PLUGIN_VERSION.toString()] = Component.text(Yolo.version)
-                        }
-                    }
-                }
-            }
-            return toReturn
-        }
+    /**
+     * Turns the constant name into it's corresponding text-placeholder. (Example: [.PLAYER_NAME] →
+     * `%player_name%`)
+     *
+     * @return The text-placeholder representation of the constant.
+     */
+    override fun toString(): String {
+        return "%" + name.lowercase(Locale.getDefault()) + "%"
     }
 }

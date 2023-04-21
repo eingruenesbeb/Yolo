@@ -23,7 +23,6 @@ import io.github.eingruenesbeb.yolo.managers.PlayerManager
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabExecutor
-import org.bukkit.plugin.java.JavaPlugin
 
 /**
  * This is the command executor, registered for the command `revive`. On tab completion, it provides a list of revivable
@@ -33,7 +32,7 @@ import org.bukkit.plugin.java.JavaPlugin
  * @see PlayerManager.setReviveOnUser
  * @see PlayerManager.provideRevivable
  */
-class ReviveCommand : TabExecutor {
+internal class ReviveCommand : TabExecutor {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
         try {
             val restoreInventory = try {
@@ -47,7 +46,7 @@ class ReviveCommand : TabExecutor {
                 true
             }
             PlayerManager.setReviveOnUser(args[0], true, restoreInventory, teleportToDeathPos)
-            sender.sendPlainMessage(JavaPlugin.getPlugin(Yolo::class.java).pluginResourceBundle.getString("player.setRevive").replace("%player_name%", args[0]))
+            sender.sendPlainMessage(Yolo.pluginResourceBundle.getString("player.setRevive").replace("%player_name%", args[0]))
         } catch (e: IllegalArgumentException) {
             return false
         } catch (e: IndexOutOfBoundsException) {

@@ -28,18 +28,20 @@ import org.bukkit.plugin.java.JavaPlugin
 /**
  * This is the [CommandExecutor] for the command `yolo-reload`.
  */
-class ReloadCommand : CommandExecutor {
+internal class ReloadCommand : CommandExecutor {
     /**
      * Upon this command being executed, this method is called. It calls [Yolo.globalReload].
+     *
      * @param sender Source of the command
      * @param command Command which was executed
      * @param label Alias of the command which was used
      * @param args Passed command arguments
+     *
      * @return The success of this command. (Always true)
      */
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
         JavaPlugin.getPlugin(Yolo::class.java).globalReload()
-        sender.sendMessage(Component.text(JavaPlugin.getPlugin(Yolo::class.java).pluginResourceBundle.getString("system.reloaded")))
+        sender.sendMessage(Component.text(Yolo.pluginResourceBundle.getString("system.reloaded")))
         return true
     }
 }

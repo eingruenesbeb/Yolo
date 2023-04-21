@@ -27,6 +27,8 @@ import kotlinx.serialization.encoding.*
 import org.bukkit.Bukkit
 import org.bukkit.Location
 
+// Leave public, as other plugins may want to (de)serialize this ones data.
+
 /**
  * This class is a serializer designed to be used with the Kotlin serialization library. It serialized and deserializes
  * [Location] data, as it's defined by Bukkit.
