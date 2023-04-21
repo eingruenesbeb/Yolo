@@ -51,7 +51,8 @@ class PreYoloPlayerReviveEventAsync internal constructor(
     companion object {
         private val handlerList = HandlerList()
 
-        fun getHandlers() = handlerList
+        @JvmStatic
+        fun getHandlerList() = handlerList
     }
 
     override fun getHandlers(): HandlerList = handlerList

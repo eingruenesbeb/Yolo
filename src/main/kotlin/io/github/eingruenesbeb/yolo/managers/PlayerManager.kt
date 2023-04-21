@@ -354,6 +354,9 @@ object PlayerManager {
         // This may be necessary, if the player was banned by this plugin directly. (See the comment in
         // YoloEventListener#onPlayerDeath)
         deathEvent.player.inventory.contents = arrayOf()
+
+        // Finally ban the player from the pseudo-ban server
+        pseudoBanPlayer(deathEvent.player.uniqueId, null)
     }
 
     /**

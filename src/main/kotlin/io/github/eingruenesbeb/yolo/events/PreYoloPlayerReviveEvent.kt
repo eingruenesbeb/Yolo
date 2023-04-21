@@ -49,7 +49,8 @@ class PreYoloPlayerReviveEvent internal constructor(override val yoloPlayerInfor
     companion object {
         private val handlerList = HandlerList()
 
-        fun getHandlers() = handlerList
+        @JvmStatic
+        fun getHandlerList() = handlerList
     }
 
     /**
