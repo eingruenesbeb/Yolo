@@ -41,11 +41,6 @@ $dokka.location:io.github.eingruenesbeb.yolo/Yolo/Yolo/#/PointingToDeclaration/
 $dokka.location:io.github.eingruenesbeb.yolo/Yolo/isFunctionalityEnabled/#/PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo/-yolo/is-functionality-enabled.html
 $dokka.location:io.github.eingruenesbeb.yolo/Yolo/onDisable/#/PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo/-yolo/on-disable.html
 $dokka.location:io.github.eingruenesbeb.yolo/Yolo/onEnable/#/PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo/-yolo/on-enable.html
-$dokka.location:io.github.eingruenesbeb.yolo/YoloEventListener///PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo/-yolo-event-listener/index.html
-$dokka.location:io.github.eingruenesbeb.yolo/YoloEventListener/YoloEventListener/#/PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo/-yolo-event-listener/-yolo-event-listener.html
-$dokka.location:io.github.eingruenesbeb.yolo/YoloEventListener/onEntityResurrected/#org.bukkit.event.entity.EntityResurrectEvent/PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo/-yolo-event-listener/on-entity-resurrected.html
-$dokka.location:io.github.eingruenesbeb.yolo/YoloEventListener/onPlayerDeath/#org.bukkit.event.entity.PlayerDeathEvent/PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo/-yolo-event-listener/on-player-death.html
-$dokka.location:io.github.eingruenesbeb.yolo/YoloEventListener/onPlayerJoin/#org.bukkit.event.player.PlayerJoinEvent/PointingToDeclaration/-yolo/io.github.eingruenesbeb.yolo/-yolo-event-listener/on-player-join.html
 io.github.eingruenesbeb.yolo
 io.github.eingruenesbeb.yolo.managers
 io.github.eingruenesbeb.yolo.serialize

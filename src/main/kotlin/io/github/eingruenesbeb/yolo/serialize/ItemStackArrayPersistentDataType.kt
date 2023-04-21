@@ -36,8 +36,12 @@ import java.util.*
 // Leave public, as other plugins may want to (de)serialize this ones data.
 
 /**
- * This class represents a [PersistentDataType], that is used to save an indexed array of [ItemStack]s to be saved to a
- * [PersistentDataContainer]. Useful for storing data about an inventory.
+ * This class represents a
+ * [PersistentDataType](https://jd.papermc.io/paper/1.19/org/bukkit/persistence/PersistentDataContainer.html), that is
+ * used to save an indexed array of [ItemStack](https://jd.papermc.io/paper/1.19/org/bukkit/inventory/ItemStack.html)s
+ * to be saved to a
+ * [PersistentDataContainer](https://jd.papermc.io/paper/1.19/org/bukkit/persistence/PersistentDataContainer.html).
+ * Useful for storing data about an inventory.
  */
 class ItemStackArrayPersistentDataType : PersistentDataType<Array<PersistentDataContainer>, Array<ItemStack?>> {
     private data class IndexedItemStackData(val index: Int, val itemStackData: ByteArray) : Serializable {

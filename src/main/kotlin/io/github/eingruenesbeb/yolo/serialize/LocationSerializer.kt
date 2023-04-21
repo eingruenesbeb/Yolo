@@ -30,10 +30,8 @@ import org.bukkit.Location
 // Leave public, as other plugins may want to (de)serialize this ones data.
 
 /**
- * This class is a serializer designed to be used with the Kotlin serialization library. It serialized and deserializes
- * [Location] data, as it's defined by Bukkit.
- *
- * @see KSerializer
+ * This object is a serializer designed to be used with the Kotlin serialization library. It serialized and deserializes
+ * [Location](https://jd.papermc.io/paper/1.19/org/bukkit/Location.html) data, as it's defined by Bukkit.
  */
 object LocationSerializer : KSerializer<Location?> {
     // The location will look like this, when serialized to json:

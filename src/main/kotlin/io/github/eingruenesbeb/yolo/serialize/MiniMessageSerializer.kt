@@ -29,6 +29,11 @@ import net.kyori.adventure.text.minimessage.MiniMessage
 
 // Leave public, as other plugins may want to (de)serialize this ones data.
 
+/**
+ * This object is a serializer designed to be used with the Kotlin serialization library. Makes use of the already
+ * existing [Component](https://jd.advntr.dev/api/4.13.1/net/kyori/adventure/text/Component.html) to
+ * [MiniMessage format serializer](https://jd.advntr.dev/text-minimessage/4.13.1/net/kyori/adventure/text/minimessage/MiniMessage.html)
+ */
 object MiniMessageSerializer : KSerializer<Component> {
     override val descriptor: SerialDescriptor
         get() = buildClassSerialDescriptor("MiniMessage") {

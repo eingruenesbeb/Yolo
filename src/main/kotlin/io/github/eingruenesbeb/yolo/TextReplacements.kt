@@ -63,7 +63,7 @@ enum class TextReplacements {
 
     /**
      * A stand-in for all possible replacements. May not be used for actual replacements, but rather in conjunction with
-     * [.provideDefaults].
+     * [provideStringDefaults] or [provideComponentDefaults].
      */
     ALL;
 
@@ -220,7 +220,7 @@ enum class TextReplacements {
     }
 
     /**
-     * Turns the constant name into it's corresponding text-placeholder. (Example: [.PLAYER_NAME] →
+     * Turns the constant name into it's corresponding text-placeholder. (Example: [PLAYER_NAME] →
      * `%player_name%`)
      *
      * @return The text-placeholder representation of the constant.
