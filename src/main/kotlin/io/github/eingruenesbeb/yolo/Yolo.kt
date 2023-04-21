@@ -77,6 +77,12 @@ class Yolo : JavaPlugin() {
 
         isFunctionalityEnabled = (Bukkit.isHardcore() || config.getBoolean("enable_on_non_hc", false)) && !config.getBoolean("easy_disable", false)
 
+        // Initialize managers:
+        safeSpicordManager()
+        ChatManager
+        PlayerManager
+        ResourcePackManager
+
         server.pluginManager.registerEvents(YoloEventListener(), this)
         server.pluginManager.registerEvents(PlayerManager.PlayerManagerEvents(), this)
         val commandRegistrar = CommandRegistrar()
