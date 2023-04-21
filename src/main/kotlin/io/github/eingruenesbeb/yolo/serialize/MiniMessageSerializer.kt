@@ -46,7 +46,7 @@ object MiniMessageSerializer : KSerializer<Component> {
                         miniMessage.deserialize(this.decodeStringElement(descriptor, 0)).replaceText {
                             it.matchLiteral("\r")
                             it.replacement("")
-                        }  // Convert from potential clrf to lf format, to avoid unrecognized character.
+                        }  // Convert from potential crlf to lf format, to avoid unrecognized character.
 
                     CompositeDecoder.DECODE_DONE -> break
                     else -> error("Unexpected index $index")

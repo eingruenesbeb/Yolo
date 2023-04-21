@@ -201,7 +201,7 @@ internal object PlayerManager {
     /**
      * This method is used for setting a revivable (meaning that the player is dead and isn't already queued for
      * revival) up to be revived upon the next join.
-     * The revival process is setting the player's gamemode to [GameMode.SURVIVAL], teleporting them to the location of
+     * The revival process is setting the player's game mode to [GameMode.SURVIVAL], teleporting them to the location of
      * their death, if it's safe, and finally restoring their inventory.
      *
      * @param targetName The name of the player.
