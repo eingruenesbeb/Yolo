@@ -32,7 +32,7 @@ import java.io.File
 import java.io.IOException
 import java.util.*
 
-// May be interesting to implement PAPI support in the future.
+// It may be interesting to implement PAPI support in the future.
 /**
  * A Bukkit plugin that adds features related to player deaths and Discord integration.
  * This is the main class of that plugin.
@@ -110,8 +110,8 @@ class Yolo : JavaPlugin() {
         reloadConfig()
         isFunctionalityEnabled = (Bukkit.isHardcore() || config.getBoolean("enable_on_non_hc", false)) && !config.getBoolean("easy_disable", false)
 
-        // May do some fancy shenanigans later, by reloading classes, that implement `ReloadableManager`, later. For
-        // now, that's just not worth it, with only three classes, that need that.
+        // May do some fancy shenanigans later, by reloading classes that implement `ReloadableManager`, later.
+        // For now, that's just not worth it, with only three classes that need that.
         ResourcePackManager.reload()
         ChatManager.reload()
         safeSpicordManager()?.reload()
@@ -129,7 +129,7 @@ class Yolo : JavaPlugin() {
     }
 
     /**
-     * Private method for regenerating any missing file, if it doesn't exist.
+     * Private method for regenerating any missing file if it doesn't exist.
      */
     private fun regenerateMissingFiles() {
         // Guarantee the existence of the data folder.

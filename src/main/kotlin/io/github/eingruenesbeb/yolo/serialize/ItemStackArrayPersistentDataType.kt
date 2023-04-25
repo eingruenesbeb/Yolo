@@ -86,7 +86,7 @@ class ItemStackArrayPersistentDataType : PersistentDataType<Array<PersistentData
     ): Array<PersistentDataContainer> {
         var itemStackData = emptyArray<PersistentDataContainer>()
 
-        // Data in a PDC of this type should always include the originals length for later reconstruction.
+        // Data in a PDC of this type should always include the original length for later reconstruction.
         val lengthContainer = context.newPersistentDataContainer()
         lengthContainer.set(lengthKey, PersistentDataType.INTEGER, complex.size)
         itemStackData = itemStackData.plusElement(lengthContainer)
@@ -107,10 +107,10 @@ class ItemStackArrayPersistentDataType : PersistentDataType<Array<PersistentData
         primitive: Array<PersistentDataContainer>,
         context: PersistentDataAdapterContext
     ): Array<ItemStack?> {
-        // Again: Data, that uses this type should also include information about the length of the inventory. This data
-        //     should be encoded in the first element of the array. If that's the case, the element is simply be
-        //     skipped. In case the length is at another index, it's simply ignored (in order to cut down a bit on
-        //     complexity.)
+        // Again: Data that uses this type should also include information about the length of the inventory.
+        // This data should be encoded in the first element of the array.
+        // If that's the case, the element is simply being skipped.
+        // In case the length is at another index, it's simply ignored (in order to cut down a bit on complexity.)
         val length = primitive.firstOrNull()?.get(lengthKey, PersistentDataType.INTEGER)
         var recoveredItemStacks = arrayOfNulls<ItemStack?>(length ?: primitive.size)
 

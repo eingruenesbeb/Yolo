@@ -58,7 +58,7 @@ internal class CheckoutDeathLocationCommand : TabExecutor {
     }
 
     /**
-     * Teleports the executor, if they are a player, to the location of death of the target revivable player.
+     * Teleports the executor if they are a player, to the location of the death from the target-revivable player.
      *
      * @param sender Source of the command
      * @param command Command which was executed

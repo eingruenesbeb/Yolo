@@ -26,17 +26,17 @@ import org.bukkit.event.HandlerList
 import java.util.*
 
 /**
- * This event is emitted, when a player is about to be revived. It is an asynchronous variant of
- * [PreYoloPlayerReviveEvent] and can be used to monitor the status of the player-status, **but not for interfering with
- * the process**.
+ * This event is emitted when a player is about to be revived.
+ * It is an asynchronous variant of [PreYoloPlayerReviveEvent] and can be used to monitor the status of the
+ * player-status, **but not for interfering with the process**.
  *
  *
  * It implements [YoloPlayerEvent], meaning, that it provides relevant information about the player and access to the
  * corresponding [org.bukkit.OfflinePlayer] and [org.bukkit.entity.Player].
  *
  * @property yoloPlayerInformation The information regarding this player including their current status
- * @property originalTargetOutcome The originally intended outcome of the revive attempt
- * @property targetOutcome The currently targeted outcome of the revive attempt
+ * @property originalTargetOutcome The originally intended outcome of the revive-attempt
+ * @property targetOutcome The currently targeted outcome of the revive-attempt
  *
  * @see PreYoloPlayerReviveEvent
  * @see YoloPlayerEvent

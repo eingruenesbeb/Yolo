@@ -27,7 +27,7 @@ import java.util.*
 
 /**
  * This event is emitted after a player has been revived by the plugin. This is mostly just useful for post-processing
- * and information purposes. It is a synchronous version of [YoloPlayerRevivedEventAsync]. **For actions, that are not
+ * and information purposes. It is a synchronous version of [YoloPlayerRevivedEventAsync]. **For actions that are not
  * needed to be executed synchronously, consider the alternative.**
  *
  *
@@ -35,7 +35,7 @@ import java.util.*
  * corresponding [org.bukkit.OfflinePlayer] and [org.bukkit.entity.Player].
  *
  * @property yoloPlayerInformation The information regarding this player including their current status
- * @property finalResult The result of the revive attempt
+ * @property finalResult The result of the revive-attempt
  *
  * @see YoloPlayerRevivedEventAsync
  * @see PlayerStatus

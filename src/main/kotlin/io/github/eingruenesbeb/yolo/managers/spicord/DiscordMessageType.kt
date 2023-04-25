@@ -68,7 +68,7 @@ internal enum class DiscordMessageType {
     val resourceName: String
         /**
          * Describes the path for retrieving the String contents of the file. Either used to get the file containing the
-         * message from the plugin's data-folder, or it's embedded resources.
+         * message from the plugin's data-folder, or its embedded resources.
          *
          * @return The path identifying the message-content's file.
          */

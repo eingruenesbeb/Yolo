@@ -26,7 +26,7 @@ import org.bukkit.entity.Player
 import java.util.*
 
 /**
- * Indicates, that an event has a [yoloPlayerInformation] property, that is a [Pair] consisting of a player's [UUID] and
+ * Indicates that an event has a [yoloPlayerInformation] property, that is a [Pair] consisting of a player's [UUID] and
  * their associated [PlayerStatus].
  */
 @Suppress("unused")

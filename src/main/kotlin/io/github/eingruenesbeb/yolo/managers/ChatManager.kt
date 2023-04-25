@@ -154,7 +154,8 @@ internal object ChatManager : ReloadableManager {
     }
 
     /**
-     * Sends the specified chat message with optional replacements, if the message is enabled and the specified key exists.
+     * Sends the specified chat message with optional replacements
+     * if the message is enabled and the specified key exists.
      *
      * @param targetAudience The [Audience], that should see the message.
      * @param messageType The [ChatMessageType] of the chat message to send.
@@ -174,7 +175,7 @@ internal object ChatManager : ReloadableManager {
             return
         }
 
-        // Finally send the message.
+        // Finally, send the message.
         val toSend = rawMessage.returnComponent(replacements)
         if (rawMessage.enabled) {
             targetAudience.sendMessage(toSend)
@@ -217,14 +218,14 @@ internal object ChatManager : ReloadableManager {
                 // Update the file version:
                 userConfiguredProperties.setProperty("version", embedded.getProperty("version"))
 
-                // Finally save the new version of the userConfiguredProperties.
+                // Finally, save the new version of the userConfiguredProperties.
                 userConfiguredProperties.store(
                     Files.newBufferedWriter(
                         userConfigured.toPath(),
                         StandardCharsets.ISO_8859_1
                     ), null
                 )
-                // This is a stupid solution, but this undoes the escaping of the '#' character.
+                // This is a ludicrous solution, but this undoes the escaping of the '#' character.
                 val unescaped =
                     Files.readString(userConfigured.toPath(), StandardCharsets.ISO_8859_1).replace("\\#", "#")
                 Files.writeString(userConfigured.toPath(), unescaped, StandardCharsets.ISO_8859_1)

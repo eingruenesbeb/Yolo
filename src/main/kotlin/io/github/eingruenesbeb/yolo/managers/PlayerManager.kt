@@ -80,8 +80,8 @@ object PlayerManager {
     )
 
     /**
-     * Represents the result of a revival attempt. If the attempt lies in the future or in the past, is
-     * context-dependent.
+     * Represents the result of a revival attempt.
+     * If the attempt lies in the future or in the past, it is context-dependent.
      *
      * @property successful Whether the attempt should be or was successful.
      * @property teleported Whether the player should be or was teleported to their last death location.
@@ -99,15 +99,15 @@ object PlayerManager {
 
     /**
      * Represents an additional state, a player can be in, when teleported upon their revival. Whilst in this state,
-     * a player cannot be harmed and is invisible, but cannot engage in either PvP or PvE, without being forced out of
+     * a player can't be harmed and is invisible, but can't engage in either PvP or PvE, without being forced out of
      * this state. The last part is handled by the [PlayerManagerEvents] event-listener.
      *
      *
-     * Is visible, because it's a part of a player's data, which is public. However, all it's members are either private
-     * or internal.
+     * It Is visible because it's a part of a player's data, which is public. However, all its members are either
+     * private or internal.
      *
      * @property enabled Whether the player is in this ghost-like state
-     * @property ticksLeft How long the player will be in this state, if it's not removed prematurely.
+     * @property ticksLeft How long the player will be in this state if it's not removed prematurely.
      * @property attachedPlayerID The [UUID] of the corresponding player. **MUSTN'T BE `null`!**
      */
     @Internal
@@ -189,7 +189,7 @@ object PlayerManager {
     internal class PlayerManagerEvents : Listener {
         @EventHandler(ignoreCancelled = true)
         fun onPlayerPreLoginAsync(event: AsyncPlayerPreLoginEvent) {
-            // Don't kick players, if the death-ban functionality is disabled.
+            // Don't kick players if the death-ban functionality is disabled.
             if (!JavaPlugin.getPlugin(Yolo::class.java).isFunctionalityEnabled) return
 
             // Pseudo-ban players, if they are dead:
@@ -323,7 +323,8 @@ object PlayerManager {
             var isTeleported = false
             var isWithInventory = false
             with(Bukkit.getPlayer(uuid)) {
-                this ?: return yolo.logger.warning { Yolo.pluginResourceBundle.getString("player.revive.notOnline") }  // The player will still be revivable, if the process is stopped here.
+                this ?: return yolo.logger.warning { Yolo.pluginResourceBundle.getString("player.revive.notOnline") }  // The player will still be revivable
+                // if the process is stopped here.
                 if (playerStatus.isDead && tempStatus.isToRevive) {
                     this.gameMode = GameMode.SURVIVAL
                     if (tempStatus.isRestoreInventory) restoreReviveInventory().also { isWithInventory = true }
@@ -337,9 +338,9 @@ object PlayerManager {
                         yolo.logger.warning { Yolo.pluginResourceBundle.getString("player.revive.invalidTeleport") }
                     }
 
-                    // If we got here, that means, that the process was successful. Therefore, set the death and revive
-                    // status to false, as to avoid accidentally reviving a player twice, without them having died in
-                    // the meantime.
+                    // If we got here, that means that the process was successful.
+                    // Therefore, set the death and revive status to false, as to avoid accidentally reviving a player
+                    // twice, without them having died in the meantime.
                     playerStatus.isDead = false
                     playerStatus.isToRevive = false
                     isSuccess = true
@@ -415,8 +416,8 @@ object PlayerManager {
     }
 
     /**
-     * Provides a list of the names of every player, that is dead and isn't already set to be revived. Useful for
-     * command tab-completions.
+     * Provides a list of the names from every player, that is dead and isn't yet set to be revived.
+     * Useful for command tab-completions.
      *
      * @return A list of every revivable player.
      */
@@ -432,7 +433,7 @@ object PlayerManager {
     }
 
     /**
-     * This method is used for setting a revivable (meaning that the player is dead and isn't already queued for
+     * This method is used for setting a revivable player (meaning that the player is dead and isn't already queued for
      * revival) up to be revived upon the next join.
      * The revival process is setting the player's game mode to [GameMode.SURVIVAL], teleporting them to the location of
      * their death, if it's safe, and finally restoring their inventory.
@@ -442,7 +443,7 @@ object PlayerManager {
      * @param setIsRestoreInventory Whether the inventory should be restored (Default: `true`)
      * @param setIsTeleportToDeathPos Whether to teleport the player to their last death location (Default: `true`)
      *
-     * @throws IllegalStateException When the player hasn't been set to be revived.
+     * @throws IllegalStateException When the player has not been set to be revived.
      */
     @Throws(IllegalStateException::class)
     internal fun setReviveOnUser(
@@ -476,7 +477,7 @@ object PlayerManager {
     }
 
     /**
-     * Executes everything, that needs to be, when a player has died.
+     * Executes everything that needs to be, when a player has died.
      *
      * @param  deathEvent The death event.
      */
@@ -502,11 +503,11 @@ object PlayerManager {
 
         playerFromRegistry.playerStatus.banMessage = dynamicBanMessage ?: Component.text("[<red>Yolo</red>] » You have died and therefore can no longer play on this hardcore server. :(")
 
-        // This may be necessary, if the player was banned by this plugin directly. (See the comment in
-        // YoloEventListener#onPlayerDeath)
+        // This may be necessary if the player was banned by this plugin directly.
+        // (See the comment in YoloEventListener#onPlayerDeath)
         deathEvent.player.inventory.contents = arrayOf()
 
-        // Finally ban the player from the pseudo-ban server. (deferred)
+        // Finally, ban the player from the pseudo-ban server. (deferred)
         object : BukkitRunnable() {
             override fun run() {
                 pseudoBanPlayer(deathEvent.player.uniqueId, null)
@@ -515,7 +516,7 @@ object PlayerManager {
     }
 
     /**
-     * Is to be called, when the plugin is disabled. Ensures, that every important bit of data is saved.
+     * Is to be called when the plugin is disabled. Ensures that every important bit of data is saved.
      */
     internal fun savePlayerData() {
         yolo.logger.info { Yolo.pluginResourceBundle.getString("player.saveData.start") }
@@ -545,7 +546,7 @@ object PlayerManager {
     }
 
     /**
-     * Pseudo-ban players, if they are dead and aren't queued to be revived.
+     * Pseudo-ban players, if they're dead and aren't queued to be revived.
      *
      *
      * Only "Pseudo-"ban, because the player isn't officially put on the ban-list and thus is only banned as long as the

@@ -29,16 +29,17 @@ import org.bukkit.plugin.java.JavaPlugin
 import java.util.*
 
 /**
- * This event is emitted, when a player is about to be revived. It is a synchronous variant of
- * [PreYoloPlayerReviveEventAsync], that can change the outcome of the process by using [changeOutcome].
+ * This event is emitted when a player is about to be revived.
+ * It is a synchronous variant of [PreYoloPlayerReviveEventAsync], that can change the outcome of the process by using
+ * [changeOutcome].
  *
  *
  * It implements [YoloPlayerEvent], meaning, that it provides relevant information about the player and access to the
  * corresponding [org.bukkit.OfflinePlayer] and [org.bukkit.entity.Player].
  *
  * @property yoloPlayerInformation The information regarding this player including their current status
- * @property originalTargetOutcome The originally intended outcome of the revive attempt
- * @property targetOutcome The currently targeted outcome of the revive attempt
+ * @property originalTargetOutcome The originally intended outcome of the revive-attempt
+ * @property targetOutcome The currently targeted outcome of the revive-attempt
  *
  * @see PreYoloPlayerReviveEventAsync
  * @see YoloPlayerEvent
@@ -55,7 +56,7 @@ class PreYoloPlayerReviveEvent internal constructor(override val yoloPlayerInfor
 
     /**
      * This is the current targeted outcome.\
-     * It have been altered by other plugins.
+     * It has been altered by other plugins.
      *
      * @see ReviveResult
      */
@@ -68,9 +69,11 @@ class PreYoloPlayerReviveEvent internal constructor(override val yoloPlayerInfor
      * Changes the outcome of the process depending on the new parameters given.
      *
      *
-     * **Note, that this has no direct effect on the player's (Yolo internal) status and only on the revive attempt,
-     * that emitted the event.** Should the attempt succeed however, the isDead and isToRevive flags are updated to
-     * false. You can check the outcome via [YoloPlayerRevivedEvent] (or it's asynchronous variant) and react
+     * **Note that this has no direct effect on the player's (Yolo internal) status and only on the revive-attempt,
+     * that emitted the event.** However, should the attempt succeed,
+     * the isDead and isToRevive flags are updated to
+     * false.
+     * You can check the outcome via [YoloPlayerRevivedEvent] (or it's asynchronous variant) and react
      * accordingly.
      *
      * @param isToRevive Whether to revive the player at all

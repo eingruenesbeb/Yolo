@@ -31,10 +31,10 @@ import java.security.NoSuchAlgorithmException
 import java.util.concurrent.CompletableFuture
 
 /**
- * This is a utility object, that manages setting up a resource pack, as it is described in the plugin's config. It
- * provides asynchronous validation of the provided resource-pack and a fallback, if no custom resource pack should be
- * used or the custom resource pack couldn't be validated. It also provides a method to apply the resource pack to a
- * player.
+ * This is a utility object that manages to set up a resource pack, as it is described in the plugin's config.
+ * It provides asynchronous validation of the provided resource-pack and a fallback if no custom resource pack should be
+ * used, or the custom resource pack couldn't be validated.
+ * It also provides a method to apply the resource pack to a player.
  */
 internal object ResourcePackManager : ReloadableManager {
     private const val defaultPackURL = "https://drive.google.com/uc?export=download&id=1UWoiOGFlt2QIyQPVKAv5flLTNeNiI439"
