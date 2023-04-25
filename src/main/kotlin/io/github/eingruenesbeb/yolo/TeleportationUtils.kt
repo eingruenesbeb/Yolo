@@ -74,11 +74,11 @@ internal object TeleportationUtils {
             player.teleport(targetLocation.toHighestLocation())
         } else {
             // Give up
-            JavaPlugin.getPlugin(Yolo::class.java).logger.info(
+            JavaPlugin.getPlugin(Yolo::class.java).logger.info {
                 Yolo.pluginResourceBundle
                     .getString("player.unsafeTeleport")
                     .replace("%player_name%", player.name)
-            )
+            }
             false
         }
     }

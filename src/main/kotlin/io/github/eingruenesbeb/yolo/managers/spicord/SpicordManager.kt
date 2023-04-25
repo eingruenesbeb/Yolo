@@ -100,13 +100,13 @@ internal object SpicordManager : ReloadableManager {
                 )?.sendMessage(MessageCreateData.fromEmbeds(toSend))
                 messageCreateAction?.submit()?.whenComplete { _: Message?, throwable: Throwable? ->
                     // Handle potential errors
-                    if (throwable != null) yolo.logger.severe(
+                    if (throwable != null) yolo.logger.severe {
                         Yolo.pluginResourceBundle.getString("spicord.sending.failed")
                             .replace("%error%", throwable.toString())
-                    )
+                    }
                 }
             } catch (e: NullPointerException) {
-                yolo.logger.severe(Yolo.pluginResourceBundle.getString("spicord.sending.nullChannel"))
+                yolo.logger.severe {Yolo.pluginResourceBundle.getString("spicord.sending.nullChannel") }
             }
         }
     }
@@ -117,7 +117,7 @@ internal object SpicordManager : ReloadableManager {
         // Get and validate the channel-id:
         messageChannelId = yolo.config.getString("spicord.message_channel_id")
         if (messageChannelId?.matches("[0-9]+".toRegex()) != true) {
-            yolo.logger.warning(Yolo.pluginResourceBundle.getString("loading.spicord.invalidId"))
+            yolo.logger.warning { Yolo.pluginResourceBundle.getString("loading.spicord.invalidId") }
             return
         }
 
@@ -126,11 +126,11 @@ internal object SpicordManager : ReloadableManager {
             updateMessageTemplates()
         } catch (e: IOException) {
             // Shouldn't happen
-            yolo.logger.severe(
+            yolo.logger.severe {
                 Yolo.pluginResourceBundle
                     .getString("loading.spicord.failedMessageTemplate")
                     .replace("%error%", e.toString())
-            )
+            }
             e.printStackTrace()
             return
         }
@@ -165,7 +165,7 @@ internal object SpicordManager : ReloadableManager {
         // Get and validate the channel-id:
         messageChannelId = yolo.config.getString("spicord.message_channel_id")
         if (messageChannelId?.matches("[0-9]+".toRegex()) != true) {
-            yolo.logger.warning(Yolo.pluginResourceBundle.getString("loading.spicord.invalidId"))
+            yolo.logger.warning { Yolo.pluginResourceBundle.getString("loading.spicord.invalidId") }
             return
         }
 
@@ -174,11 +174,11 @@ internal object SpicordManager : ReloadableManager {
             updateMessageTemplates()
         } catch (e: IOException) {
             // Shouldn't happen
-            yolo.logger.severe(
+            yolo.logger.severe {
                 Yolo.pluginResourceBundle
                     .getString("loading.spicord.failedMessageTemplate")
                     .replace("%error%", e.toString())
-            )
+            }
             e.printStackTrace()
             return
         }
@@ -191,9 +191,9 @@ internal object SpicordManager : ReloadableManager {
                     spicordBot = bot
                     isSpicordBotAvailable = true
                     if (!isSpicordBotAvailable) {
-                        yolo.logger.warning(Yolo.pluginResourceBundle.getString("loading.spicord.bot_unavailable"))
+                        yolo.logger.warning { Yolo.pluginResourceBundle.getString("loading.spicord.bot_unavailable") }
                     } else if (yolo.config.getBoolean("spicord.send")) {
-                        yolo.logger.info(Yolo.pluginResourceBundle.getString("loading.spicord.bot_available"))
+                        yolo.logger.info { Yolo.pluginResourceBundle.getString("loading.spicord.bot_available") }
                     }
                 }
 

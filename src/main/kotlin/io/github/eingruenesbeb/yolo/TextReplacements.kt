@@ -82,7 +82,7 @@ enum class TextReplacements {
          *
          * @implNote If any necessary reference parameter is not given, replacements referencing it will not be present in the final map.
          * For example, if the player parameter is null, player-based replacements will not be included in the returned map.
-         * If the replacements array is null, an empty map will be returned.
+         * If the `replacements` array is null, an empty map will be returned.
          */
         fun provideComponentDefaults(event: Event?, vararg replacements: TextReplacements?): HashMap<String, Component?> {
             val toReturn = HashMap<String, Component?>()
@@ -104,7 +104,7 @@ enum class TextReplacements {
                                     event.player?.let { Component.text(it.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING)) }
                             }
                             if (event is PlayerDeathEvent) {
-                                toReturn[DEATH_MESSAGE.toString()] = event.deathMessage()
+                                event.deathMessage()?.let { toReturn[DEATH_MESSAGE.toString()] = it}
                                 toReturn[PLAYER_NAME.toString()] = event.player.displayName()
                                 toReturn[TOTEM_USES.toString()] =
                                     Component.text(event.player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING))
@@ -147,7 +147,7 @@ enum class TextReplacements {
 
                         DEATH_MESSAGE -> {
                             if (event is PlayerDeathEvent) {
-                                toReturn[DEATH_MESSAGE.toString()] = event.deathMessage()
+                                event.deathMessage()?.let { toReturn[DEATH_MESSAGE.toString()] = it}
                             }
                         }
 
@@ -173,7 +173,7 @@ enum class TextReplacements {
          *
          * @implNote If any necessary reference parameter is not given, replacements referencing it will not be present in the final map.
          * For example, if the player parameter is null, player-based replacements will not be included in the returned map.
-         * If the replacements array is null, an empty map will be returned.
+         * If the `replacements` array is null, an empty map will be returned.
          */
         fun provideStringDefaults(event: Event?, vararg replacements: TextReplacements?): HashMap<String, String?> {
             val toReturn = HashMap<String, String?>()

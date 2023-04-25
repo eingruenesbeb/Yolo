@@ -60,7 +60,7 @@ internal object ResourcePackManager : ReloadableManager {
         force = config.getBoolean("resource-pack.force", true)
         validatePackAsync(packURL, packSha1).whenComplete { isValid: Boolean?, _: Throwable? ->
             if (!isValid!!) {
-                yolo.logger.warning(Yolo.pluginResourceBundle.getString("loading.resourcePack.invalid"))
+                yolo.logger.warning { Yolo.pluginResourceBundle.getString("loading.resourcePack.invalid") }
                 packURL = defaultPackURL
                 packSha1 = defaultPackSha1
             }
@@ -89,7 +89,7 @@ internal object ResourcePackManager : ReloadableManager {
         force = config.getBoolean("resource-pack.force", true)
         validatePackAsync(packURL, packSha1).whenComplete { isValid: Boolean?, _: Throwable? ->
             if (!isValid!!) {
-                yolo.logger.warning(Yolo.pluginResourceBundle.getString("loading.resourcePack.invalid"))
+                yolo.logger.warning { Yolo.pluginResourceBundle.getString("loading.resourcePack.invalid") }
                 packURL = defaultPackURL
                 packSha1 = defaultPackSha1
             }

@@ -51,6 +51,8 @@ internal class ReviveCommand : TabExecutor {
             return false
         } catch (e: IndexOutOfBoundsException) {
             return false
+        } catch (e: IllegalStateException) {
+            return false
         }
 
         return true

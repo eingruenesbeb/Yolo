@@ -89,7 +89,7 @@ class Yolo : JavaPlugin() {
         commandRegistrar.registerCommands()
 
         // Setup automatic and asynchronous saving of player data, to make it less prone to data loss, after an
-        // unexpected crashes.
+        // unexpected crash.
         object : BukkitRunnable() {
             override fun run() {
                 PlayerManager.savePlayerData()
@@ -193,7 +193,7 @@ class Yolo : JavaPlugin() {
             try {
                 inFolder.save(dataFolder.path + "/config.yml")
             } catch (e: IOException) {
-                logger.severe(pluginResourceBundle.getString("loading.configUpdateFail"))
+                logger.severe { pluginResourceBundle.getString("loading.configUpdateFail") }
             }
         }
     }

@@ -267,13 +267,15 @@ object PlayerManager {
         private val yolo = JavaPlugin.getPlugin(Yolo::class.java)
         private val reviveInventoryKey = NamespacedKey(yolo, "reviveInventory")
 
-        fun setIsToReviveOnDead(toTrue: Boolean) {
-            if (playerStatus.isDead && toTrue) {
+        fun setIsToReviveOnDead(toTrue: Boolean): Boolean {
+            return if (playerStatus.isDead && toTrue) {
                 playerStatus.isToRevive = true
                 // If this is set to true, the player has been unbanned and will be revived upon the next join.
-            } else if (!toTrue) {
+                true
+            } else {
                 // Disabling this flag should always go through, because it is generally safe, as nothing will happen.
                 playerStatus.isDead = false
+                false
             }
         }
 
@@ -439,7 +441,10 @@ object PlayerManager {
      * @param reviveOnJoin Whether to set `isToRevive` to true.
      * @param setIsRestoreInventory Whether the inventory should be restored (Default: `true`)
      * @param setIsTeleportToDeathPos Whether to teleport the player to their last death location (Default: `true`)
+     *
+     * @throws IllegalStateException When the player hasn't been set to be revived.
      */
+    @Throws(IllegalStateException::class)
     internal fun setReviveOnUser(
         targetName: String,
         reviveOnJoin: Boolean,
@@ -447,7 +452,8 @@ object PlayerManager {
         setIsTeleportToDeathPos: Boolean = true
     ) {
         val target = PlayerRegistry[Bukkit.getOfflinePlayer(targetName).uniqueId]
-        target.setIsToReviveOnDead(reviveOnJoin)
+        val successful = target.setIsToReviveOnDead(reviveOnJoin)
+        if (!successful) throw IllegalStateException("Player has not been set to be revived!")
         target.playerStatus.isRestoreInventory = setIsRestoreInventory
         target.playerStatus.isTeleportToDeathPos = setIsTeleportToDeathPos
     }
@@ -500,8 +506,12 @@ object PlayerManager {
         // YoloEventListener#onPlayerDeath)
         deathEvent.player.inventory.contents = arrayOf()
 
-        // Finally ban the player from the pseudo-ban server
-        pseudoBanPlayer(deathEvent.player.uniqueId, null)
+        // Finally ban the player from the pseudo-ban server. (deferred)
+        object : BukkitRunnable() {
+            override fun run() {
+                pseudoBanPlayer(deathEvent.player.uniqueId, null)
+            }
+        }.runTaskLater(yolo, 1)
     }
 
     /**
@@ -530,7 +540,7 @@ object PlayerManager {
         }.onFailure {
             yolo.logger.severe { Yolo.pluginResourceBundle.getString("player.saveData.failure") }
         }.onSuccess {
-            yolo.logger.info(Yolo.pluginResourceBundle.getString("player.saveData.success"))
+            yolo.logger.info { Yolo.pluginResourceBundle.getString("player.saveData.success") }
         }
     }
 

@@ -30,6 +30,7 @@ import org.bukkit.Bukkit
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityResurrectEvent
 import org.bukkit.event.entity.PlayerDeathEvent
@@ -51,7 +52,7 @@ internal class YoloEventListener : Listener {
      * the configured discord text channel.
      * @param event The [PlayerDeathEvent] passed to the listener.
      */
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     fun onPlayerDeath(event: PlayerDeathEvent) {
         val player = event.player
 
@@ -69,7 +70,7 @@ internal class YoloEventListener : Listener {
     }
 
     /**
-     * Send all players, that are not exempt a forced resource-pack, to reflect, that they are (essentially) in hardcore-
+     * Send all players, that aren't exempt a forced resource-pack, to reflect, that they are (essentially) in hardcore-
      * mode.
      * @param event The [PlayerJoinEvent] passed to the listener.
      */
