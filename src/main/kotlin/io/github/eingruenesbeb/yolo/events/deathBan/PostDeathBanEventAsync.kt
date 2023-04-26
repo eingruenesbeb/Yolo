@@ -20,18 +20,38 @@
 package io.github.eingruenesbeb.yolo.events.deathBan
 
 import io.github.eingruenesbeb.yolo.events.YoloPlayerEvent
+import io.github.eingruenesbeb.yolo.events.revive.YoloPlayerRevivedEventAsync
 import io.github.eingruenesbeb.yolo.managers.PlayerManager
+import io.github.eingruenesbeb.yolo.managers.PlayerManager.PlayerStatus
+import io.github.eingruenesbeb.yolo.managers.PlayerManager.ReviveResult
 import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
 import org.bukkit.event.entity.PlayerDeathEvent
 import java.util.*
 
+/**
+ * This event is emitted after a player has been death-banned by the plugin.
+ * This is mostly just useful for post-processing and information purposes.
+ * It is an asynchronous version of [PostDeathBanEvent].
+ * **For actions that need to access not thread-safe API, consider the synchronous alternative.**
+ *
+ *
+ * It implements [YoloPlayerEvent], meaning, that it provides relevant information about the player and access to the
+ * corresponding [org.bukkit.OfflinePlayer] and [org.bukkit.entity.Player].
+ *
+ * @property yoloPlayerInformation The information regarding this player including their current status
+ * @property result The result of the death-ban.
+ *
+ * @see YoloPlayerRevivedEventAsync
+ * @see PlayerStatus
+ * @see ReviveResult
+ */
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class PostDeathBanEventAsync internal constructor(
-    override val yoloPlayerInformation: Pair<UUID, PlayerManager.PlayerStatus>,
+    override val yoloPlayerInformation: Pair<UUID, PlayerStatus>,
     val result: PlayerManager.DeathBanResult,
     val associatedPlayerDeathEvent: PlayerDeathEvent
-) : YoloPlayerEvent, Event(true) {
+): YoloPlayerEvent, Event(true) {
     companion object {
         private val handlerList = HandlerList()
 

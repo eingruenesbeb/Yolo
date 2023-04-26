@@ -21,6 +21,7 @@ package io.github.eingruenesbeb.yolo.events.deathBan
 
 import io.github.eingruenesbeb.yolo.Yolo
 import io.github.eingruenesbeb.yolo.events.YoloPlayerEvent
+import io.github.eingruenesbeb.yolo.events.revive.PreYoloPlayerReviveEventAsync
 import io.github.eingruenesbeb.yolo.managers.PlayerManager
 import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
@@ -29,12 +30,29 @@ import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.*
 
+/**
+ * This event is emitted when a player is about to be death-banned.
+ * It is a synchronous variant of [PreDeathBanEventAsync], that can change the outcome of the process by using
+ * [changeOutcome].
+ *
+ *
+ * It implements [YoloPlayerEvent], meaning, that it provides relevant information about the player and access to the
+ * corresponding [org.bukkit.OfflinePlayer] and [org.bukkit.entity.Player].
+ *
+ * @property yoloPlayerInformation The information regarding this player including their current status
+ * @property originalTargetResult The originally intended outcome of the event
+ * @property targetResult The currently targeted outcome of the event.
+ *
+ * @see PreYoloPlayerReviveEventAsync
+ * @see YoloPlayerEvent
+ * @see PlayerManager.DeathBanResult
+ */
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class PreDeathBanEvent internal constructor(
     override val yoloPlayerInformation: Pair<UUID, PlayerManager.PlayerStatus>,
     val originalTargetResult: PlayerManager.DeathBanResult,
     val associatedPlayerDeathEvent: PlayerDeathEvent
-) : YoloPlayerEvent, Event() {
+): YoloPlayerEvent, Event() {
     companion object {
         private val handlerList = HandlerList()
 
