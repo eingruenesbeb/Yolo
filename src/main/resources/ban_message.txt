@@ -1,1 +1,3 @@
 [<red>Yolo</red>] » You have died and therefore can no longer play on this hardcore server. :(
+
+<i><gray>How you died:</gray></i> %death_message%

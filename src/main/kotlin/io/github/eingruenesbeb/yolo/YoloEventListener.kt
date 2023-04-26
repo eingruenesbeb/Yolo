@@ -18,21 +18,22 @@
  */
 package io.github.eingruenesbeb.yolo
 
+import io.github.eingruenesbeb.yolo.events.revive.YoloPlayerRevivedEventAsync
 import io.github.eingruenesbeb.yolo.managers.ChatManager
 import io.github.eingruenesbeb.yolo.managers.PlayerManager
-import io.github.eingruenesbeb.yolo.managers.SpicordManager
-import io.github.eingruenesbeb.yolo.managers.SpicordManager.DiscordMessageType
+import io.github.eingruenesbeb.yolo.managers.ResourcePackManager
+import io.github.eingruenesbeb.yolo.managers.spicord.DiscordMessageType
+import io.github.eingruenesbeb.yolo.managers.spicord.safeSpicordManager
+import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
-import org.bukkit.Material
-import org.bukkit.Statistic
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityResurrectEvent
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.PlayerJoinEvent
-import org.bukkit.event.player.PlayerKickEvent
 import org.bukkit.plugin.java.JavaPlugin
 
 /**
@@ -41,7 +42,7 @@ import org.bukkit.plugin.java.JavaPlugin
  *
  * @see org.bukkit.event.Event
  */
-class YoloEventListener : Listener {
+internal class YoloEventListener : Listener {
     private val yoloPluginInstance = JavaPlugin.getPlugin(Yolo::class.java)
 
     /**
@@ -50,30 +51,17 @@ class YoloEventListener : Listener {
      * the configured discord text channel.
      * @param event The [PlayerDeathEvent] passed to the listener.
      */
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     fun onPlayerDeath(event: PlayerDeathEvent) {
         val player = event.player
 
         if (!player.hasPermission("yolo.exempt") && yoloPluginInstance.isFunctionalityEnabled) {
-            PlayerManager.instance.actionsOnDeath(player)
-            val replacementMap: HashMap<String?, String?> =
-                TextReplacements.provideDefaults(player, TextReplacements.ALL)
-
-            // Pseudo-ban players:
-            player.kick(yoloPluginInstance.banMessage, PlayerKickEvent.Cause.BANNED)
-
-            // It's about sending a message.
-            if (yoloPluginInstance.isUseSpicord) {
-                if (SpicordManager.instance.isSpicordBotAvailable) {
-                    SpicordManager.instance.trySend(DiscordMessageType.DEATH, replacementMap)
-                }
-            }
-            ChatManager.instance.trySend(Bukkit.getServer(), ChatManager.ChatMessageType.DEATH, replacementMap)
+            PlayerManager.actionsOnDeath(event)
         }
     }
 
     /**
-     * Send all players, that are not exempt a forced resource-pack, to reflect, that they are (essentially) in hardcore-
+     * Send all players, that aren't exempt a forced resource-pack, to reflect, that they are (essentially) in hardcore-
      * mode.
      * @param event The [PlayerJoinEvent] passed to the listener.
      */
@@ -81,7 +69,7 @@ class YoloEventListener : Listener {
     fun onPlayerJoin(event: PlayerJoinEvent) {
         val player = event.player
         if (!player.hasPermission("yolo.exempt") && yoloPluginInstance.isFunctionalityEnabled) {
-            yoloPluginInstance.resourcePackManager?.applyPack(player)
+            ResourcePackManager.applyPack(player)
         }
     }
 
@@ -95,13 +83,19 @@ class YoloEventListener : Listener {
         if (event.entity.hasPermission("yolo.exempt") || !yoloPluginInstance.isFunctionalityEnabled) return
         val player = event.entity as Player
         if (player.hasPermission("yolo.exempt")) return
-        val replacementMap: HashMap<String?, String?> =
-            TextReplacements.provideDefaults(player, TextReplacements.PLAYER_NAME)
-        replacementMap[TextReplacements.TOTEM_USES.toString()] =
-            (player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING) + 1).toString()
-        if (yoloPluginInstance.isUseSpicord) {
-            SpicordManager.instance.trySend(DiscordMessageType.TOTEM, replacementMap)
+        val stringReplacementMap: HashMap<String, String?> = TextReplacements.provideStringDefaults(event, TextReplacements.PLAYER_NAME)
+        val componentReplacementMap: HashMap<String, Component?> = TextReplacements.provideComponentDefaults(event, TextReplacements.PLAYER_NAME)
+        safeSpicordManager()?.trySend(DiscordMessageType.TOTEM, stringReplacementMap)
+        ChatManager.trySend(Bukkit.getServer(), ChatManager.ChatMessageType.TOTEM, componentReplacementMap)
+    }
+
+    @EventHandler
+    fun onPlayerRevivedAsync(event: YoloPlayerRevivedEventAsync) {
+        if (event.finalResult.successful) {
+            val stringReplacementMap: HashMap<String, String?> = TextReplacements.provideStringDefaults(event, TextReplacements.ALL)
+            val componentReplacementMap: HashMap<String, Component?> = TextReplacements.provideComponentDefaults(event, TextReplacements.ALL)
+            ChatManager.trySend(Bukkit.getServer(), ChatManager.ChatMessageType.PLAYER_REVIVED, componentReplacementMap)
+            safeSpicordManager()?.trySend(DiscordMessageType.PLAYER_REVIVE, stringReplacementMap)
         }
-        ChatManager.instance.trySend(Bukkit.getServer(), ChatManager.ChatMessageType.TOTEM, replacementMap)
     }
 }

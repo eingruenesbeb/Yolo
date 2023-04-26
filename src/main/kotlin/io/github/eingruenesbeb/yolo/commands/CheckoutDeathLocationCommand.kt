@@ -34,22 +34,45 @@ import org.bukkit.entity.Player
  * @see TabExecutor
  * @see PlayerManager.teleportToRevivable
  */
-class CheckoutDeathLocationCommand : TabExecutor {
+internal class CheckoutDeathLocationCommand : TabExecutor {
+
+    /**
+     * Provides a list of revivable players as auto-complete options.
+     *
+     * @param sender Source of the command
+     * @param command Command which was executed
+     * @param label Alias of the command which was used
+     * @param args Passed command arguments
+     *
+     * @return The list of revivable players.
+     *
+     * @see [PlayerManager.provideRevivable]
+     */
     override fun onTabComplete(
         sender: CommandSender,
         command: Command,
         label: String,
         args: Array<out String>?
     ): List<String> {
-        return PlayerManager.instance.provideRevivable()
+        return PlayerManager.provideRevivable()
     }
 
+    /**
+     * Teleports the executor if they are a player, to the location of the death from the target-revivable player.
+     *
+     * @param sender Source of the command
+     * @param command Command which was executed
+     * @param label Alias of the command which was used
+     * @param args Passed command arguments
+     *
+     * @return `true`, if successful, `false` otherwise
+     */
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>?): Boolean {
         if (sender !is Player) {
-            ChatManager.instance.trySend(sender, ChatManager.ChatMessageType.PLAYER_ONLY_COMMAND, null)
+            ChatManager.trySend(sender, ChatManager.ChatMessageType.PLAYER_ONLY_COMMAND, null)
             return false
         }
 
-        return PlayerManager.instance.teleportToRevivable(sender, args?.get(0) ?: "")
+        return PlayerManager.teleportToRevivable(sender, args?.get(0) ?: "")
     }
 }

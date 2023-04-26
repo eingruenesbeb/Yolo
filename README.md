@@ -9,6 +9,22 @@
 [![GitHub](https://img.shields.io/github/license/eingruenesbeb/Yolo?style=for-the-badge)](https://github.com/eingruenesbeb/Yolo/blob/master/COPYING)
 
 ---
+## Content
+
+1. [What does this plugin do?](#1-what-does-this-plugin-do)
+2. [Configuration](#2-configuration)
+   1. [`config.yml`](#21-configyml)
+   2. [`chat_messages.properties`](#22-chatmessagesproperties)
+   3. [`discord/[...].json`](#23-discordjson)
+   4. [`ban_message.txt`](#24-banmessagetxt)
+   5. [Text replacements](#25-text-replacements)
+3. [Permissions](#3-permissions)
+4. [Commands](#4-commands)
+5. [Further considerations](#5-further-considerations)
+6. [Planned features](#6-planned-features)
+7. [For developers](#7-for-developers)
+
+---
 
 ## 1. What does this plugin do?
 
@@ -17,11 +33,20 @@ You only live once... the name says it all.
 This plugin is meant for hardcore survival servers, that implements, but also expands on the vanilla hardcore
 mechanics for a player's death on a server.\
 Upon death players usually get banned off of a server, if (and only if) the setting for hardcore was enabled in
-`server.properties` before world generation. That is not the case, if this setting was set to true retroactively. And
-here is, where this plugin comes into play, by implementing this behaviour regardless of when hardcore was enabled. 
-Additionally, you can exempt players from this rule and send a customized message to a Discord-server upon occurrence of
-a (non-exempt) player-death. The plugin can also force a resource-pack of your choice, with the default one replacing
-the normal health-bar with hardcore-hearts, on any non-exempt player. (*You can check out the resource-pack
+`server.properties` before world generation.
+
+That is not the case if this setting was set to true retroactively.
+
+And here is, where this plugin comes into play, by
+implementing this behaviour regardless of when hardcore was enabled.
+
+Additionally, you can exempt players from this rule
+and send a customized message to a Discord-server upon the occurrence of a (non-exempt) player-death.
+
+The plugin can also force a resource-pack of your choice, with the default one replacing the normal health-bar with 
+hardcore-hearts, on any non-exempt player.
+
+(*You can check out the resource-pack 
 [here](https://drive.google.com/file/d/1UWoiOGFlt2QIyQPVKAv5flLTNeNiI439/view?usp=share_link).*)
 
 ## 2. Configuration
@@ -58,9 +83,8 @@ spicord:
 
 - `send`: Whether to enable the Spicord-Integration. (Allowed values: `true`, `false`)
 - `message_channel_id`: The id of the channel to send the message to. You can obtain it using
-  [this method](https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-) (
-  you
-  can also obtain the channel-id by itself, by right-clicking the channel on the channel-selection-sidebar).
+  [this method](https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-)
+(you can also obtain the channel-id by itself, by right-clicking the channel on the channel-selection-sidebar).
 
 In the `announce` section you can individually toggle messages:
 
@@ -68,32 +92,45 @@ In the `announce` section you can individually toggle messages:
 announce:
   death:
     discord: false
-    chat: false
+    chat: true
   totem:
     discord: false
-    chat: false
+    chat: true
+  revive:
+    discord: false
+    chat: true
 ```
 
-This should be pretty self-explanatory. The listed messages are announcements, that would be sent on their respective
-occasions and targets. The allowed values are `true` or `false`.
+This should be pretty self-explanatory.
+
+The listed messages are announcements that would be sent on their respective occasions and targets.
+
+The allowed values are `true` or `false`.
 
 The option `enable-on-non-hc` lets you enable this plugin's functionality even on a non-hardcore server, while the last
 option `easy-disable` lets you disable the death-ban functionality, if it's `true` (previously dead players can join, if
-this is enabled). It may take a while, before banned players can join, if this option is true. Yet again acceptable 
-values (for both) are `true` and `false`.
+this is enabled).
+It may take a while before banned players can join if this option is true.
+
+Yet again acceptable values (for both) are `true` and `false`.
 
 ### 2.2 `chat_messages.properties`
 
-The messages defined in this file, are chat messages, that can be customized. There should not be a need to add more.
-You can also use the MiniMessage format, to make them *special*. How you can use this format, you can read
-[here](https://docs.advntr.dev/minimessage/format.html).
+The messages defined in this file are chat messages that can be customized.
+
+There shouldn't be a need to add more.
+You can also use the MiniMessage format to make them *special*.
+
+How you can use this format, you can read [here](https://docs.advntr.dev/minimessage/format.html).
 
 ### 2.3 `discord/[...].json`
 
-In these files, you can customize the embeds, that are sent by the plugin. You can use
-[this tool](https://leovoel.github.io/embed-visualizer/), to visualize them and generate the json file.\
-If for example you'd like to customize the discord message, that gets send upon a player's death, you'd need to modify
-`plugins/yolo/discord/death_message.json` to something like this:
+In these files, you can customize the embeds, sent by the plugin.
+
+You can use [this tool](https://leovoel.github.io/embed-visualizer/) to visualize them and generate the json file.
+
+If, for example, you'd like to customize the discord message, that is getting sent upon a player's death, you'd need to
+modify `plugins/yolo/discord/death_message.json` to something like this:
 
 ```json
 {
@@ -115,12 +152,20 @@ If for example you'd like to customize the discord message, that gets send upon 
 ```
 
 ### 2.4 `ban_message.txt`
-This is, where you can customize the ban message, players see, when they are dead.
+This is where you can customize the ban message that players see when they're dead.
+
+### 2.5 Text replacements
+Every message that gets sent by the Plugin can use the following replacements:
+- `%player_name%` - The name of the affected player
+- `%totem_uses%` - The number of totems the subject player of the message has used.
+- `%death_message%` - The death message, if the player has died. (only available in messages, sent upon a 
+player's death.)
+- `%version%` - The current version of the plugin.
 
 ## 3. Permissions
 
 One permission is `yolo.exempt`, which excludes any players having it from the plugin's effects. There are also two
-other permissions, that relate to commands. These are described in the section about [commands](#4-commands).\
+other permissions that relate to commands. These are described in the section about [commands](#4-commands).\
 For a general guide to permissions on Bukkit and its derivatives, please refer to
 [this page](https://bukkit.fandom.com/wiki/Permissions.yml). *(I'd recommend using a permission manager like
 [LuckPerms](https://luckperms.net/) though.)*
@@ -164,8 +209,8 @@ addons = [
 - **This plugin was made for PaperMC-1.19.4.** Other versions and platforms haven't been tested *yet*, but this is
   planned
   to be completed until the full release. Issues for incompatibility can
-  be [submitted](https://github.com/eingruenesbeb/Yolo/issues/new/choose), but will not be resolved, if
-  this would mean dropping support for other compatible versions.
+  be [submitted](https://github.com/eingruenesbeb/Yolo/issues/new/choose), but will not be resolved if
+  this means dropping support for other compatible versions.
 - Reviving a player with inventory restoring enabled, can lead to item duplication, as players still drop their items.
 You may want to check out the teleport location with `/checkout_death_location` first, in order to check for duplicates.
 - This is a pre-release version, so bugs or glitches may be encountered more often.
@@ -173,11 +218,29 @@ You may want to check out the teleport location with `/checkout_death_location` 
 ## 6. Planned features
 
 - Commands to undo a player's revive
-- GUI for the revive system (planned for 2.0)
+- GUI for the revive-system (planned for 2.0)
 - Full support for PlaceholderAPI (planned for 2.0)
 - Death location marker on Dynmap, Bluemap and co. (planned for in 2.0)
 - Have a suggestion? Submit it [here](https://github.com/eingruenesbeb/Yolo/issues/new/choose)!
 
+## 7. For developers
+To add this project as a dependency for yours, follow [this link](https://jitpack.io/#eingruenesbeb/Yolo) and select 
+your desired version (go to *branches* → *master-SNAPSHOT* for the most recent version). Then follow the instructions
+below.
+
+To avoid inflating your jar-file, you can change the scope to `compileOnly`.
+
+Additionally, you'll need to declare the dependency in your `plugin.yml`-file like this:
+```yml
+#### ↑ other stuff ↑ ###
+depend: [  # Or `softdepend`
+  Yolo
+]
+#### ↓ other stuff ↓ ###
+```
+
+You can find the documentation [here](https://eingruenesbeb.github.io/Yolo/).
+
 ---
 
-*From Version: 0.6.0*
+*From Version: 0.7.0*

@@ -1,0 +1,13 @@
+{
+  "embed": {
+    "title": "`%player_name%` was revived! 🎉",
+    "description": "🤔 They don't only live once I guess...",
+    "color": 15005546,
+    "footer": {
+      "text": "powered by Yolo %plugin_version% using Spicord"
+    },
+    "image": {
+      "url": "https://media.tenor.com/wNIBnzmJWZ4AAAAC/cat-revives.gif"
+    }
+  }
+}

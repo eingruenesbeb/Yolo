@@ -19,14 +19,13 @@
 
 package io.github.eingruenesbeb.yolo
 
+import io.github.eingruenesbeb.yolo.TeleportationUtils.safeTeleport
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
-import org.bukkit.potion.PotionEffect
-import org.bukkit.potion.PotionEffectType
 import org.jetbrains.annotations.Contract
 
 /**
@@ -35,7 +34,7 @@ import org.jetbrains.annotations.Contract
  *
  * @see safeTeleport
  */
-object TeleportationUtils {
+internal object TeleportationUtils {
     /**
      * This function is useful for teleporting a player in survival or adventure mode to a "safe location".
      *
@@ -66,29 +65,21 @@ object TeleportationUtils {
      */
     fun safeTeleport(player: Player, targetLocation: Location, advancedChecks: Boolean = true, tryHighestLoc: Boolean = true): Boolean {
         // Despite the check, the location may still be dangerous.
-        val effectsOnTeleport = listOf(
-            PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 600, 6),
-            PotionEffect(PotionEffectType.INVISIBILITY, 600, 1)
-        )
 
-        if (checkTeleportSafety(targetLocation, advancedChecks)) {
-            player.addPotionEffects(effectsOnTeleport)
+        return if (checkTeleportSafety(targetLocation, advancedChecks)) {
             targetLocation.chunk.load()
-            return player.teleport(targetLocation)
+            player.teleport(targetLocation)
         } else if (tryHighestLoc && checkTeleportSafety(targetLocation.toHighestLocation(), advancedChecks)) {
-            player.addPotionEffects(effectsOnTeleport)
             targetLocation.chunk.load()
-            return player.teleport(targetLocation.toHighestLocation())
+            player.teleport(targetLocation.toHighestLocation())
         } else {
             // Give up
-            JavaPlugin.getPlugin(Yolo::class.java).getLogger().info(
-                JavaPlugin.getPlugin(
-                    Yolo::class.java
-                ).pluginResourceBundle
+            JavaPlugin.getPlugin(Yolo::class.java).logger.info {
+                Yolo.pluginResourceBundle
                     .getString("player.unsafeTeleport")
                     .replace("%player_name%", player.name)
-            )
-            return false
+            }
+            false
         }
     }
 

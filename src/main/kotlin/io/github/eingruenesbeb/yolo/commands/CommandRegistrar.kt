@@ -20,23 +20,20 @@ package io.github.eingruenesbeb.yolo.commands
 
 import io.github.eingruenesbeb.yolo.Yolo
 import org.bukkit.command.CommandExecutor
-import org.bukkit.command.TabExecutor
+import org.bukkit.command.TabCompleter
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.*
 
 /**
  * This class is responsible for registering all commands of the plugin. It provides a single public method:
- * [.registerCommands]
+ * [registerCommands]
  */
-class CommandRegistrar {
+internal class CommandRegistrar {
     private enum class Commands {
         RELOAD, REVIVE, CHECKOUT_DEATH_LOCATION;
 
-        // Currently not implemented
         override fun toString(): String {
-            return if (this == RELOAD) "yolo-reload" else name.lowercase(
-                Locale.getDefault()
-            )
+            return if (this == RELOAD) "yolo-reload" else name.lowercase(Locale.US)
         }
 
         val commandInstance: CommandExecutor
@@ -62,11 +59,10 @@ class CommandRegistrar {
      */
     fun registerCommands() {
         for (command in Commands.values()) {
-            val pluginCommand = JavaPlugin.getPlugin(Yolo::class.java).getCommand(command.toString())
-                ?: continue
+            val pluginCommand = JavaPlugin.getPlugin(Yolo::class.java).getCommand(command.toString()) ?: continue
             pluginCommand.setExecutor(command.commandInstance)
-            if (Arrays.stream(command.javaClass.interfaces).anyMatch { i: Class<*> -> i == TabExecutor::class.java }) {
-                pluginCommand.tabCompleter = command.commandInstance as? TabExecutor
+            if (command.commandInstance is TabCompleter) {
+                pluginCommand.tabCompleter = command.commandInstance as TabCompleter
             }
         }
     }
