@@ -18,13 +18,12 @@
  */
 package io.github.eingruenesbeb.yolo
 
-import io.github.eingruenesbeb.yolo.events.YoloPlayerRevivedEventAsync
+import io.github.eingruenesbeb.yolo.events.revive.YoloPlayerRevivedEventAsync
 import io.github.eingruenesbeb.yolo.managers.ChatManager
 import io.github.eingruenesbeb.yolo.managers.PlayerManager
 import io.github.eingruenesbeb.yolo.managers.ResourcePackManager
 import io.github.eingruenesbeb.yolo.managers.spicord.DiscordMessageType
 import io.github.eingruenesbeb.yolo.managers.spicord.safeSpicordManager
-
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.entity.EntityType
@@ -58,14 +57,6 @@ internal class YoloEventListener : Listener {
 
         if (!player.hasPermission("yolo.exempt") && yoloPluginInstance.isFunctionalityEnabled) {
             PlayerManager.actionsOnDeath(event)
-            val stringReplacementMap: HashMap<String, String?> = TextReplacements.provideStringDefaults(event, TextReplacements.ALL)
-            val componentReplacementMap: HashMap<String, Component?> = TextReplacements.provideComponentDefaults(event, TextReplacements.ALL)
-
-            // It's about sending a message.
-            if (safeSpicordManager()?.isSpicordBotAvailable == true) {
-                safeSpicordManager()?.trySend(DiscordMessageType.DEATH, stringReplacementMap)
-            }
-            ChatManager.trySend(Bukkit.getServer(), ChatManager.ChatMessageType.DEATH, componentReplacementMap)
         }
     }
 

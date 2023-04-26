@@ -17,8 +17,9 @@
  *   You can reach the original author via e-Mail: agreenbeb@gmail.com
  */
 
-package io.github.eingruenesbeb.yolo.events
+package io.github.eingruenesbeb.yolo.events.revive
 
+import io.github.eingruenesbeb.yolo.events.YoloPlayerEvent
 import io.github.eingruenesbeb.yolo.managers.PlayerManager.PlayerStatus
 import io.github.eingruenesbeb.yolo.managers.PlayerManager.ReviveResult
 import org.bukkit.event.Event
@@ -27,8 +28,8 @@ import java.util.*
 
 /**
  * This event is emitted after a player has been revived by the plugin. This is mostly just useful for post-processing
- * and information purposes. It is an asynchronous version of [YoloPlayerRevivedEvent]. **For actions that need to
- * be executed synchronously, consider the alternative.**
+ * and information purposes. It is a synchronous version of [YoloPlayerRevivedEventAsync]. **For actions that are not
+ * needed to be executed synchronously, consider the alternative.**
  *
  *
  * It implements [YoloPlayerEvent], meaning, that it provides relevant information about the player and access to the
@@ -37,12 +38,15 @@ import java.util.*
  * @property yoloPlayerInformation The information regarding this player including their current status
  * @property finalResult The result of the revive-attempt
  *
- * @see YoloPlayerRevivedEvent
+ * @see YoloPlayerRevivedEventAsync
  * @see PlayerStatus
  * @see ReviveResult
  */
-@Suppress("unused")
-class YoloPlayerRevivedEventAsync internal constructor(override val yoloPlayerInformation: Pair<UUID, PlayerStatus>, val finalResult: ReviveResult): Event(true), YoloPlayerEvent {
+@Suppress("MemberVisibilityCanBePrivate", "unused")
+class YoloPlayerRevivedEvent internal constructor(
+    override val yoloPlayerInformation: Pair<UUID, PlayerStatus>,
+    val finalResult: ReviveResult,
+): Event(), YoloPlayerEvent {
     companion object {
         private val handlerList = HandlerList()
 

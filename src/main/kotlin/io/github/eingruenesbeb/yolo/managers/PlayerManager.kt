@@ -25,12 +25,19 @@ import com.destroystokyo.paper.event.player.PlayerPostRespawnEvent
 import io.github.eingruenesbeb.yolo.TeleportationUtils.safeTeleport
 import io.github.eingruenesbeb.yolo.TextReplacements
 import io.github.eingruenesbeb.yolo.Yolo
-import io.github.eingruenesbeb.yolo.events.PreYoloPlayerReviveEvent
-import io.github.eingruenesbeb.yolo.events.PreYoloPlayerReviveEventAsync
-import io.github.eingruenesbeb.yolo.events.YoloPlayerRevivedEvent
-import io.github.eingruenesbeb.yolo.events.YoloPlayerRevivedEventAsync
+import io.github.eingruenesbeb.yolo.events.*
+import io.github.eingruenesbeb.yolo.events.deathBan.PostDeathBanEvent
+import io.github.eingruenesbeb.yolo.events.deathBan.PostDeathBanEventAsync
+import io.github.eingruenesbeb.yolo.events.deathBan.PreDeathBanEvent
+import io.github.eingruenesbeb.yolo.events.deathBan.PreDeathBanEventAsync
+import io.github.eingruenesbeb.yolo.events.revive.PreYoloPlayerReviveEvent
+import io.github.eingruenesbeb.yolo.events.revive.PreYoloPlayerReviveEventAsync
+import io.github.eingruenesbeb.yolo.events.revive.YoloPlayerRevivedEvent
+import io.github.eingruenesbeb.yolo.events.revive.YoloPlayerRevivedEventAsync
 import io.github.eingruenesbeb.yolo.managers.PlayerManager.PlayerStatus
 import io.github.eingruenesbeb.yolo.managers.PlayerManager.YoloPlayer
+import io.github.eingruenesbeb.yolo.managers.spicord.DiscordMessageType
+import io.github.eingruenesbeb.yolo.managers.spicord.safeSpicordManager
 import io.github.eingruenesbeb.yolo.serialize.ItemStackArrayPersistentDataType
 import io.github.eingruenesbeb.yolo.serialize.LocationSerializer
 import io.github.eingruenesbeb.yolo.serialize.MiniMessageSerializer
@@ -63,11 +70,24 @@ import java.util.*
 /**
  * This class is responsible for managing player data and actions related to death and revival.
  * It includes a nested class [YoloPlayer], which contains the player's UUID and their [PlayerStatus] data.
- *
- * @constructor Creates a new instance of `PlayerManager`. This is a private constructor since this class is a singleton.
  */
 @OptIn(ExperimentalSerializationApi::class)
 object PlayerManager {
+
+    /**
+     * This data class represents the status values, tracked by this plugin.
+     *
+     *
+     * It can be used externally to get information about a player, that is the subject of a
+     * [io.github.eingruenesbeb.yolo.events.YoloPlayerEvent].
+     *
+     * @property latestDeathPos The location of the last death.
+     * @property isDead Whether the player is considered to be dead by the plugin.
+     * @property isToRevive Whether the player should be revived by the plugin.
+     * @property isTeleportToDeathPos Whether the player should be teleported to the [latestDeathPos] upon their revival.
+     * @property isRestoreInventory Whether the inventory should be restored upon revival.
+     * @property banMessage The ban message, that will be shown to the player upon being death-banned.
+     */
     @Serializable
     data class PlayerStatus(
         var latestDeathPos: Location?,
@@ -77,6 +97,20 @@ object PlayerManager {
         var isRestoreInventory: Boolean = true,
         var banMessage: Component = Component.text(""),
         internal val ghostState: GhostState = GhostState(false, 0)
+    )
+
+    /**
+     * Represents the result of a death-ban.
+     * If the attempt lies in the future or in the past, it is context-dependent.
+     *
+     * @property successful Whether the outcome was successful.
+     * @property latestDeathPos The stored death-position
+     * @property banMessage The message shown to the banned player
+     */
+    data class DeathBanResult(
+        var successful: Boolean,
+        var latestDeathPos: Location?,
+        var banMessage: Component
     )
 
     /**
@@ -483,12 +517,8 @@ object PlayerManager {
      */
     internal fun actionsOnDeath(deathEvent: PlayerDeathEvent) {
         val playerFromRegistry = PlayerRegistry[deathEvent.player.uniqueId]
-        playerFromRegistry.playerStatus.isDead = true
-        playerFromRegistry.saveReviveInventory()
-        playerFromRegistry.playerStatus.latestDeathPos = deathEvent.player.location
-
+        val stringReplacementMap: HashMap<String, String?> = TextReplacements.provideStringDefaults(deathEvent, TextReplacements.ALL)
         val componentReplacementMap: HashMap<String, Component?> = TextReplacements.provideComponentDefaults(deathEvent, TextReplacements.ALL)
-
         var dynamicBanMessage = JavaPlugin.getPlugin(Yolo::class.java).banMessage
         componentReplacementMap.forEach { replacement ->
             replacement.key.let { key ->
@@ -501,16 +531,69 @@ object PlayerManager {
             }
         }
 
+        playerFromRegistry.playerStatus.isDead = true
+        playerFromRegistry.playerStatus.latestDeathPos = deathEvent.player.location
         playerFromRegistry.playerStatus.banMessage = dynamicBanMessage ?: Component.text("[<red>Yolo</red>] » You have died and therefore can no longer play on this hardcore server. :(")
 
+        // Emit pre-death-ban events.
+        val preEvent = PreDeathBanEvent(
+            deathEvent.player.uniqueId to playerFromRegistry.playerStatus.copy(),
+            DeathBanResult(true, deathEvent.player.location, playerFromRegistry.playerStatus.banMessage),
+            deathEvent
+        )
+        preEvent.callEvent()
+
+        with(preEvent.targetResult) {
+            playerFromRegistry.playerStatus.isDead = this.successful
+            playerFromRegistry.playerStatus.latestDeathPos = this.latestDeathPos
+            playerFromRegistry.playerStatus.banMessage = this.banMessage
+        }
+
+        object : BukkitRunnable() {
+            override fun run() {
+                PreDeathBanEventAsync(
+                    deathEvent.player.uniqueId to playerFromRegistry.playerStatus.copy(),
+                    preEvent.targetResult,
+                    preEvent.originalTargetResult,
+                    deathEvent
+                ).callEvent()
+            }
+        }.runTaskAsynchronously(yolo)
+
+        playerFromRegistry.saveReviveInventory()
+
         // This may be necessary if the player was banned by this plugin directly.
-        // (See the comment in YoloEventListener#onPlayerDeath)
         deathEvent.player.inventory.contents = arrayOf()
+
+        val postEventAsync = object : BukkitRunnable() {
+            override fun run() {
+                PostDeathBanEventAsync(
+                    deathEvent.player.uniqueId to playerFromRegistry.playerStatus,
+                    preEvent.targetResult,
+                    deathEvent
+                ).callEvent()
+            }
+        }
 
         // Finally, ban the player from the pseudo-ban server. (deferred)
         object : BukkitRunnable() {
             override fun run() {
-                pseudoBanPlayer(deathEvent.player.uniqueId, null)
+                if (playerFromRegistry.playerStatus.isDead) {
+                    pseudoBanPlayer(deathEvent.player.uniqueId, null)
+
+                    // It's about sending a message.
+                    if (safeSpicordManager()?.isSpicordBotAvailable == true) {
+                        safeSpicordManager()?.trySend(DiscordMessageType.DEATH, stringReplacementMap)
+                    }
+                    ChatManager.trySend(Bukkit.getServer(), ChatManager.ChatMessageType.DEATH, componentReplacementMap)
+                }
+
+                postEventAsync.runTaskAsynchronously(yolo)
+                PostDeathBanEvent(
+                    deathEvent.player.uniqueId to playerFromRegistry.playerStatus,
+                    preEvent.targetResult,
+                    deathEvent
+                ).callEvent()
             }
         }.runTaskLater(yolo, 1)
     }

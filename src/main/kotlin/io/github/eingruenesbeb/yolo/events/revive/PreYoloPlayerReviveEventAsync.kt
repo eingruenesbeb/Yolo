@@ -17,8 +17,9 @@
  *   You can reach the original author via e-Mail: agreenbeb@gmail.com
  */
 
-package io.github.eingruenesbeb.yolo.events
+package io.github.eingruenesbeb.yolo.events.revive
 
+import io.github.eingruenesbeb.yolo.events.YoloPlayerEvent
 import io.github.eingruenesbeb.yolo.managers.PlayerManager.PlayerStatus
 import io.github.eingruenesbeb.yolo.managers.PlayerManager.ReviveResult
 import org.bukkit.event.Event
@@ -26,26 +27,28 @@ import org.bukkit.event.HandlerList
 import java.util.*
 
 /**
- * This event is emitted after a player has been revived by the plugin. This is mostly just useful for post-processing
- * and information purposes. It is a synchronous version of [YoloPlayerRevivedEventAsync]. **For actions that are not
- * needed to be executed synchronously, consider the alternative.**
+ * This event is emitted when a player is about to be revived.
+ * It is an asynchronous variant of [PreYoloPlayerReviveEvent] and can be used to monitor the status of the
+ * player-status, **but not for interfering with the process**.
  *
  *
  * It implements [YoloPlayerEvent], meaning, that it provides relevant information about the player and access to the
  * corresponding [org.bukkit.OfflinePlayer] and [org.bukkit.entity.Player].
  *
  * @property yoloPlayerInformation The information regarding this player including their current status
- * @property finalResult The result of the revive-attempt
+ * @property originalTargetOutcome The originally intended outcome of the revive-attempt
+ * @property targetOutcome The currently targeted outcome of the revive-attempt
  *
- * @see YoloPlayerRevivedEventAsync
- * @see PlayerStatus
+ * @see PreYoloPlayerReviveEvent
+ * @see YoloPlayerEvent
  * @see ReviveResult
  */
-@Suppress("MemberVisibilityCanBePrivate", "unused")
-class YoloPlayerRevivedEvent internal constructor(
+@Suppress("unused", "MemberVisibilityCanBePrivate")
+class PreYoloPlayerReviveEventAsync internal constructor(
     override val yoloPlayerInformation: Pair<UUID, PlayerStatus>,
-    val finalResult: ReviveResult,
-): Event(), YoloPlayerEvent {
+    val originalTargetOutcome: ReviveResult,
+    val targetOutcome: ReviveResult
+): Event(true), YoloPlayerEvent {
     companion object {
         private val handlerList = HandlerList()
 

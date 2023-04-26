@@ -17,9 +17,10 @@
  *   You can reach the original author via e-Mail: agreenbeb@gmail.com
  */
 
-package io.github.eingruenesbeb.yolo.events
+package io.github.eingruenesbeb.yolo.events.revive
 
 import io.github.eingruenesbeb.yolo.Yolo
+import io.github.eingruenesbeb.yolo.events.YoloPlayerEvent
 import io.github.eingruenesbeb.yolo.managers.PlayerManager.PlayerStatus
 import io.github.eingruenesbeb.yolo.managers.PlayerManager.ReviveResult
 import org.bukkit.event.Event
@@ -46,7 +47,10 @@ import java.util.*
  * @see ReviveResult
  */
 @Suppress("unused", "MemberVisibilityCanBePrivate")
-class PreYoloPlayerReviveEvent internal constructor(override val yoloPlayerInformation: Pair<UUID, PlayerStatus>, val originalTargetOutcome: ReviveResult): Event(), YoloPlayerEvent {
+class PreYoloPlayerReviveEvent internal constructor(
+    override val yoloPlayerInformation: Pair<UUID, PlayerStatus>,
+    val originalTargetOutcome: ReviveResult
+): Event(), YoloPlayerEvent {
     companion object {
         private val handlerList = HandlerList()
 
