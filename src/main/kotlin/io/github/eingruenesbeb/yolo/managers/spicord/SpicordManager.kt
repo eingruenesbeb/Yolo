@@ -21,6 +21,7 @@ package io.github.eingruenesbeb.yolo.managers.spicord
 import io.github.eingruenesbeb.yolo.Yolo
 import io.github.eingruenesbeb.yolo.managers.ReloadableManager
 import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.utils.messages.MessageCreateData
 import org.bukkit.plugin.java.JavaPlugin
 import org.spicord.Spicord
@@ -93,12 +94,9 @@ internal object SpicordManager : ReloadableManager {
         val toSend = rawDiscordEmbed.returnSpicordEmbed(replacements).toJdaEmbed()
         if (toSend.isSendable) {
             try {
-                val messageCreateAction = Objects.requireNonNull(
-                    spicordBot!!.jda.getTextChannelById(
-                        messageChannelId!!
-                    )
-                )?.sendMessage(MessageCreateData.fromEmbeds(toSend))
-                messageCreateAction?.submit()?.whenComplete { _: Message?, throwable: Throwable? ->
+                val textChannel = spicordBot!!.jda.getGuildChannelById(messageChannelId!!) as? TextChannel
+                val messageCreateAction = textChannel!!.sendMessage(MessageCreateData.fromEmbeds(toSend))
+                messageCreateAction.submit().whenComplete { _: Message?, throwable: Throwable? ->
                     // Handle potential errors
                     if (throwable != null) yolo.logger.severe {
                         Yolo.pluginResourceBundle.getString("spicord.sending.failed")
