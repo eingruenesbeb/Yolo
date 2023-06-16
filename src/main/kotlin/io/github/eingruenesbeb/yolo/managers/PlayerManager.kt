@@ -68,7 +68,7 @@ import java.nio.file.StandardOpenOption
 import java.util.*
 
 /**
- * This class is responsible for managing player data and actions related to death and revival.
+ * This object is responsible for managing player data and actions related to death and revival.
  * It includes a nested class [YoloPlayer], which contains the player's UUID and their [PlayerStatus] data.
  */
 @OptIn(ExperimentalSerializationApi::class)

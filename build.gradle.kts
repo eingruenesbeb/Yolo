@@ -11,7 +11,7 @@ plugins {
 }
 
 group = "io.github.eingruenesbeb"
-version = "0.7.1"
+version = "0.7.2"
 
 repositories {
     mavenCentral()
@@ -38,7 +38,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.19.4-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
     compileOnly("net.dv8tion:JDA:5.0.0-beta.5")
     compileOnly("com.github.Spicord.Spicord:spicord-common:v5-SNAPSHOT")
     compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")

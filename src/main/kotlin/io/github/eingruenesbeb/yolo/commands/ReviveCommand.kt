@@ -1,5 +1,5 @@
 /*
- * This is program is a plugin for Minecraft Servers called "Yolo".
+ * This program is a plugin for Minecraft Servers called "Yolo".
  * Copyright (C) 2023  eingruenesbeb
  *
  *     This program is free software: you can redistribute it and/or modify
