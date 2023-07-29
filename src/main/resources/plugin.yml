@@ -10,6 +10,9 @@ softdepend: [ Spicord ]
 libraries:
   - "org.jetbrains.kotlin:kotlin-stdlib:1.8.20-RC"
   - "org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0"
+  - "io.papermc:paperlib:1.0.7"
+
+folia-supported:true
 
 default-permission: op
 permissions:

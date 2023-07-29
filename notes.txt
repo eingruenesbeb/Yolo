@@ -1,0 +1,9 @@
+API-Calls:
+    - com.destroytokyo.paper.profile.PlayerProfile:
+
+    - org.bukkit.OfflinePlayer:
+        - getPlayerProfile()
+    - org.bukkit.entity.Player:
+        - displayName()
+        - getStatistic()
+        -

@@ -5,7 +5,7 @@ plugins {
     id("java")
     id("com.rikonardo.papermake") version "1.0.6"
     id("maven-publish")
-    kotlin("jvm") version "1.8.20-RC"
+    kotlin("jvm") version "1.9.0"
     id("org.jetbrains.dokka") version "1.8.10"
     kotlin("plugin.serialization") version "1.8.10"
 }
@@ -38,11 +38,12 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
     compileOnly("net.dv8tion:JDA:5.0.0-beta.5")
     compileOnly("com.github.Spicord.Spicord:spicord-common:v5-SNAPSHOT")
     compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    compileOnly("dev.folia:folia-api:1.20.1-R0.1-SNAPSHOT")
+    compileOnly("io.papermc:paperlib:1.0.7")
 
     // Manually test functionality on PaperMake-dev-server for now.
     /*
