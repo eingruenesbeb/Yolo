@@ -25,7 +25,7 @@ import org.bukkit.plugin.java.JavaPlugin
 import org.jetbrains.annotations.Contract
 import java.io.ByteArrayOutputStream
 import java.io.IOException
-import java.net.URL
+import java.net.URI
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.util.concurrent.CompletableFuture
@@ -37,34 +37,19 @@ import java.util.concurrent.CompletableFuture
  * It also provides a method to apply the resource pack to a player.
  */
 internal object ResourcePackManager : ReloadableManager {
-    private const val defaultPackURL = "https://drive.google.com/uc?export=download&id=1UWoiOGFlt2QIyQPVKAv5flLTNeNiI439"
-    private const val defaultPackSha1 = "cc17ee284417acd83536af878dabecab7ca7f3d1"
+    private const val DEFAULT_PACK_URL = "https://download.mc-packs.net/pack/cc17ee284417acd83536af878dabecab7ca7f3d1.zip"
+    private const val DEFAULT_PACK_SHA1 = "cc17ee284417acd83536af878dabecab7ca7f3d1"
     private val yolo: Yolo = JavaPlugin.getPlugin(Yolo::class.java)
-    private var packURL: String? = null
-    private var packSha1: String? = null
-    private var force: Boolean
+    private var packURL = DEFAULT_PACK_URL
+    private var packSha1  = DEFAULT_PACK_URL
+    private var force = true
 
     /**
      * Constructs a new ResourcePackManager sets all important fields from the config or fallback and asynchronously
      * calls for validation of the pack. For details see `ResourcePackManager#validatePackAsync`.
      */
     init {
-        val config = yolo.config
-        if (config.getBoolean("resource-pack.custom.use")) {
-            packURL = config.getString("resource-pack.custom.url", defaultPackURL)
-            packSha1 = config.getString("resource-pack.custom.sha1", defaultPackSha1)
-        } else {
-            packURL = defaultPackURL
-            packSha1 = defaultPackSha1
-        }
-        force = config.getBoolean("resource-pack.force", true)
-        validatePackAsync(packURL, packSha1).whenComplete { isValid: Boolean?, _: Throwable? ->
-            if (!isValid!!) {
-                yolo.logger.warning { Yolo.pluginResourceBundle.getString("loading.resourcePack.invalid") }
-                packURL = defaultPackURL
-                packSha1 = defaultPackSha1
-            }
-        }
+        reload()
     }
 
     /**
@@ -74,24 +59,22 @@ internal object ResourcePackManager : ReloadableManager {
     fun applyPack(player: Player) {
         val textComponent =
             Component.text("You are in hardcore mode. Please accept this ressource pack to reflecting that.")
-        player.setResourcePack(packURL!!, packSha1!!, force, textComponent)
+        player.setResourcePack(packURL, packSha1, force, textComponent)
     }
 
     override fun reload() {
         val config = yolo.config
         if (config.getBoolean("resource-pack.custom.use")) {
-            packURL = config.getString("resource-pack.custom.url", defaultPackURL)
-            packSha1 = config.getString("resource-pack.custom.sha1", defaultPackSha1)
-        } else {
-            packURL = defaultPackURL
-            packSha1 = defaultPackSha1
+            config.getString("resource-pack.custom.url")?.let { packURL = it }
+            config.getString("resource-pack.custom.sha1")?.let { packSha1 = it }
         }
+
         force = config.getBoolean("resource-pack.force", true)
         validatePackAsync(packURL, packSha1).whenComplete { isValid: Boolean?, _: Throwable? ->
             if (!isValid!!) {
                 yolo.logger.warning { Yolo.pluginResourceBundle.getString("loading.resourcePack.invalid") }
-                packURL = defaultPackURL
-                packSha1 = defaultPackSha1
+                packURL = DEFAULT_PACK_URL
+                packSha1 = DEFAULT_PACK_SHA1
             }
         }
     }
@@ -105,20 +88,22 @@ internal object ResourcePackManager : ReloadableManager {
      * can be downloaded, and it's checksum matches the one provided.
      */
     @Contract("_, _ -> new")
-    private fun validatePackAsync(url: String?, expected: String?): CompletableFuture<Boolean> {
+    private fun validatePackAsync(url: String, expected: String): CompletableFuture<Boolean> {
         return CompletableFuture.supplyAsync {
             try {
                 // Download the file
-                val inputStream = URL(url).openStream()
+                val inputStream = url.let { URI(it).toURL().openStream() }
                 val outputStream = ByteArrayOutputStream()
                 val checksumLength = 4069
                 val buffer = ByteArray(checksumLength)
                 var bytesRead: Int
-                while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                    outputStream.write(buffer, 0, bytesRead)
+                if (inputStream != null) {
+                    while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                        outputStream.write(buffer, 0, bytesRead)
+                    }
                 }
                 val fileBytes = outputStream.toByteArray()
-                inputStream.close()
+                inputStream?.close()
                 outputStream.close()
 
                 // Compute the SHA1 hash value of the downloaded file
