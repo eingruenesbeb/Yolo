@@ -1,13 +1,13 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import java.net.URI
 
 plugins {
     id("java")
     id("com.rikonardo.papermake") version "1.0.6"
     id("maven-publish")
-    kotlin("jvm") version "1.8.20-RC"
-    id("org.jetbrains.dokka") version "1.8.10"
-    kotlin("plugin.serialization") version "1.8.10"
+    kotlin("jvm") version "2.0.0"
+    id("org.jetbrains.dokka") version "1.9.20"
+    kotlin("plugin.serialization") version "2.0.0"
 }
 
 group = "io.github.eingruenesbeb"
@@ -38,11 +38,10 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
-    compileOnly("net.dv8tion:JDA:5.0.0-beta.5")
+    compileOnly("io.papermc.paper:paper-api:1.21-R0.1-SNAPSHOT")
+    compileOnly("net.dv8tion:JDA:5.0.0-beta.23")
     compileOnly("com.github.Spicord.Spicord:spicord-common:v5-SNAPSHOT")
-    compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
-    compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
     // Manually test functionality on PaperMake-dev-server for now.
     /*
@@ -52,7 +51,7 @@ dependencies {
      */
 }
 
-val targetJavaVersion = 17
+val targetJavaVersion = 21
 java {
     val javaVersion = JavaVersion.toVersion(targetJavaVersion)
     sourceCompatibility = javaVersion
@@ -101,12 +100,8 @@ publishing {
     }
 }
 
-val compileKotlin: KotlinCompile by tasks
-compileKotlin.kotlinOptions {
-    jvmTarget = "17"
-}
-
-val compileTestKotlin: KotlinCompile by tasks
-compileTestKotlin.kotlinOptions {
-    jvmTarget = "17"
+kotlin {
+    compilerOptions {
+        apiVersion.set(KotlinVersion.KOTLIN_2_0)
+    }
 }
