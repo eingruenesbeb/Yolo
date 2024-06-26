@@ -41,7 +41,7 @@ internal object ResourcePackManager : ReloadableManager {
     private const val DEFAULT_PACK_SHA1 = "cc17ee284417acd83536af878dabecab7ca7f3d1"
     private val yolo: Yolo = JavaPlugin.getPlugin(Yolo::class.java)
     private var packURL = DEFAULT_PACK_URL
-    private var packSha1  = DEFAULT_PACK_URL
+    private var packSha1  = DEFAULT_PACK_SHA1
     private var force = true
 
     /**
