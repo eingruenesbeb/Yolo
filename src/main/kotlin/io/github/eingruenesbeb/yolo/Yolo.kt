@@ -40,7 +40,7 @@ import java.util.*
 class Yolo : JavaPlugin() {
     companion object {
         // Meta:
-        const val version = "v0.7.0"
+        const val VERSION = "v0.7.2"
 
         /**
          * This is the [ResourceBundle] to use for translating cli messages.

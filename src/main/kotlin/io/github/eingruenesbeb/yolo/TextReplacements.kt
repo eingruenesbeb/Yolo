@@ -110,7 +110,7 @@ enum class TextReplacements {
                                     Component.text(event.player.getStatistic(Statistic.USE_ITEM, Material.TOTEM_OF_UNDYING))
                             }
 
-                            toReturn[PLUGIN_VERSION.toString()] = Component.text(Yolo.version)
+                            toReturn[PLUGIN_VERSION.toString()] = Component.text(Yolo.VERSION)
 
                             return toReturn
                         }
@@ -152,7 +152,7 @@ enum class TextReplacements {
                         }
 
                         PLUGIN_VERSION -> {
-                            toReturn[PLUGIN_VERSION.toString()] = Component.text(Yolo.version)
+                            toReturn[PLUGIN_VERSION.toString()] = Component.text(Yolo.VERSION)
                         }
                     }
                 }
@@ -203,7 +203,7 @@ enum class TextReplacements {
                                     ?.let { LegacyComponentSerializer.legacySection().serialize(it) }
                             }
 
-                            toReturn[PLUGIN_VERSION.toString()] = Yolo.version
+                            toReturn[PLUGIN_VERSION.toString()] = Yolo.VERSION
 
                             return toReturn
                         }
@@ -243,7 +243,7 @@ enum class TextReplacements {
                         }
 
                         PLUGIN_VERSION -> {
-                            toReturn[PLUGIN_VERSION.toString()] = Yolo.version
+                            toReturn[PLUGIN_VERSION.toString()] = Yolo.VERSION
                         }
                     }
                 }
