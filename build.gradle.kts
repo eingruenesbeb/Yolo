@@ -5,9 +5,9 @@ plugins {
     id("java")
     id("com.rikonardo.papermake") version "1.0.6"
     id("maven-publish")
-    kotlin("jvm") version "2.0.0"
+    kotlin("jvm") version "2.0.20"
     id("org.jetbrains.dokka") version "1.9.20"
-    kotlin("plugin.serialization") version "2.0.0"
+    kotlin("plugin.serialization") version "2.0.20"
 }
 
 group = "io.github.eingruenesbeb"
@@ -32,15 +32,15 @@ repositories {
         url = URI("https://repo.codemc.io/repository/maven-public/")
     }
     maven {
-        name = "jitpack"
-        url = URI("https://jitpack.io")
+        name = "spicord"
+        url = URI("https://repo.spicord.org")
     }
 }
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21-R0.1-SNAPSHOT")
-    compileOnly("net.dv8tion:JDA:5.0.0-beta.23")
-    compileOnly("com.github.Spicord.Spicord:spicord-common:v5-SNAPSHOT")
+    compileOnly("net.dv8tion:JDA:5.1.0")
+    compileOnly("org.spicord:spicord-common:5.4.0")
     compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
     // Manually test functionality on PaperMake-dev-server for now.
