@@ -145,6 +145,7 @@ object PlayerManager {
      * @property attachedPlayerID The [UUID] of the corresponding player. **MUSTN'T BE `null`!**
      */
     @Internal
+    @ConsistentCopyVisibility
     @Serializable
     data class GhostState internal constructor(
         internal var enabled: Boolean = false,
@@ -187,7 +188,10 @@ object PlayerManager {
             playerObject.isInvulnerable = true
             playerObject.isInvisible = true
             enabled = true
-            if (ticksLeft < 1) ticker.remainingTicks = 600
+            if (ticksLeft < 1) {
+                ticksLeft = 600
+                ticker.remainingTicks = ticksLeft
+            }
             reinstateTicker()
         }
 
