@@ -37,7 +37,7 @@ import java.util.concurrent.CompletableFuture
  * It also provides a method to apply the resource pack to a player.
  */
 internal object ResourcePackManager : ReloadableManager {
-    private const val DEFAULT_PACK_URL = "https://download.mc-packs.net/pack/cc17ee284417acd83536af878dabecab7ca7f3d1.zip"
+    private const val DEFAULT_PACK_URL = "https://drive.google.com/uc?export=download&id=1UWoiOGFlt2QIyQPVKAv5flLTNeNiI439"
     private const val DEFAULT_PACK_SHA1 = "cc17ee284417acd83536af878dabecab7ca7f3d1"
     private val yolo: Yolo = JavaPlugin.getPlugin(Yolo::class.java)
     private var packURL = DEFAULT_PACK_URL

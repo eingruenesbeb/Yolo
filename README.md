@@ -16,7 +16,7 @@
    1. [`config.yml`](#21-configyml)
    2. [`chat_messages.properties`](#22-chat_messagesproperties)
    3. [`discord/[...].json`](#23-discordjson)
-   4. [`ban_message.txt`](#24-banmessagetxt)
+   4. [`ban_message.txt`](#24-ban_messagetxt)
    5. [Text replacements](#25-text-replacements)
 3. [Permissions](#3-permissions)
 4. [Commands](#4-commands)
@@ -183,6 +183,7 @@ the arguments to `false`. (If you only want to disable the teleport, you need to
 to `true`.)
 - `/checkout_death_location` This command lets you teleport to a dead player's death location. This is useful for
 checking for traps and duplicate items. It requires the `yolo.revive` permission.
+- `/undo_revive [player name]` Undoes/Unschedules a player-revive for the specified player.
 
 ## 5. Further considerations
 

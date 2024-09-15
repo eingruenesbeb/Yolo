@@ -30,7 +30,7 @@ import java.util.*
  */
 internal class CommandRegistrar {
     private enum class Commands {
-        RELOAD, REVIVE, CHECKOUT_DEATH_LOCATION;
+        RELOAD, REVIVE, CHECKOUT_DEATH_LOCATION, UNDO_REVIVE;
 
         override fun toString(): String {
             return if (this == RELOAD) "yolo-reload" else name.lowercase(Locale.US)
@@ -50,6 +50,10 @@ internal class CommandRegistrar {
                     CHECKOUT_DEATH_LOCATION -> {
                         CheckoutDeathLocationCommand()
                     }
+
+                    UNDO_REVIVE -> {
+                        UndoReviveCommand()
+                    }
                 }
             }
     }
@@ -58,7 +62,7 @@ internal class CommandRegistrar {
      * Registers the commands for this plugin.
      */
     fun registerCommands() {
-        for (command in Commands.values()) {
+        for (command in Commands.entries) {
             val pluginCommand = JavaPlugin.getPlugin(Yolo::class.java).getCommand(command.toString()) ?: continue
             pluginCommand.setExecutor(command.commandInstance)
             if (command.commandInstance is TabCompleter) {

@@ -46,6 +46,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.util.TriState
 import org.bukkit.*
 import org.bukkit.entity.EnderCrystal
 import org.bukkit.entity.Player
@@ -87,6 +88,7 @@ object PlayerManager {
      * @property isTeleportToDeathPos Whether the player should be teleported to the [latestDeathPos] upon their revival.
      * @property isRestoreInventory Whether the inventory should be restored upon revival.
      * @property banMessage The ban message, that will be shown to the player upon being death-banned.
+     * @property isUndoRevive Whether the player had a successful revive, that should be reverted.
      */
     @Serializable
     data class PlayerStatus(
@@ -96,7 +98,9 @@ object PlayerManager {
         var isTeleportToDeathPos: Boolean = true,
         var isRestoreInventory: Boolean = true,
         var banMessage: Component = Component.text(""),
-        internal val ghostState: GhostState = GhostState(false, 0)
+        var isUndoRevive: Boolean = false,
+        internal val ghostState: GhostState = GhostState(false, 0),
+        internal val revives: MutableList<ReviveResult> = mutableListOf()
     )
 
     /**
@@ -121,10 +125,12 @@ object PlayerManager {
      * @property teleported Whether the player should be or was teleported to their last death location.
      * @property inventoryRestored Whether the inventory should be or was restored.
      */
+    @Serializable
     data class ReviveResult(
         val successful: Boolean = false,
         val teleported: Boolean = false,
-        val inventoryRestored: Boolean = false
+        val inventoryRestored: Boolean = false,
+        internal val teleportedFrom: Location? = null
     ) {
         override fun toString(): String {
             return "[Successful: $successful, Teleport: $teleported, Restored inventory: $inventoryRestored]"
@@ -392,6 +398,55 @@ object PlayerManager {
             playerStatus.revives.add(finalResult)
         }
 
+        // Runs in case the player has already been revived.
+        fun undoLastReviveActive() {
+            val player = Bukkit.getPlayer(uuid) ?: return yolo.logger.warning { Yolo.pluginResourceBundle.getString("player.revive.undo.notOnline") }
+            if (player.permissionValue("yolo.exempt") == TriState.TRUE) return
+            playerStatus.isUndoRevive = false
+
+            runCatching {
+                with(playerStatus.revives.last { it.successful }) {
+                    this.teleportedFrom?.let { player.teleport(it) }
+                    if (this.inventoryRestored) {
+                        player.inventory.clear()
+                    }
+                }
+            }.onFailure {
+                if (it is NoSuchElementException) return
+            }
+
+            playerStatus.revives.removeAt(playerStatus.revives.indexOfLast { it.successful })
+
+            playerStatus.isToRevive = false
+            playerStatus.isDead = true
+
+            pseudoBanPlayer(uuid, null)
+        }
+
+        private fun dispatchPreReviveEvents(originalOutcome: ReviveResult): ReviveResult {
+            val preEvent = PreYoloPlayerReviveEvent(uuid to playerStatus.copy(), originalOutcome)
+            preEvent.callEvent()
+
+            // The async variant of the event is only for observing:
+            object : BukkitRunnable() {
+                override fun run() {
+                    PreYoloPlayerReviveEventAsync(uuid to playerStatus.copy(), originalOutcome.copy(), preEvent.targetOutcome.copy()).callEvent()
+                }
+            }.runTaskAsynchronously(yolo)
+
+            return preEvent.targetOutcome
+        }
+
+        private fun dispatchPostReviveEvents(finalResult: ReviveResult) {
+            object : BukkitRunnable() {
+                override fun run() {
+                    YoloPlayerRevivedEventAsync(uuid to playerStatus.copy(), finalResult).callEvent()
+                }
+            }.runTaskAsynchronously(yolo)
+
+            YoloPlayerRevivedEvent(uuid to playerStatus.copy(), finalResult).callEvent()
+        }
+
         private fun restoreReviveInventory() {
             with(Bukkit.getPlayer(uuid)) {
                 this ?: return yolo.logger.warning { Yolo.pluginResourceBundle.getString("player.revive.notOnline") }
@@ -463,6 +518,33 @@ object PlayerManager {
             }
         }
         return listOfRevivable
+    }
+
+    /**
+     * Provides a list of the names from every player, who has been revived.
+     */
+    fun provideRevived(): List<String> = PlayerRegistry.filter {
+            it.value.playerStatus.revives.isNotEmpty()
+        }.map {
+            Bukkit.getOfflinePlayer(it.key).name
+        }.filterNotNull()
+
+    internal fun undoRevive(targetName: String): Boolean {
+        val offlinePlayer = Bukkit.getOfflinePlayer(targetName)
+        val targetFromRegistry = PlayerRegistry[offlinePlayer.uniqueId]
+
+        if (targetFromRegistry.playerStatus.isToRevive) {
+            targetFromRegistry.playerStatus.isToRevive = false
+            targetFromRegistry.playerStatus.isDead = true
+            return true
+        } else if (targetFromRegistry.playerStatus.revives.any { it.successful }) {
+            if (offlinePlayer.player != null) {
+                targetFromRegistry.undoLastReviveActive()
+            } else {
+                targetFromRegistry.playerStatus.isUndoRevive = true  // Player isn't online. Undo revive later.
+            }
+            return true
+        } else return false
     }
 
     /**

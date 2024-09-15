@@ -36,3 +36,8 @@ commands:
     usage: "Usage: `/checkout_death_location [player name]` (player must be revivable!)"
     permission: yolo.revive
     permission-message: You don't have the permission to use that command!
+  undo_revive:
+    description: Undoes the latest revive for the provided player.
+    usage: "Usage: `/undo_revive [player name]`"
+    permission: yolo.revive
+    permission-message: You don't have the permission to use that command!
