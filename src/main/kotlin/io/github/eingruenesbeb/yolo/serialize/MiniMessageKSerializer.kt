@@ -34,7 +34,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage
  * existing [Component](https://jd.advntr.dev/api/4.13.1/net/kyori/adventure/text/Component.html) to
  * [MiniMessage format serializer](https://jd.advntr.dev/text-minimessage/4.13.1/net/kyori/adventure/text/minimessage/MiniMessage.html)
  */
-object MiniMessageSerializer : KSerializer<Component> {
+object MiniMessageKSerializer : KSerializer<Component> {
     override val descriptor: SerialDescriptor
         get() = buildClassSerialDescriptor("MiniMessage") {
             element<String>("message")

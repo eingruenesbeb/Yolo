@@ -22,13 +22,13 @@ package io.github.eingruenesbeb.yolo.events.deathBan
 import io.github.eingruenesbeb.yolo.Yolo
 import io.github.eingruenesbeb.yolo.events.YoloPlayerEvent
 import io.github.eingruenesbeb.yolo.events.revive.PreYoloPlayerReviveEventAsync
-import io.github.eingruenesbeb.yolo.managers.PlayerManager
+import io.github.eingruenesbeb.yolo.player.DeathBanResult
+import io.github.eingruenesbeb.yolo.player.YoloPlayerData
 import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.java.JavaPlugin
-import java.util.*
 
 /**
  * This event is emitted when a player is about to be death-banned.
@@ -45,12 +45,12 @@ import java.util.*
  *
  * @see PreYoloPlayerReviveEventAsync
  * @see YoloPlayerEvent
- * @see PlayerManager.DeathBanResult
+ * @see DeathBanResult
  */
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class PreDeathBanEvent internal constructor(
-    override val yoloPlayerInformation: Pair<UUID, PlayerManager.PlayerStatus>,
-    val originalTargetResult: PlayerManager.DeathBanResult,
+    override val yoloPlayerInformation: YoloPlayerData,
+    val originalTargetResult: DeathBanResult,
     val associatedPlayerDeathEvent: PlayerDeathEvent
 ): YoloPlayerEvent, Event() {
     companion object {
@@ -75,9 +75,9 @@ class PreDeathBanEvent internal constructor(
      * default
      * @param reason Optionally a reason, why the change was made. `null` by default
      *
-     * @see PlayerManager.DeathBanResult
+     * @see DeathBanResult
      */
-    fun changeOutcome(newTargetResult: PlayerManager.DeathBanResult, by: Plugin, isSilent: Boolean = false, reason: String? = null) {
+    fun changeOutcome(newTargetResult: DeathBanResult, by: Plugin, isSilent: Boolean = false, reason: String? = null) {
         targetResult = newTargetResult
         if (isSilent) return
         JavaPlugin.getPlugin(Yolo::class.java).logger.run {

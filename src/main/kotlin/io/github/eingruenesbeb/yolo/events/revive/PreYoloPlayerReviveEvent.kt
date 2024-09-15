@@ -21,13 +21,12 @@ package io.github.eingruenesbeb.yolo.events.revive
 
 import io.github.eingruenesbeb.yolo.Yolo
 import io.github.eingruenesbeb.yolo.events.YoloPlayerEvent
-import io.github.eingruenesbeb.yolo.managers.PlayerManager.PlayerStatus
-import io.github.eingruenesbeb.yolo.managers.PlayerManager.ReviveResult
+import io.github.eingruenesbeb.yolo.player.ReviveResult
+import io.github.eingruenesbeb.yolo.player.YoloPlayerData
 import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
 import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.java.JavaPlugin
-import java.util.*
 
 /**
  * This event is emitted when a player is about to be revived.
@@ -48,7 +47,7 @@ import java.util.*
  */
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class PreYoloPlayerReviveEvent internal constructor(
-    override val yoloPlayerInformation: Pair<UUID, PlayerStatus>,
+    override val yoloPlayerInformation: YoloPlayerData,
     val originalTargetOutcome: ReviveResult
 ): Event(), YoloPlayerEvent {
     companion object {

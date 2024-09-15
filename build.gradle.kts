@@ -42,6 +42,7 @@ dependencies {
     compileOnly("net.dv8tion:JDA:5.1.0")
     compileOnly("org.spicord:spicord-common:5.4.0")
     compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.6.3")
 
     // Manually test functionality on PaperMake-dev-server for now.
     /*

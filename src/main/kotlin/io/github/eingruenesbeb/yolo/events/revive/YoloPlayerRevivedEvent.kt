@@ -20,11 +20,10 @@
 package io.github.eingruenesbeb.yolo.events.revive
 
 import io.github.eingruenesbeb.yolo.events.YoloPlayerEvent
-import io.github.eingruenesbeb.yolo.managers.PlayerManager.PlayerStatus
-import io.github.eingruenesbeb.yolo.managers.PlayerManager.ReviveResult
+import io.github.eingruenesbeb.yolo.player.ReviveResult
+import io.github.eingruenesbeb.yolo.player.YoloPlayerData
 import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
-import java.util.*
 
 /**
  * This event is emitted after a player has been revived by the plugin. This is mostly just useful for post-processing
@@ -39,12 +38,12 @@ import java.util.*
  * @property finalResult The result of the revive-attempt
  *
  * @see YoloPlayerRevivedEventAsync
- * @see PlayerStatus
+ * @see YoloPlayerData
  * @see ReviveResult
  */
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 class YoloPlayerRevivedEvent internal constructor(
-    override val yoloPlayerInformation: Pair<UUID, PlayerStatus>,
+    override val yoloPlayerInformation: YoloPlayerData,
     val finalResult: ReviveResult,
 ): Event(), YoloPlayerEvent {
     companion object {

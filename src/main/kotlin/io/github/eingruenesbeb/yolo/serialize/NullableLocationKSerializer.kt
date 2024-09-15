@@ -33,10 +33,7 @@ import org.bukkit.Location
  * This object is a serializer designed to be used with the Kotlin serialization library. It serialized and deserializes
  * [Location](https://jd.papermc.io/paper/1.19/org/bukkit/Location.html) data, as it's defined by Bukkit.
  */
-object LocationSerializer : KSerializer<Location?> {
-    // The location will look like this, when serialized to json:
-    // {world:}
-
+object NullableLocationKSerializer : KSerializer<Location?> {
     override val descriptor: SerialDescriptor
         get() = buildClassSerialDescriptor("Location") {
             element<String>("world")

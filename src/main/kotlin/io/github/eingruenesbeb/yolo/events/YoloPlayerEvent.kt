@@ -19,7 +19,7 @@
 
 package io.github.eingruenesbeb.yolo.events
 
-import io.github.eingruenesbeb.yolo.managers.PlayerManager.PlayerStatus
+import io.github.eingruenesbeb.yolo.player.YoloPlayerData
 import org.bukkit.Bukkit
 import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
@@ -27,13 +27,13 @@ import java.util.*
 
 /**
  * Indicates that an event has a [yoloPlayerInformation] property, that is a [Pair] consisting of a player's [UUID] and
- * their associated [PlayerStatus].
+ * their associated [YoloPlayerData].
  */
 interface YoloPlayerEvent {
     /**
-     * A [Pair] consisting of a player's [UUID] and their associated [PlayerStatus].
+     * A [Pair] consisting of a player's [UUID] and their associated [YoloPlayerData].
      */
-    val yoloPlayerInformation: Pair<UUID, PlayerStatus>
+    val yoloPlayerInformation: YoloPlayerData
 
     /**
      * The corresponding [Player], if they are online. Otherwise, this is `null`.
@@ -41,7 +41,7 @@ interface YoloPlayerEvent {
      * @see Bukkit.getPlayer
      */
     val player: Player?
-        get() = Bukkit.getPlayer(yoloPlayerInformation.first)
+        get() = Bukkit.getPlayer(yoloPlayerInformation.uuid)
 
     /**
      * The corresponding [OfflinePlayer].
@@ -49,11 +49,5 @@ interface YoloPlayerEvent {
      * @see Bukkit.getOfflinePlayer
      */
     val offlinePlayer: OfflinePlayer
-        get() = Bukkit.getOfflinePlayer(yoloPlayerInformation.first)
-
-    /**
-     * Returns the [PlayerStatus] contained in [yoloPlayerInformation].
-     */
-    val status: PlayerStatus
-        get() = yoloPlayerInformation.second
+        get() = Bukkit.getOfflinePlayer(yoloPlayerInformation.uuid)
 }

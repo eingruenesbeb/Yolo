@@ -21,13 +21,11 @@ package io.github.eingruenesbeb.yolo.events.deathBan
 
 import io.github.eingruenesbeb.yolo.events.YoloPlayerEvent
 import io.github.eingruenesbeb.yolo.events.revive.YoloPlayerRevivedEventAsync
-import io.github.eingruenesbeb.yolo.managers.PlayerManager
-import io.github.eingruenesbeb.yolo.managers.PlayerManager.PlayerStatus
-import io.github.eingruenesbeb.yolo.managers.PlayerManager.ReviveResult
+import io.github.eingruenesbeb.yolo.player.DeathBanResult
+import io.github.eingruenesbeb.yolo.player.YoloPlayerData
 import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
 import org.bukkit.event.entity.PlayerDeathEvent
-import java.util.*
 
 /**
  * This event is emitted after a player has been death-banned by the plugin.
@@ -43,13 +41,13 @@ import java.util.*
  * @property result The result of the death-ban.
  *
  * @see YoloPlayerRevivedEventAsync
- * @see PlayerStatus
- * @see ReviveResult
+ * @see YoloPlayerData
+ * @see DeathBanResult
  */
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class PostDeathBanEvent internal constructor(
-    override val yoloPlayerInformation: Pair<UUID, PlayerStatus>,
-    val result: PlayerManager.DeathBanResult,
+    override val yoloPlayerInformation: YoloPlayerData,
+    val result: DeathBanResult,
     val associatedPlayerDeathEvent: PlayerDeathEvent
 ): YoloPlayerEvent, Event() {
     companion object {
