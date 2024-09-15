@@ -61,8 +61,8 @@ internal class YoloEventListener : Listener {
     }
 
     /**
-     * Send all players, that aren't exempt a forced resource-pack, to reflect, that they are (essentially) in hardcore-
-     * mode.
+     * Send all players, that aren't exempt a forced resource-pack, to reflect, that they are (essentially) in
+     * hardcore-mode.
      * @param event The [PlayerJoinEvent] passed to the listener.
      */
     @EventHandler(ignoreCancelled = true)

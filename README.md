@@ -14,7 +14,7 @@
 1. [What does this plugin do?](#1-what-does-this-plugin-do)
 2. [Configuration](#2-configuration)
    1. [`config.yml`](#21-configyml)
-   2. [`chat_messages.properties`](#22-chatmessagesproperties)
+   2. [`chat_messages.properties`](#22-chat_messagesproperties)
    3. [`discord/[...].json`](#23-discordjson)
    4. [`ban_message.txt`](#24-banmessagetxt)
    5. [Text replacements](#25-text-replacements)

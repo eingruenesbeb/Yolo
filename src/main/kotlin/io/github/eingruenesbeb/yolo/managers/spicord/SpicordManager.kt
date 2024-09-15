@@ -138,7 +138,7 @@ internal object SpicordManager : ReloadableManager {
     @Throws(IOException::class)
     private fun updateMessageTemplates() {
         rawDiscordEmbedEnumMap.clear()
-        for (discordMessageType in DiscordMessageType.values()) {
+        for (discordMessageType in DiscordMessageType.entries) {
             val resourceName: String = discordMessageType.resourceName
             val resourcePath = yolo.dataFolder.toPath().resolve(resourceName)
             val contents: String = try {
