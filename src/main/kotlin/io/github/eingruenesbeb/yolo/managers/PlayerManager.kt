@@ -453,7 +453,7 @@ object PlayerManager {
         saveAllPlayerData()
 
         File(oldDataPath).delete()
-        if (File(oldDataPath).listFiles()?.isEmpty() == true) File(oldDataPath).parentFile.deleteRecursively()
+        if (File(oldDataPath).parentFile.listFiles()?.isEmpty() == true) File(oldDataPath).parentFile.deleteRecursively()
     }
 
     /**
