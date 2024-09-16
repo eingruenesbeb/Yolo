@@ -157,7 +157,7 @@ object PlayerManager {
         }
     }
 
-    private object SinglePlayerAutoSave : BukkitRunnable() {
+    private object SingularPlayerAutoSave : BukkitRunnable() {
         private val queue = ConcurrentLinkedQueue<YoloPlayerData>()
         private val isBusy = AtomicBoolean(false)
 
@@ -195,18 +195,22 @@ object PlayerManager {
 
         override fun put(key: UUID, value: YoloPlayer): YoloPlayer? {
             val previousValue = super.put(key, value)
-            SinglePlayerAutoSave.requestSave(value.yoloPlayerData)
+            if (isAutoSaveEnabled) SingularPlayerAutoSave.requestSave(value.yoloPlayerData)
             return previousValue
         }
 
         override fun putAll(from: Map<out UUID, YoloPlayer>) {
             super.putAll(from)
-            from.values.forEach { SinglePlayerAutoSave.requestSave(it.yoloPlayerData) }
+            if (isAutoSaveEnabled) from.values.forEach { SingularPlayerAutoSave.requestSave(it.yoloPlayerData) }
         }
     }
+
     private val yolo = JavaPlugin.getPlugin(Yolo::class.java)
+    private var isAutoSaveEnabled = false  // Prevent unnecessary saving of player-data during loading.
 
     init {
+        yolo.logger.info { Yolo.pluginResourceBundle.getString("player.load.start") }
+
         val oldDataFile = File(yolo.dataFolder.absolutePath.plus("/data/yolo_player_data.json"))
         if (oldDataFile.exists() && oldDataFile.isFile) runCatching {
             convertLegacyData()
@@ -242,6 +246,10 @@ object PlayerManager {
                 throw it
             }
         }
+
+        isAutoSaveEnabled = true
+
+        yolo.logger.info { Yolo.pluginResourceBundle.getString("player.load.success") }
     }
 
     /**
