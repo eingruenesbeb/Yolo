@@ -30,6 +30,7 @@ import io.github.eingruenesbeb.yolo.events.deathBan.PostDeathBanEventAsync
 import io.github.eingruenesbeb.yolo.events.deathBan.PreDeathBanEvent
 import io.github.eingruenesbeb.yolo.events.deathBan.PreDeathBanEventAsync
 import io.github.eingruenesbeb.yolo.events.revive.YoloPlayerRevivedEvent
+import io.github.eingruenesbeb.yolo.localizedMessageWithStackTrace
 import io.github.eingruenesbeb.yolo.managers.spicord.DiscordMessageType
 import io.github.eingruenesbeb.yolo.managers.spicord.safeSpicordManager
 import io.github.eingruenesbeb.yolo.player.DeathBanResult
@@ -73,9 +74,8 @@ object PlayerManager {
             if (!JavaPlugin.getPlugin(Yolo::class.java).isFunctionalityEnabled) return
 
             // Pseudo-ban players, if they are dead:
-            PlayerRegistry[event.uniqueId].let {
-                if (it.yoloPlayerData.isDead && !it.yoloPlayerData.isToRevive) pseudoBanPlayer(event.uniqueId, event)
-            }
+            val target = PlayerRegistry[event.uniqueId]
+            if (target.yoloPlayerData.isDead && !target.yoloPlayerData.isToRevive) pseudoBanPlayer(event.uniqueId, event)
         }
 
         @EventHandler(ignoreCancelled = true)
@@ -88,7 +88,7 @@ object PlayerManager {
             }
 
             // Players may have been set to be revived, after they have respawned, when they have respawned during the
-            // plugin's death ban functionality being disabled.
+            // plugin's death-ban functionality being disabled.
             if (!event.player.isDead && playerInRegistry.yoloPlayerData.isToRevive) {
                 playerInRegistry.revivePlayer()
             }
@@ -216,11 +216,13 @@ object PlayerManager {
             convertLegacyData()
         }.onFailure {
             yolo.logger.severe {
-                Yolo.pluginResourceBundle.getString("player.saveData.failure")
-                    .replace("%error%", "${it.localizedMessage}\n${it.stackTraceToString()}")
+                Yolo.pluginResourceBundle.getString("player.load.legacyConversion.fail")
             }
-
-            throw it
+            throw it  // Throw to disable plugin
+        }.onSuccess {
+            yolo.logger.info {
+                Yolo.pluginResourceBundle.getString("player.load.legacyConversion.success")
+            }
         }
 
         val dataFilesWithUUID = runCatching {
@@ -434,10 +436,11 @@ object PlayerManager {
     internal fun saveAllPlayerData() {
         yolo.logger.info { Yolo.pluginResourceBundle.getString("player.saveData.start") }
         PlayerRegistry.values.forEach { savePlayerData(it.yoloPlayerData) }
+        yolo.logger.info { Yolo.pluginResourceBundle.getString("player.saveData.done") }
     }
 
     private fun savePlayerData(yoloPlayerData: YoloPlayerData) {
-        SinglePlayerAutoSave.flushQueue()
+        SingularPlayerAutoSave.flushQueue()
         runCatching {
             File(
                 yolo.dataFolder.absolutePath.plus("/player_data"),
@@ -447,7 +450,7 @@ object PlayerManager {
             yolo.logger.severe {
                 Yolo.pluginResourceBundle.getString("player.saveData.failure")
                     .replace("%uuid%", "$yoloPlayerData")
-                    .replace("%error%", "${it.localizedMessage}\n${it.stackTraceToString()}")
+                    .replace("%error%", it.localizedMessageWithStackTrace())
             }
         }
     }
@@ -477,7 +480,11 @@ object PlayerManager {
     private fun pseudoBanPlayer(playerUUID: UUID, preLoginEvent: AsyncPlayerPreLoginEvent?) {
         PlayerRegistry[playerUUID].let {
             val message = it.yoloPlayerData.banMessage
-            preLoginEvent?.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, message) ?: Bukkit.getServer().getPlayer(playerUUID)?.kick(message, PlayerKickEvent.Cause.BANNED)
+            preLoginEvent?.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, message).also {
+                yolo.logger.info { Yolo.pluginResourceBundle.getString("player.deathBan.onJoin").replace("%uuid%", "$playerUUID") }
+            } ?: Bukkit.getServer().getPlayer(playerUUID)?.kick(message, PlayerKickEvent.Cause.BANNED).also {
+                yolo.logger.info { Yolo.pluginResourceBundle.getString("player.deathBan.kick").replace("%uuid%, ", "$playerUUID") }
+            }
         }
     }
 }

@@ -20,6 +20,7 @@ package io.github.eingruenesbeb.yolo.commands
 
 import io.github.eingruenesbeb.yolo.Yolo
 import io.github.eingruenesbeb.yolo.managers.PlayerManager
+import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabExecutor
@@ -46,7 +47,7 @@ internal class ReviveCommand : TabExecutor {
                 true
             }
             PlayerManager.setReviveOnUser(args[0], true, restoreInventory, teleportToDeathPos)
-            sender.sendPlainMessage(Yolo.pluginResourceBundle.getString("player.setRevive").replace("%player_name%", args[0]))
+            sender.sendMessage(MiniMessage.miniMessage().deserialize(Yolo.pluginResourceBundle.getString("player.revive.set").replace("%player_name%", args[0])))
         } catch (e: IllegalArgumentException) {
             return false
         } catch (e: IndexOutOfBoundsException) {
