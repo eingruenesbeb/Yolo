@@ -21,7 +21,6 @@ package io.github.eingruenesbeb.yolo.managers
 import io.github.eingruenesbeb.yolo.Yolo
 import net.kyori.adventure.text.Component
 import org.bukkit.entity.Player
-import org.bukkit.plugin.java.JavaPlugin
 import org.jetbrains.annotations.Contract
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -39,7 +38,7 @@ import java.util.concurrent.CompletableFuture
 internal object ResourcePackManager : ReloadableManager {
     private const val DEFAULT_PACK_URL = "https://drive.google.com/uc?export=download&id=1UWoiOGFlt2QIyQPVKAv5flLTNeNiI439"
     private const val DEFAULT_PACK_SHA1 = "cc17ee284417acd83536af878dabecab7ca7f3d1"
-    private val yolo: Yolo = JavaPlugin.getPlugin(Yolo::class.java)
+    private val yolo: Yolo = Yolo.pluginInstance!!
     private var packURL = DEFAULT_PACK_URL
     private var packSha1  = DEFAULT_PACK_SHA1
     private var force = true

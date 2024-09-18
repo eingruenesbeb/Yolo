@@ -23,7 +23,6 @@ import io.github.eingruenesbeb.yolo.managers.ReloadableManager
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.utils.messages.MessageCreateData
-import org.bukkit.plugin.java.JavaPlugin
 import org.spicord.Spicord
 import org.spicord.SpicordLoader
 import org.spicord.api.addon.SimpleAddon
@@ -72,7 +71,7 @@ internal object SpicordManager : ReloadableManager {
     var spicordBot: DiscordBot? = null
         private set
 
-    private val yolo = JavaPlugin.getPlugin(Yolo::class.java)
+    private val yolo = Yolo.pluginInstance!!
     private val rawDiscordEmbedEnumMap = EnumMap<DiscordMessageType, RawDiscordEmbed>(DiscordMessageType::class.java)
     private var messageChannelId: String? = null
 

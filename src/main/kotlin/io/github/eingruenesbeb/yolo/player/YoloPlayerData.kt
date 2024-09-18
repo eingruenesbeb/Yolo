@@ -36,6 +36,6 @@ data class YoloPlayerData(
     var isRestoreInventory: Boolean = true,
     var banMessage: Component = Component.text(""),
     var isUndoRevive: Boolean = false,
-    internal val ghostState: GhostState = GhostState(false, 0, uuid),
+    internal val ghostState: GhostState = GhostState(uuid, false, 0),
     internal val revives: MutableList<ReviveResult> = mutableListOf()
 )

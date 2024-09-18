@@ -21,7 +21,6 @@ package io.github.eingruenesbeb.yolo.commands
 import io.github.eingruenesbeb.yolo.Yolo
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.TabCompleter
-import org.bukkit.plugin.java.JavaPlugin
 import java.util.*
 
 /**
@@ -63,7 +62,7 @@ internal class CommandRegistrar {
      */
     fun registerCommands() {
         for (command in Commands.entries) {
-            val pluginCommand = JavaPlugin.getPlugin(Yolo::class.java).getCommand(command.toString()) ?: continue
+            val pluginCommand = Yolo.pluginInstance!!.getCommand(command.toString()) ?: continue
             pluginCommand.setExecutor(command.commandInstance)
             if (command.commandInstance is TabCompleter) {
                 pluginCommand.tabCompleter = command.commandInstance as TabCompleter

@@ -28,7 +28,6 @@ import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.plugin.Plugin
-import org.bukkit.plugin.java.JavaPlugin
 
 /**
  * This event is emitted when a player is about to be death-banned.
@@ -80,7 +79,7 @@ class PreDeathBanEvent internal constructor(
     fun changeOutcome(newTargetResult: DeathBanResult, by: Plugin, isSilent: Boolean = false, reason: String? = null) {
         targetResult = newTargetResult
         if (isSilent) return
-        JavaPlugin.getPlugin(Yolo::class.java).logger.run {
+        Yolo.pluginInstance!!.logger.run {
             this.info {
                 Yolo.pluginResourceBundle.getString("player.revive.outcome.changed")
                     .replace("%original_outcome%", originalTargetResult.toString())

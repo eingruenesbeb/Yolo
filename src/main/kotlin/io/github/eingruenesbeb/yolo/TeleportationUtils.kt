@@ -25,7 +25,6 @@ import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.entity.Player
-import org.bukkit.plugin.java.JavaPlugin
 import org.jetbrains.annotations.Contract
 
 /**
@@ -74,7 +73,7 @@ internal object TeleportationUtils {
             player.teleport(targetLocation.toHighestLocation())
         } else {
             // Give up
-            JavaPlugin.getPlugin(Yolo::class.java).logger.info {
+            Yolo.pluginInstance!!.logger.info {
                 Yolo.pluginResourceBundle
                     .getString("player.unsafeTeleport")
                     .replace("%player_name%", player.name)

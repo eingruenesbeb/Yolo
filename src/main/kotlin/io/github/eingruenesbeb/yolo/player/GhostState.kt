@@ -1,11 +1,14 @@
+@file:UseSerializers(UUIDKSerializer::class)
+
 package io.github.eingruenesbeb.yolo.player
 
 import io.github.eingruenesbeb.yolo.Yolo
 import io.github.eingruenesbeb.yolo.managers.PlayerManager.PlayerManagerEvents
+import io.github.eingruenesbeb.yolo.serialize.UUIDKSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.serialization.UseSerializers
 import org.bukkit.Bukkit
-import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.scheduler.BukkitRunnable
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
@@ -26,12 +29,13 @@ import java.util.*
 @Internal
 @ConsistentCopyVisibility
 @Serializable
-data class GhostState internal constructor(
+data class GhostState(
+    private val attachedPlayerID: UUID,
     internal var enabled: Boolean = false,
-    private var ticksLeft: Long = 0,
-    @Transient private val attachedPlayerID: UUID = UUID.randomUUID()
+    private var ticksLeft: Int = 0
 ) {
-    @Transient private val yolo = JavaPlugin.getPlugin(Yolo::class.java)
+    private val yolo
+        get() = Yolo.pluginInstance!!
 
     private class Ticker(val state:GhostState) : BukkitRunnable() {
         var remainingTicks = state.ticksLeft

@@ -34,7 +34,6 @@ import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityResurrectEvent
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.PlayerJoinEvent
-import org.bukkit.plugin.java.JavaPlugin
 
 /**
  * The event listener for this plugin.
@@ -43,7 +42,7 @@ import org.bukkit.plugin.java.JavaPlugin
  * @see org.bukkit.event.Event
  */
 internal class YoloEventListener : Listener {
-    private val yoloPluginInstance = JavaPlugin.getPlugin(Yolo::class.java)
+    private val yoloPluginInstance = Yolo.pluginInstance!!
 
     /**
      * This is the main "attraction" of this plugin, that is triggered everytime a player dies. If the player isn't

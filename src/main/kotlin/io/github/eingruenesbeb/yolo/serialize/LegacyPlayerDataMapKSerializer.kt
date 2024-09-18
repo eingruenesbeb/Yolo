@@ -33,7 +33,7 @@ object LegacyPlayerDataMapKSerializer : KSerializer<Map<UUID, YoloPlayer>> {
         var isRestoreInventory: Boolean = true,
         var banMessage: Component = Component.text(""),
         var isUndoRevive: Boolean = false,
-        val ghostState: GhostState = GhostState(false, 0),
+        val ghostState: LegacyGhostState,
         val revives: MutableList<ReviveResult> = mutableListOf()
     ) {
         fun toNewFormat(uuid: UUID): YoloPlayerData = YoloPlayerData(
@@ -45,10 +45,12 @@ object LegacyPlayerDataMapKSerializer : KSerializer<Map<UUID, YoloPlayer>> {
             isRestoreInventory,
             banMessage,
             isUndoRevive,
-            ghostState,
+            GhostState(uuid, ghostState.enabled, ghostState.ticksLeft.toInt()),
             revives
         )
     }
+
+    @Serializable private data class LegacyGhostState(var enabled: Boolean = false, val ticksLeft: Long = 600L)
 
     // Descriptor for serializing a map of UUID to YoloPlayerData
     @OptIn(ExperimentalSerializationApi::class)

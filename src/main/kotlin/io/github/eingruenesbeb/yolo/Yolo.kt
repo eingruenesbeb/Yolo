@@ -36,15 +36,17 @@ import java.util.*
  * A Bukkit plugin that adds features related to player deaths and Discord integration.
  * This is the main class of that plugin.
  */
-class Yolo : JavaPlugin() {
+open class Yolo : JavaPlugin() {
     companion object {
         // Meta:
-        const val VERSION = "v0.7.2"
+        const val VERSION = "0.7.2"
 
         /**
          * This is the [ResourceBundle] to use for translating cli messages.
          */
         val pluginResourceBundle: ResourceBundle = ResourceBundle.getBundle("i18n")
+
+        internal var pluginInstance: Yolo? = null
     }
 
     /**
@@ -61,6 +63,8 @@ class Yolo : JavaPlugin() {
         private set
 
     override fun onEnable() {
+        pluginInstance = this
+
         regenerateMissingFiles()
 
         var rawBanMessage: String

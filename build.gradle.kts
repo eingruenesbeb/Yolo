@@ -44,12 +44,12 @@ dependencies {
     compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
     compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.6.3")
 
-    // Manually test functionality on PaperMake-dev-server for now.
-    /*
-    testCompileOnly("io.papermc.paper:paper-api:1.19.3-R0.1-SNAPSHOT")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
-    testImplementation("org.mockito:mockito-core:5.1.1")
-     */
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.0")
+    testImplementation("com.github.seeseemelk:MockBukkit-v1.21:3.127.1")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.6.3")
+    testImplementation("io.mockk:mockk:1.13.12")
 }
 
 val targetJavaVersion = 21
@@ -77,17 +77,17 @@ tasks.processResources {
     }
 }
 
-/*
+
 tasks.test {
     useJUnitPlatform()
 
-    maxHeapSize = "1G"
+    maxHeapSize = "4G"
 
     testLogging {
         events("passed")
     }
 }
- */
+
 
 tasks.dokkaHtml {
     outputDirectory.set(File(projectDir.path + "/docs"))

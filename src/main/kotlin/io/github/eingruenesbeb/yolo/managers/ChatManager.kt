@@ -25,7 +25,6 @@ import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.bukkit.plugin.java.JavaPlugin
 import org.jetbrains.annotations.Contract
 import java.io.IOException
 import java.nio.charset.StandardCharsets
@@ -144,7 +143,7 @@ internal object ChatManager : ReloadableManager {
             }
     }
 
-    private val yolo = JavaPlugin.getPlugin(Yolo::class.java)
+    private val yolo = Yolo.pluginInstance!!
     private val rawMessagesEnumMap = EnumMap<ChatMessageType, RawChatMessage>(
         ChatMessageType::class.java
     )

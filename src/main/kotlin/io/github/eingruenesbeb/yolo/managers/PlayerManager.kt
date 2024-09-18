@@ -54,8 +54,8 @@ import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.*
-import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.scheduler.BukkitRunnable
+import org.jetbrains.annotations.VisibleForTesting
 import java.io.File
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -71,7 +71,7 @@ object PlayerManager {
         @EventHandler(ignoreCancelled = true)
         fun onPlayerPreLoginAsync(event: AsyncPlayerPreLoginEvent) {
             // Don't kick players if the death-ban functionality is disabled.
-            if (!JavaPlugin.getPlugin(Yolo::class.java).isFunctionalityEnabled) return
+            if (!Yolo.pluginInstance!!.isFunctionalityEnabled) return
 
             // Pseudo-ban players, if they are dead:
             val target = PlayerRegistry[event.uniqueId]
@@ -105,7 +105,7 @@ object PlayerManager {
         fun onPlayerPostRespawn(event: PlayerPostRespawnEvent) {
             // Players may be revived, even if death-ban functionality is disabled.
             Bukkit.getScheduler().runTaskLater(
-                JavaPlugin.getPlugin(Yolo::class.java),
+                Yolo.pluginInstance!!,
                 Runnable {
                     val playerInRegistry = PlayerRegistry[event.player.uniqueId]
                     if (playerInRegistry.yoloPlayerData.isToRevive) {
@@ -160,31 +160,39 @@ object PlayerManager {
     private object SingularPlayerAutoSave : BukkitRunnable() {
         private val queue = ConcurrentLinkedQueue<YoloPlayerData>()
         private val isBusy = AtomicBoolean(false)
+        private val isEnabled = AtomicBoolean(false)
 
         override fun run() {
-            isBusy.set(true)
+                while (queue.size > 0 || !isCancelled || isEnabled.get()) {
+                    val toSave = queue.poll() ?: break
+                    savePlayerData(toSave)
+                }
 
-            while (queue.isNotEmpty()) {
-                val toSave = queue.poll()
-                savePlayerData(toSave)
-            }
-
-            isBusy.set(false)
+                isBusy.set(false)
         }
 
         fun requestSave(data: YoloPlayerData) {
+            if (!isEnabled.get()) return
             queue.offer(data)
             if (!isBusy.get()) {
+                isBusy.set(true)
                 this.runTaskAsynchronously(yolo)
             }
         }
 
-        fun flushQueue() {
-            queue.drop(queue.size)
+        fun enable() {
+            isEnabled.set(true)
+        }
+
+        fun flushAndDisable() {
+            isEnabled.set(false)
+            queue.removeAll { true }
+            while (isBusy.get()) { /* Wait until no data is written by this runnable to avoid concurrent writes. */ }
         }
     }
 
-    private object PlayerRegistry : HashMap<UUID, YoloPlayer>() {
+    @VisibleForTesting
+    internal object PlayerRegistry : HashMap<UUID, YoloPlayer>() {
         private fun readResolve(): Any = PlayerRegistry
 
         override fun get(key: UUID): YoloPlayer {
@@ -195,23 +203,23 @@ object PlayerManager {
 
         override fun put(key: UUID, value: YoloPlayer): YoloPlayer? {
             val previousValue = super.put(key, value)
-            if (isAutoSaveEnabled) SingularPlayerAutoSave.requestSave(value.yoloPlayerData)
+            SingularPlayerAutoSave.requestSave(value.yoloPlayerData)
             return previousValue
         }
 
         override fun putAll(from: Map<out UUID, YoloPlayer>) {
             super.putAll(from)
-            if (isAutoSaveEnabled) from.values.forEach { SingularPlayerAutoSave.requestSave(it.yoloPlayerData) }
+            from.values.forEach { SingularPlayerAutoSave.requestSave(it.yoloPlayerData) }
         }
     }
 
-    private val yolo = JavaPlugin.getPlugin(Yolo::class.java)
-    private var isAutoSaveEnabled = false  // Prevent unnecessary saving of player-data during loading.
+    private val yolo = Yolo.pluginInstance!!
 
     init {
-        yolo.logger.info { Yolo.pluginResourceBundle.getString("player.load.start") }
+        yolo.logger.info { Yolo.pluginResourceBundle.getString("player.load.start") }  // TODO: remove
 
         val oldDataFile = File(yolo.dataFolder.absolutePath.plus("/data/yolo_player_data.json"))
+        yolo.logger.info { "Looking for legacy data at \"$oldDataFile\"" }
         if (oldDataFile.exists() && oldDataFile.isFile) runCatching {
             convertLegacyData()
         }.onFailure {
@@ -225,12 +233,13 @@ object PlayerManager {
             }
         }
 
+        yolo.logger.info { "Looking for player-data at \"${yolo.dataFolder.absolutePath.plus("/player_data")}\"" }  // TODO: remove
         val dataFilesWithUUID = runCatching {
-            File(yolo.dataFolder.absolutePath.plus("/player_data")).listFiles { file, _ ->
+            File(yolo.dataFolder.absolutePath.plus("/player_data")).listFiles { _, fileName ->
                 // Data is stored in CBOR format.
                 return@listFiles runCatching inner@ {
-                    UUID.fromString(file.nameWithoutExtension)
-                    return@inner file.extension == ".cbor"
+                    UUID.fromString(fileName.substringBeforeLast('.'))
+                    return@inner fileName.substringAfterLast('.') == "cbor"
                 }.getOrElse { false }
             }?.associateBy {
                 UUID.fromString(it.nameWithoutExtension)
@@ -249,8 +258,7 @@ object PlayerManager {
             }
         }
 
-        isAutoSaveEnabled = true
-
+        SingularPlayerAutoSave.enable()
         yolo.logger.info { Yolo.pluginResourceBundle.getString("player.load.success") }
     }
 
@@ -351,7 +359,7 @@ object PlayerManager {
         val playerFromRegistry = PlayerRegistry[deathEvent.player.uniqueId]
         val stringReplacementMap: HashMap<String, String?> = TextReplacements.provideStringDefaults(deathEvent, TextReplacements.ALL)
         val componentReplacementMap: HashMap<String, Component?> = TextReplacements.provideComponentDefaults(deathEvent, TextReplacements.ALL)
-        var dynamicBanMessage = JavaPlugin.getPlugin(Yolo::class.java).banMessage
+        var dynamicBanMessage = Yolo.pluginInstance!!.banMessage
         componentReplacementMap.forEach { replacement ->
             replacement.key.let { key ->
                 replacement.value?.let {  value ->
@@ -435,12 +443,12 @@ object PlayerManager {
      */
     internal fun saveAllPlayerData() {
         yolo.logger.info { Yolo.pluginResourceBundle.getString("player.saveData.start") }
+        SingularPlayerAutoSave.flushAndDisable()
         PlayerRegistry.values.forEach { savePlayerData(it.yoloPlayerData) }
         yolo.logger.info { Yolo.pluginResourceBundle.getString("player.saveData.done") }
     }
 
     private fun savePlayerData(yoloPlayerData: YoloPlayerData) {
-        SingularPlayerAutoSave.flushQueue()
         runCatching {
             File(
                 yolo.dataFolder.absolutePath.plus("/player_data"),

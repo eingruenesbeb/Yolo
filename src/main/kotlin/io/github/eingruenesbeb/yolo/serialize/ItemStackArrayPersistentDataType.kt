@@ -26,7 +26,6 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataAdapterContext
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
-import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.util.io.BukkitObjectInputStream
 import java.io.ByteArrayInputStream
 import java.io.IOException
@@ -70,8 +69,8 @@ class ItemStackArrayPersistentDataType : PersistentDataType<Array<PersistentData
         }
     }
 
-    private val contentsKey: NamespacedKey = NamespacedKey(JavaPlugin.getPlugin(Yolo::class.java), "contents")
-    private val lengthKey: NamespacedKey = NamespacedKey(JavaPlugin.getPlugin(Yolo::class.java), "length")
+    private val contentsKey: NamespacedKey = NamespacedKey(Yolo.pluginInstance!!, "contents")
+    private val lengthKey: NamespacedKey = NamespacedKey(Yolo.pluginInstance!!, "length")
 
     override fun getPrimitiveType(): Class<Array<PersistentDataContainer>> {
         return Array<PersistentDataContainer>::class.java

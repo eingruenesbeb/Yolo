@@ -26,7 +26,6 @@ import io.github.eingruenesbeb.yolo.player.YoloPlayerData
 import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
 import org.bukkit.plugin.Plugin
-import org.bukkit.plugin.java.JavaPlugin
 
 /**
  * This event is emitted when a player is about to be revived.
@@ -90,7 +89,7 @@ class PreYoloPlayerReviveEvent internal constructor(
     fun changeOutcome(isToRevive: Boolean, isTeleportToDeathPos: Boolean, isRestoreInventory: Boolean, by: Plugin, isSilent: Boolean = false, reason: String? = null) {
         targetOutcome = ReviveResult(isToRevive, isTeleportToDeathPos, isRestoreInventory)
         if (isSilent) return
-        JavaPlugin.getPlugin(Yolo::class.java).logger.run {
+        Yolo.pluginInstance!!.logger.run {
             this.info {
                 Yolo.pluginResourceBundle.getString("player.revive.outcome.changed")
                     .replace("%original_outcome%", originalTargetOutcome.toString())

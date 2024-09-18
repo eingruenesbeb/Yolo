@@ -13,13 +13,12 @@ import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.NamespacedKey
 import org.bukkit.inventory.ItemStack
-import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.scheduler.BukkitRunnable
 
 class YoloPlayer(
     val yoloPlayerData: YoloPlayerData
 ) {
-    private val yolo = JavaPlugin.getPlugin(Yolo::class.java)
+    private val yolo = Yolo.pluginInstance!!
     private val reviveInventoryKey = NamespacedKey(yolo, "reviveInventory")
 
     fun setIsToReviveOnDead(toTrue: Boolean): Boolean {
