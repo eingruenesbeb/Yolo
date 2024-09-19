@@ -11,6 +11,7 @@ libraries:
   - "org.jetbrains.kotlin:kotlin-stdlib:2.0.20"
   - "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3"
   - "org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.6.3"
+  - "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0"
 
 default-permission: op
 permissions:

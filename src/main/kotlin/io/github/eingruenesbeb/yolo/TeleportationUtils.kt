@@ -46,7 +46,7 @@ internal object TeleportationUtils {
      * void.
      * - The location is not water, when the block above is solid or water as well.
      * - The surrounding blocks do not contain lava.
-     * - The neighbouring blocks are not collidable, thus guaranteeing movement for at least one block and additionally
+     * - The neighbouring blocks don't have collision, thus guaranteeing movement for at least one block and additionally
      * raising the odds of the location being escapable.
      *
      * If the location is determined to be unsafe and [tryHighestLoc] is true, the teleportation attempt is tried again

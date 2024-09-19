@@ -3,7 +3,6 @@
 package io.github.eingruenesbeb.yolo.player
 
 import io.github.eingruenesbeb.yolo.Yolo
-import io.github.eingruenesbeb.yolo.managers.PlayerManager.PlayerManagerEvents
 import io.github.eingruenesbeb.yolo.serialize.UUIDKSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -16,7 +15,7 @@ import java.util.*
 /**
  * Represents an additional state, a player can be in, when teleported upon their revival. Whilst in this state,
  * a player can't be harmed and is invisible, but can't engage in either PvP or PvE, without being forced out of
- * this state. The last part is handled by the [PlayerManagerEvents] event-listener.
+ * this state. The last part is handled by the [io.github.eingruenesbeb.yolo.YoloEventListener] event-listener.
  *
  *
  * It Is visible because it's a part of a player's data, which is public. However, all its members are either

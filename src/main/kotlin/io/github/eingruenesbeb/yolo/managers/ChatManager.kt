@@ -20,7 +20,6 @@ package io.github.eingruenesbeb.yolo.managers
 
 import io.github.eingruenesbeb.yolo.Yolo
 import io.github.eingruenesbeb.yolo.managers.ChatManager.RawChatMessage
-import io.github.eingruenesbeb.yolo.managers.ChatManager.trySend
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
@@ -47,29 +46,123 @@ import java.util.*
  *
  * @see RawChatMessage
  */
-internal object ChatManager : ReloadableManager {
+internal class ChatManager : ReloadableManager {
+    private val yolo = Yolo.pluginInstance!!
+
+    private val rawMessagesEnumMap = EnumMap<ChatMessageType, RawChatMessage>(
+        ChatMessageType::class.java
+    )
+    init {
+        initMessages()
+    }
+
+    override fun reload() {
+        initMessages()
+    }
+
     /**
-     * A container class for raw chat messages and their enabled status.
+     * Sends the specified chat message with optional replacements
+     * if the message is enabled and the specified key exists.
+     *
+     * @param targetAudience The [Audience], that should see the message.
+     * @param messageType The [ChatMessageType] of the chat message to send.
+     * @param replacements A mapping of strings to replace in the raw chat message.
      */
-    private data class RawChatMessage(val rawString: String, val enabled: Boolean) {
-        fun returnComponent(replacements: HashMap<String, Component?>?): Component {
-            var toReturn = MiniMessage.miniMessage().deserialize(rawString)
-            replacements?.forEach { replacement ->
-                replacement.value?.let {  value ->
-                    toReturn = toReturn.replaceText {
-                        it.matchLiteral(replacement.key)
-                        it.replacement(value)
-                    }
+    internal fun trySend(targetAudience: Audience, messageType: ChatMessageType, replacements: HashMap<String, Component?>?) {
+        val rawMessage = rawMessagesEnumMap[messageType]
+        if (rawMessage == null) {
+            try {
+                throw IllegalArgumentException()
+            } catch (e: IllegalArgumentException) {
+                yolo.logger.severe {
+                    Yolo.pluginResourceBundle.getString("chatManager.noMessage")
+                        .replace("%trace%", ExceptionUtils.getStackTrace(e))
                 }
             }
-            return toReturn
+            return
+        }
+
+        // Finally, send the message.
+        val toSend = rawMessage.returnComponent(replacements)
+        if (rawMessage.enabled) {
+            targetAudience.sendMessage(toSend)
+        }
+    }
+
+    private fun initMessages() {
+        rawMessagesEnumMap.clear()
+        val embedded = Properties()
+        try {
+            embedded.load(yolo.getResource("chat_messages.properties"))
+        } catch (e: IOException) {
+            // This should never happen on an embedded resource.
+        }
+        val userConfiguredProperties = Properties()
+        try {
+            // Try to load the messages, as configured in the plugin's data folder.
+            val userConfigured = Path.of(yolo.dataFolder.path + "/chat_messages.properties").toFile()
+            userConfiguredProperties.load(Files.newBufferedReader(userConfigured.toPath(), StandardCharsets.ISO_8859_1))
+
+            // Perform content/version check:
+            if (embedded.getProperty("version") != userConfiguredProperties.getProperty("version", "0")) {
+                val embeddedKeys = embedded.stringPropertyNames()
+                val loadedKeys = userConfiguredProperties.stringPropertyNames()
+                loadedKeys.iterator().forEachRemaining { key: String ->
+                    // Remove redundant keys:
+                    if (!embeddedKeys.contains(key)) {
+                        userConfiguredProperties.remove(key)
+                    }
+                }
+                embeddedKeys.iterator().forEachRemaining { key: String? ->
+                    // Add missing keys:
+                    userConfiguredProperties.putIfAbsent(key, embedded.getProperty(key))
+                }
+
+                // Update the file version:
+                userConfiguredProperties.setProperty("version", embedded.getProperty("version"))
+
+                // Finally, save the new version of the userConfiguredProperties.
+                userConfiguredProperties.store(
+                    Files.newBufferedWriter(
+                        userConfigured.toPath(),
+                        StandardCharsets.ISO_8859_1
+                    ), null
+                )
+                // This is a ludicrous solution, but this undoes the escaping of the '#' character.
+                val unescaped =
+                    Files.readString(userConfigured.toPath(), StandardCharsets.ISO_8859_1).replace("\\#", "#")
+                Files.writeString(userConfigured.toPath(), unescaped, StandardCharsets.ISO_8859_1)
+            }
+            for (key in userConfiguredProperties.stringPropertyNames()) {
+                // The config follows this pattern for chat message keys: "[name].chat".
+                val enumRepresentation = ChatMessageType.fromPropertiesKey(key)
+                if (enumRepresentation != null) {
+                    val isEnabled = enumRepresentation.enabledKey?.let { yolo.config.getBoolean(it, true) } ?: true
+                    rawMessagesEnumMap[enumRepresentation] =
+                        RawChatMessage(userConfiguredProperties.getProperty(key), isEnabled)
+                }
+            }
+        } catch (e: IOException) {
+            // The file should already be present and readable because of the file check on the plugin being loaded.
+            // But just in case...
+            // No need for a content check here.
+            yolo.logger.severe { Yolo.pluginResourceBundle.getString("chatManager.initFailedUserProvided") }
+            yolo.saveResource("chat_messages.properties", true)
+            for (key in embedded.stringPropertyNames()) {
+                // The config follows this pattern for chat message keys: "[name].chat".
+                val enumRepresentation = ChatMessageType.fromPropertiesKey(key)
+                if (enumRepresentation != null) {
+                    val isEnabled = enumRepresentation.enabledKey?.let { yolo.config.getBoolean(it, true) } ?: true
+                    rawMessagesEnumMap[enumRepresentation] = RawChatMessage(embedded.getProperty(key), isEnabled)
+                }
+            }
         }
     }
 
     /**
      * This enum represents the different types of chat messages that can be sent by the Yolo plugin.
      */
-    enum class ChatMessageType {
+    internal enum class ChatMessageType {
         DEATH, TOTEM, PLAYER_ONLY_COMMAND, PLAYER_REVIVED;
 
         companion object {
@@ -143,115 +236,21 @@ internal object ChatManager : ReloadableManager {
             }
     }
 
-    private val yolo = Yolo.pluginInstance!!
-    private val rawMessagesEnumMap = EnumMap<ChatMessageType, RawChatMessage>(
-        ChatMessageType::class.java
-    )
-
-    init {
-        initMessages()
-    }
-
     /**
-     * Sends the specified chat message with optional replacements
-     * if the message is enabled and the specified key exists.
-     *
-     * @param targetAudience The [Audience], that should see the message.
-     * @param messageType The [ChatMessageType] of the chat message to send.
-     * @param replacements A mapping of strings to replace in the raw chat message.
+     * A container class for raw chat messages and their enabled status.
      */
-    fun trySend(targetAudience: Audience, messageType: ChatMessageType, replacements: HashMap<String, Component?>?) {
-        val rawMessage = rawMessagesEnumMap[messageType]
-        if (rawMessage == null) {
-            try {
-                throw IllegalArgumentException()
-            } catch (e: IllegalArgumentException) {
-                yolo.logger.severe {
-                    Yolo.pluginResourceBundle.getString("chatManager.noMessage")
-                        .replace("%trace%", ExceptionUtils.getStackTrace(e))
-                }
-            }
-            return
-        }
-
-        // Finally, send the message.
-        val toSend = rawMessage.returnComponent(replacements)
-        if (rawMessage.enabled) {
-            targetAudience.sendMessage(toSend)
-        }
-    }
-
-    override fun reload() {
-        initMessages()
-    }
-
-    private fun initMessages() {
-        rawMessagesEnumMap.clear()
-        val embedded = Properties()
-        try {
-            embedded.load(yolo.getResource("chat_messages.properties"))
-        } catch (e: IOException) {
-            // This should never happen on an embedded resource.
-        }
-        val userConfiguredProperties = Properties()
-        try {
-            // Try to load the messages, as configured in the plugin's data folder.
-            val userConfigured = Path.of(yolo.dataFolder.path + "/chat_messages.properties").toFile()
-            userConfiguredProperties.load(Files.newBufferedReader(userConfigured.toPath(), StandardCharsets.ISO_8859_1))
-
-            // Perform content/version check:
-            if (embedded.getProperty("version") != userConfiguredProperties.getProperty("version", "0")) {
-                val embeddedKeys = embedded.stringPropertyNames()
-                val loadedKeys = userConfiguredProperties.stringPropertyNames()
-                loadedKeys.iterator().forEachRemaining { key: String ->
-                    // Remove redundant keys:
-                    if (!embeddedKeys.contains(key)) {
-                        userConfiguredProperties.remove(key)
+    private data class RawChatMessage(val rawString: String, val enabled: Boolean) {
+        fun returnComponent(replacements: HashMap<String, Component?>?): Component {
+            var toReturn = MiniMessage.miniMessage().deserialize(rawString)
+            replacements?.forEach { replacement ->
+                replacement.value?.let {  value ->
+                    toReturn = toReturn.replaceText {
+                        it.matchLiteral(replacement.key)
+                        it.replacement(value)
                     }
                 }
-                embeddedKeys.iterator().forEachRemaining { key: String? ->
-                    // Add missing keys:
-                    userConfiguredProperties.putIfAbsent(key, embedded.getProperty(key))
-                }
-
-                // Update the file version:
-                userConfiguredProperties.setProperty("version", embedded.getProperty("version"))
-
-                // Finally, save the new version of the userConfiguredProperties.
-                userConfiguredProperties.store(
-                    Files.newBufferedWriter(
-                        userConfigured.toPath(),
-                        StandardCharsets.ISO_8859_1
-                    ), null
-                )
-                // This is a ludicrous solution, but this undoes the escaping of the '#' character.
-                val unescaped =
-                    Files.readString(userConfigured.toPath(), StandardCharsets.ISO_8859_1).replace("\\#", "#")
-                Files.writeString(userConfigured.toPath(), unescaped, StandardCharsets.ISO_8859_1)
             }
-            for (key in userConfiguredProperties.stringPropertyNames()) {
-                // The config follows this pattern for chat message keys: "[name].chat".
-                val enumRepresentation = ChatMessageType.fromPropertiesKey(key)
-                if (enumRepresentation != null) {
-                    val isEnabled = enumRepresentation.enabledKey?.let { yolo.config.getBoolean(it, true) } ?: true
-                    rawMessagesEnumMap[enumRepresentation] =
-                        RawChatMessage(userConfiguredProperties.getProperty(key), isEnabled)
-                }
-            }
-        } catch (e: IOException) {
-            // The file should already be present and readable because of the file check on the plugin being loaded.
-            // But just in case...
-            // No need for a content check here.
-            yolo.logger.severe { Yolo.pluginResourceBundle.getString("chatManager.initFailedUserProvided") }
-            yolo.saveResource("chat_messages.properties", true)
-            for (key in embedded.stringPropertyNames()) {
-                // The config follows this pattern for chat message keys: "[name].chat".
-                val enumRepresentation = ChatMessageType.fromPropertiesKey(key)
-                if (enumRepresentation != null) {
-                    val isEnabled = enumRepresentation.enabledKey?.let { yolo.config.getBoolean(it, true) } ?: true
-                    rawMessagesEnumMap[enumRepresentation] = RawChatMessage(embedded.getProperty(key), isEnabled)
-                }
-            }
+            return toReturn
         }
     }
 }

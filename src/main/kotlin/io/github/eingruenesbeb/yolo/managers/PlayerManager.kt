@@ -32,7 +32,6 @@ import io.github.eingruenesbeb.yolo.events.deathBan.PreDeathBanEventAsync
 import io.github.eingruenesbeb.yolo.events.revive.YoloPlayerRevivedEvent
 import io.github.eingruenesbeb.yolo.localizedMessageWithStackTrace
 import io.github.eingruenesbeb.yolo.managers.spicord.DiscordMessageType
-import io.github.eingruenesbeb.yolo.managers.spicord.safeSpicordManager
 import io.github.eingruenesbeb.yolo.player.DeathBanResult
 import io.github.eingruenesbeb.yolo.player.YoloPlayer
 import io.github.eingruenesbeb.yolo.player.YoloPlayerData
@@ -48,13 +47,11 @@ import org.bukkit.*
 import org.bukkit.entity.EnderCrystal
 import org.bukkit.entity.Player
 import org.bukkit.event.Event
-import org.bukkit.event.EventHandler
-import org.bukkit.event.EventPriority
-import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.*
 import org.bukkit.scheduler.BukkitRunnable
+import org.bukkit.scheduler.BukkitTask
 import org.jetbrains.annotations.VisibleForTesting
 import java.io.File
 import java.util.*
@@ -66,154 +63,12 @@ import java.util.concurrent.atomic.AtomicBoolean
  * It includes a nested class [YoloPlayer], which contains the player's UUID and their [YoloPlayerData] data.
  */
 @OptIn(ExperimentalSerializationApi::class)
-object PlayerManager {
-    internal class PlayerManagerEvents : Listener {
-        @EventHandler(ignoreCancelled = true)
-        fun onPlayerPreLoginAsync(event: AsyncPlayerPreLoginEvent) {
-            // Don't kick players if the death-ban functionality is disabled.
-            if (!Yolo.pluginInstance!!.isFunctionalityEnabled) return
-
-            // Pseudo-ban players, if they are dead:
-            val target = PlayerRegistry[event.uniqueId]
-            if (target.yoloPlayerData.isDead && !target.yoloPlayerData.isToRevive) pseudoBanPlayer(event.uniqueId, event)
-        }
-
-        @EventHandler(ignoreCancelled = true)
-        fun onPlayerJoin(event: PlayerJoinEvent) {
-            val playerInRegistry = PlayerRegistry[event.player.uniqueId]  // Automatically registers player.
-
-            if (playerInRegistry.yoloPlayerData.isUndoRevive) {
-                playerInRegistry.undoLastReviveActive()
-                pseudoBanPlayer(playerInRegistry.yoloPlayerData.uuid, null)
-            }
-
-            // Players may have been set to be revived, after they have respawned, when they have respawned during the
-            // plugin's death-ban functionality being disabled.
-            if (!event.player.isDead && playerInRegistry.yoloPlayerData.isToRevive) {
-                playerInRegistry.revivePlayer()
-            }
-
-            playerInRegistry.yoloPlayerData.ghostState.reinstateTicker()
-        }
-
-        @EventHandler(ignoreCancelled = true)
-        fun onPlayerQuit(event: PlayerQuitEvent) {
-            PlayerRegistry[event.player.uniqueId].yoloPlayerData.ghostState.stopTicker()
-        }
-
-        @EventHandler(ignoreCancelled = true)
-        fun onPlayerPostRespawn(event: PlayerPostRespawnEvent) {
-            // Players may be revived, even if death-ban functionality is disabled.
-            Bukkit.getScheduler().runTaskLater(
-                Yolo.pluginInstance!!,
-                Runnable {
-                    val playerInRegistry = PlayerRegistry[event.player.uniqueId]
-                    if (playerInRegistry.yoloPlayerData.isToRevive) {
-                        PlayerRegistry[event.player.uniqueId].revivePlayer()
-                    }
-                },
-                1
-            )
-        }
-
-        // Check potentially offensive actions by a recently revived player and force them out of their ghost-like
-        // state.
-        @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
-        fun onPlayerAttack(event: EntityDamageByEntityEvent) {  // For the plain old *BONK* on the head
-            if (event.damager is Player) {
-                event.isCancelled = PlayerRegistry[event.damager.uniqueId].yoloPlayerData.ghostState.enabled
-                if (!event.isCancelled) return
-                PlayerRegistry[event.damager.uniqueId].yoloPlayerData.ghostState.remove()
-                if (event.entity is EnderCrystal) event.entity.remove()
-            }
-        }
-
-        @EventHandler(priority = EventPriority.LOW)
-        fun onPlayerInteract(event: PlayerInteractEvent) {
-            val pvpItemMaterials = listOf(
-                Material.FLINT_AND_STEEL,
-                Material.BOW,
-                Material.CROSSBOW,
-                Material.SPLASH_POTION,
-                Material.LINGERING_POTION,
-                Material.LAVA_BUCKET,
-                Material.FIREWORK_ROCKET,
-                Material.FIRE_CHARGE,
-                Material.FISHING_ROD
-            )
-
-            if (!event.hasItem()) return
-            if (event.item!!.type in pvpItemMaterials) {
-                event.isCancelled = PlayerRegistry[event.player.uniqueId].yoloPlayerData.ghostState.enabled
-                if (event.useItemInHand() != Event.Result.DENY) return
-                PlayerRegistry[event.player.uniqueId].yoloPlayerData.ghostState.remove()
-                event.player.setCooldown(event.material, 20)
-            }
-        }
-
-        @EventHandler(ignoreCancelled = true)
-        fun onYoloPlayerRevived(event: YoloPlayerRevivedEvent) {
-            if (!event.finalResult.successful) pseudoBanPlayer(event.offlinePlayer.uniqueId, null)
-        }
-    }
-
-    private object SingularPlayerAutoSave : BukkitRunnable() {
-        private val queue = ConcurrentLinkedQueue<YoloPlayerData>()
-        private val isBusy = AtomicBoolean(false)
-        private val isEnabled = AtomicBoolean(false)
-
-        override fun run() {
-                while (queue.size > 0 || !isCancelled || isEnabled.get()) {
-                    val toSave = queue.poll() ?: break
-                    savePlayerData(toSave)
-                }
-
-                isBusy.set(false)
-        }
-
-        fun requestSave(data: YoloPlayerData) {
-            if (!isEnabled.get()) return
-            queue.offer(data)
-            if (!isBusy.get()) {
-                isBusy.set(true)
-                this.runTaskAsynchronously(yolo)
-            }
-        }
-
-        fun enable() {
-            isEnabled.set(true)
-        }
-
-        fun flushAndDisable() {
-            isEnabled.set(false)
-            queue.removeAll { true }
-            while (isBusy.get()) { /* Wait until no data is written by this runnable to avoid concurrent writes. */ }
-        }
-    }
-
+internal class PlayerManager {
     @VisibleForTesting
-    internal object PlayerRegistry : HashMap<UUID, YoloPlayer>() {
-        private fun readResolve(): Any = PlayerRegistry
+    internal val playerRegistry = PlayerRegistry()
 
-        override fun get(key: UUID): YoloPlayer {
-            return super.get(key) ?: YoloPlayer(YoloPlayerData(key, null)).also {
-                this[key] = it
-            }
-        }
-
-        override fun put(key: UUID, value: YoloPlayer): YoloPlayer? {
-            val previousValue = super.put(key, value)
-            SingularPlayerAutoSave.requestSave(value.yoloPlayerData)
-            return previousValue
-        }
-
-        override fun putAll(from: Map<out UUID, YoloPlayer>) {
-            super.putAll(from)
-            from.values.forEach { SingularPlayerAutoSave.requestSave(it.yoloPlayerData) }
-        }
-    }
-
-    private val yolo = Yolo.pluginInstance!!
+    private val yolo
+        get() = Yolo.pluginInstance!!
 
     init {
         yolo.logger.info { Yolo.pluginResourceBundle.getString("player.load.start") }  // TODO: remove
@@ -251,7 +106,7 @@ object PlayerManager {
 
         dataFilesWithUUID.forEach { (uuid, dataFile) ->
             runCatching {
-                PlayerRegistry[uuid] = YoloPlayer(Cbor.decodeFromByteArray(dataFile.readBytes()))
+                playerRegistry[uuid] = YoloPlayer(Cbor.decodeFromByteArray(dataFile.readBytes()))
             }.onFailure {
                 yolo.logger.severe { Yolo.pluginResourceBundle.getString("player.load.corruptedFile").replace("", uuid.toString()) }
                 throw it
@@ -270,7 +125,7 @@ object PlayerManager {
      */
     fun provideRevivable(): List<String> {
         val listOfRevivable = ArrayList<String>()
-        PlayerRegistry.forEach { (uuid: UUID, yoloPlayer: YoloPlayer) ->
+        playerRegistry.forEach { (uuid: UUID, yoloPlayer: YoloPlayer) ->
             val nameRetrieved = Bukkit.getOfflinePlayer(uuid).name
             if ( nameRetrieved != null && yoloPlayer.yoloPlayerData.isDead && !yoloPlayer.yoloPlayerData.isToRevive) {
                 listOfRevivable.add(nameRetrieved)
@@ -282,7 +137,7 @@ object PlayerManager {
     /**
      * Provides a list of the names from every player, who has been revived.
      */
-    fun provideRevived(): List<String> = PlayerRegistry.filter {
+    fun provideRevived(): List<String> = playerRegistry.filter {
             it.value.yoloPlayerData.revives.isNotEmpty()
         }.map {
             Bukkit.getOfflinePlayer(it.key).name
@@ -290,7 +145,7 @@ object PlayerManager {
 
     internal fun undoRevive(targetName: String): Boolean {
         val offlinePlayer = Bukkit.getOfflinePlayer(targetName)
-        val targetFromRegistry = PlayerRegistry[offlinePlayer.uniqueId]
+        val targetFromRegistry = playerRegistry[offlinePlayer.uniqueId]
 
         if (targetFromRegistry.yoloPlayerData.isToRevive) {
             targetFromRegistry.yoloPlayerData.isToRevive = false
@@ -326,7 +181,7 @@ object PlayerManager {
         setIsRestoreInventory: Boolean = true,
         setIsTeleportToDeathPos: Boolean = true
     ) {
-        val target = PlayerRegistry[Bukkit.getOfflinePlayer(targetName).uniqueId]
+        val target = playerRegistry[Bukkit.getOfflinePlayer(targetName).uniqueId]
         val successful = target.setIsToReviveOnDead(reviveOnJoin)
         if (!successful) throw IllegalStateException("Player has not been set to be revived!")
         target.yoloPlayerData.isRestoreInventory = setIsRestoreInventory
@@ -343,7 +198,7 @@ object PlayerManager {
      */
     internal fun teleportToRevivable(toTeleport: Player, targetName: String): Boolean {
         if (targetName == "") return false
-        val targetLocation = PlayerRegistry[Bukkit.getOfflinePlayer(targetName).uniqueId].yoloPlayerData.latestDeathPos
+        val targetLocation = playerRegistry[Bukkit.getOfflinePlayer(targetName).uniqueId].yoloPlayerData.latestDeathPos
         targetLocation ?: return false
         targetLocation.chunk.load()
         // No need to check for safety, as the teleported player is probably an admin.
@@ -356,7 +211,9 @@ object PlayerManager {
      * @param  deathEvent The death event.
      */
     internal fun actionsOnDeath(deathEvent: PlayerDeathEvent) {
-        val playerFromRegistry = PlayerRegistry[deathEvent.player.uniqueId]
+        if (deathEvent.player.hasPermission("yolo.exempt") || yolo.isFunctionalityEnabled) return
+
+        val playerFromRegistry = playerRegistry[deathEvent.player.uniqueId]
         val stringReplacementMap: HashMap<String, String?> = TextReplacements.provideStringDefaults(deathEvent, TextReplacements.ALL)
         val componentReplacementMap: HashMap<String, Component?> = TextReplacements.provideComponentDefaults(deathEvent, TextReplacements.ALL)
         var dynamicBanMessage = Yolo.pluginInstance!!.banMessage
@@ -422,10 +279,10 @@ object PlayerManager {
                     pseudoBanPlayer(deathEvent.player.uniqueId, null)
 
                     // It's about sending a message.
-                    if (safeSpicordManager()?.isSpicordBotAvailable == true) {
-                        safeSpicordManager()?.trySend(DiscordMessageType.DEATH, stringReplacementMap)
+                    if (yolo.spicordManager?.isSpicordBotAvailable == true) {
+                        yolo.spicordManager?.trySend(DiscordMessageType.DEATH, stringReplacementMap)
                     }
-                    ChatManager.trySend(Bukkit.getServer(), ChatManager.ChatMessageType.DEATH, componentReplacementMap)
+                    yolo.chatManager.trySend(Bukkit.getServer(), ChatManager.ChatMessageType.DEATH, componentReplacementMap)
                 }
 
                 postEventAsync.runTaskAsynchronously(yolo)
@@ -443,9 +300,88 @@ object PlayerManager {
      */
     internal fun saveAllPlayerData() {
         yolo.logger.info { Yolo.pluginResourceBundle.getString("player.saveData.start") }
-        SingularPlayerAutoSave.flushAndDisable()
-        PlayerRegistry.values.forEach { savePlayerData(it.yoloPlayerData) }
+        SingularPlayerAutoSave.cancelAndDisable()
+        playerRegistry.values.forEach { savePlayerData(it.yoloPlayerData) }
         yolo.logger.info { Yolo.pluginResourceBundle.getString("player.saveData.done") }
+    }
+
+    internal fun onPlayerJoin(event: PlayerJoinEvent) {
+        val playerInRegistry = playerRegistry[event.player.uniqueId]  // Automatically registers player.
+
+        if (playerInRegistry.yoloPlayerData.isUndoRevive) {
+            playerInRegistry.undoLastReviveActive()
+            pseudoBanPlayer(playerInRegistry.yoloPlayerData.uuid, null)
+        }
+
+        // Players may have been set to be revived, after they have respawned, when they have respawned during the
+        // plugin's death-ban functionality being disabled.
+        if (!event.player.isDead && playerInRegistry.yoloPlayerData.isToRevive) {
+            playerInRegistry.revivePlayer()
+        }
+
+        playerInRegistry.yoloPlayerData.ghostState.reinstateTicker()
+    }
+
+    internal fun onPlayerPreLoginAsync(event: AsyncPlayerPreLoginEvent) {
+        // Don't kick players if the death-ban functionality is disabled.
+        if (!Yolo.pluginInstance!!.isFunctionalityEnabled) return
+
+        // Pseudo-ban players, if they are dead:
+        val target = playerRegistry[event.uniqueId]
+        if (target.yoloPlayerData.isDead && !target.yoloPlayerData.isToRevive) pseudoBanPlayer(event.uniqueId, event)
+    }
+
+    internal fun onPlayerQuit(event: PlayerQuitEvent) {
+        playerRegistry[event.player.uniqueId].yoloPlayerData.ghostState.stopTicker()
+    }
+
+    internal fun onPlayerRespawned(event: PlayerPostRespawnEvent) {
+        // Players may be revived, even if death-ban functionality is disabled.
+        Bukkit.getScheduler().runTaskLater(
+            Yolo.pluginInstance!!,
+            Runnable {
+                val playerInRegistry = playerRegistry[event.player.uniqueId]
+                if (playerInRegistry.yoloPlayerData.isToRevive) {
+                    playerRegistry[event.player.uniqueId].revivePlayer()
+                }
+            },
+            1
+        )
+    }
+
+    internal fun onPlayerAttack(event: EntityDamageByEntityEvent) {
+        if (event.damager is Player) {
+            event.isCancelled = playerRegistry[event.damager.uniqueId].yoloPlayerData.ghostState.enabled
+            if (!event.isCancelled) return
+            playerRegistry[event.damager.uniqueId].yoloPlayerData.ghostState.remove()
+            if (event.entity is EnderCrystal) event.entity.remove()
+        }
+    }
+
+    internal fun onPlayerInteractEvent(event: PlayerInteractEvent) {
+        val pvpItemMaterials = listOf(
+            Material.FLINT_AND_STEEL,
+            Material.BOW,
+            Material.CROSSBOW,
+            Material.SPLASH_POTION,
+            Material.LINGERING_POTION,
+            Material.LAVA_BUCKET,
+            Material.FIREWORK_ROCKET,
+            Material.FIRE_CHARGE,
+            Material.FISHING_ROD
+        )
+
+        if (!event.hasItem()) return
+        if (event.item!!.type in pvpItemMaterials) {
+            event.isCancelled = playerRegistry[event.player.uniqueId].yoloPlayerData.ghostState.enabled
+            if (event.useItemInHand() != Event.Result.DENY) return
+            playerRegistry[event.player.uniqueId].yoloPlayerData.ghostState.remove()
+            event.player.setCooldown(event.material, 20)
+        }
+    }
+
+    internal fun onYoloPlayerRevived(event: YoloPlayerRevivedEvent) {
+        if (!event.finalResult.successful) pseudoBanPlayer(event.offlinePlayer.uniqueId, null)
     }
 
     private fun savePlayerData(yoloPlayerData: YoloPlayerData) {
@@ -467,7 +403,7 @@ object PlayerManager {
         val oldDataPath = yolo.dataFolder.absolutePath.plus("/data/yolo_player_data.json")
         val oldData = Json.decodeFromStream(LegacyPlayerDataMapKSerializer, File(oldDataPath).inputStream())
         oldData.forEach { (uuid, yoloPlayer) ->
-            PlayerRegistry[uuid] = yoloPlayer
+            playerRegistry[uuid] = yoloPlayer
         }
         saveAllPlayerData()
 
@@ -486,13 +422,68 @@ object PlayerManager {
      * @param preLoginEvent The corresponding event, if this method is called upon a player attempting to join.
      */
     private fun pseudoBanPlayer(playerUUID: UUID, preLoginEvent: AsyncPlayerPreLoginEvent?) {
-        PlayerRegistry[playerUUID].let {
+        playerRegistry[playerUUID].let {
             val message = it.yoloPlayerData.banMessage
             preLoginEvent?.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, message).also {
                 yolo.logger.info { Yolo.pluginResourceBundle.getString("player.deathBan.onJoin").replace("%uuid%", "$playerUUID") }
             } ?: Bukkit.getServer().getPlayer(playerUUID)?.kick(message, PlayerKickEvent.Cause.BANNED).also {
                 yolo.logger.info { Yolo.pluginResourceBundle.getString("player.deathBan.kick").replace("%uuid%, ", "$playerUUID") }
             }
+        }
+    }
+
+    private object SingularPlayerAutoSave : BukkitRunnable() {
+        private val queue = ConcurrentLinkedQueue<YoloPlayerData>()
+        private val isRunning = AtomicBoolean(false)
+        private val isEnabled = AtomicBoolean(false)
+        private var task: BukkitTask? = null
+
+        init {
+            task = runTaskAsynchronously(Yolo.pluginInstance!!)
+        }
+
+        override fun run() {
+            isRunning.set(true)
+            while (!isCancelled && isEnabled.get()) {
+                queue.poll()?.let { Yolo.pluginInstance!!.playerManager.savePlayerData(it) }
+            }
+            isRunning.set(false)
+        }
+
+        fun requestSave(data: YoloPlayerData) {
+            if (isEnabled.get()) queue.offer(data)
+        }
+
+        fun enable() {
+            isEnabled.set(true)
+        }
+
+        fun cancelAndDisable() {
+            task?.cancel()
+            while (isRunning.get()) { /* Wait until no data is written by this runnable to avoid concurrent writes. */ }
+            isEnabled.set(false)
+        }
+    }
+
+    @VisibleForTesting
+    internal class PlayerRegistry : HashMap<UUID, YoloPlayer>() {
+        private fun readResolve(): Any = this
+
+        override fun get(key: UUID): YoloPlayer {
+            return super.get(key) ?: YoloPlayer(YoloPlayerData(key, null)).also {
+                this[key] = it
+            }
+        }
+
+        override fun put(key: UUID, value: YoloPlayer): YoloPlayer? {
+            val previousValue = super.put(key, value)
+            SingularPlayerAutoSave.requestSave(value.yoloPlayerData)
+            return previousValue
+        }
+
+        override fun putAll(from: Map<out UUID, YoloPlayer>) {
+            super.putAll(from)
+            from.values.forEach { SingularPlayerAutoSave.requestSave(it.yoloPlayerData) }
         }
     }
 }

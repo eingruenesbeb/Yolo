@@ -47,9 +47,9 @@ class PlayerManagerTest {
         // Generated test data
         File("src/test/resources/examplePlayerData").copyRecursively(File(serverMock!!.pluginsFolder.path.plus("/Yolo-${Yolo.VERSION}/player_data")))
 
-        MockBukkit.load(Yolo::class.java)
+        val yolo = MockBukkit.load(Yolo::class.java)
 
-        val loadedData = PlayerManager.PlayerRegistry.values.map { it.yoloPlayerData }.sortedBy { it.uuid }
+        val loadedData = yolo.playerManager.playerRegistry.values.map { it.yoloPlayerData }.sortedBy { it.uuid }
         @OptIn(ExperimentalSerializationApi::class)
         val deserializedTestPlayerData = buildList {
             File("src/test/resources/examplePlayerData").listFiles()!!.forEach {
@@ -72,9 +72,9 @@ class PlayerManagerTest {
             }
         }.sortedBy { it.uuid }
 
-        MockBukkit.load(Yolo::class.java)
+        val yolo = MockBukkit.load(Yolo::class.java)
 
-        val loadedData = PlayerManager.PlayerRegistry.values.map { it.yoloPlayerData }.sortedBy { it.uuid }
+        val loadedData = yolo.playerManager.playerRegistry.values.map { it.yoloPlayerData }.sortedBy { it.uuid }
 
         assert(loadedData == deserializedConvertedData) /*{
             "Loaded Data:\n$loadedData\nActual data:\n$deserializedConvertedData"
@@ -92,10 +92,10 @@ class PlayerManagerTest {
 
         val yolo = MockBukkit.load(Yolo::class.java)
 
-        PlayerManager.PlayerRegistry.putAll(testData.associate { it.uuid to YoloPlayer(it) })
+        yolo.playerManager.playerRegistry.putAll(testData.associate { it.uuid to YoloPlayer(it) })
         with(newRandomPlayerEntry()) {
             testData.add(this)
-            PlayerManager.PlayerRegistry[this.uuid] = YoloPlayer(this)
+            yolo.playerManager.playerRegistry[this.uuid] = YoloPlayer(this)
         }
 
         TimeUnit.SECONDS.sleep(1)  // This shouldn't take longer than 3 seconds.
@@ -123,8 +123,8 @@ class PlayerManagerTest {
         val yolo = MockBukkit.load(Yolo::class.java)
         val playerDataFolder = File(yolo.dataFolder.path.plus("/player_data"))
 
-        PlayerManager.PlayerRegistry.putAll(testData.associate { it.uuid to YoloPlayer(it) })
-        PlayerManager.saveAllPlayerData()
+        yolo.playerManager.playerRegistry.putAll(testData.associate { it.uuid to YoloPlayer(it) })
+        yolo.playerManager.saveAllPlayerData()
 
         val savedDataDeserialized = buildList {
             playerDataFolder.listFiles()!!.forEach {
@@ -151,7 +151,7 @@ class PlayerManagerTest {
 
             MockBukkit.load(Yolo::class.java)
             // Directory to store the generated .cbor files
-            val outputDir = File("/home/timr/Dev-stuff/Minecraft/Plugins/Yolo/src/test/resources/examplePlayerData")
+            val outputDir = File("src/test/resources/examplePlayerData")
             if (!outputDir.exists()) {
                 outputDir.mkdir()
             }
@@ -225,7 +225,7 @@ class PlayerManagerTest {
                 this.addSimpleWorld("world_nether")
             }
 
-            val outputDir = File("/home/timr/Dev-stuff/Minecraft/Plugins/Yolo/src/test/resources/exampleLegacyPlayerData")
+            val outputDir = File("src/test/resources/exampleLegacyPlayerData")
             if (!outputDir.exists()) {
                 outputDir.mkdir()
             }

@@ -36,7 +36,7 @@ import java.util.*
 /**
  * This object manages every aspect regarding functionality for sending Discord messages via Spicord.
  */
-internal object SpicordManager : ReloadableManager {
+internal class SpicordManager : ReloadableManager {
     /**
      * Used to store the raw string data and enabled status of a discord embed. All potential [RawDiscordEmbed]s are
      * stored within the private value [rawDiscordEmbedEnumMap] for look-ups and don't have any other apparent use

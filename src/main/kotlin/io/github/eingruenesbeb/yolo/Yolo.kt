@@ -22,7 +22,7 @@ import io.github.eingruenesbeb.yolo.commands.CommandRegistrar
 import io.github.eingruenesbeb.yolo.managers.ChatManager
 import io.github.eingruenesbeb.yolo.managers.PlayerManager
 import io.github.eingruenesbeb.yolo.managers.ResourcePackManager
-import io.github.eingruenesbeb.yolo.managers.spicord.safeSpicordManager
+import io.github.eingruenesbeb.yolo.managers.spicord.SpicordManager
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Bukkit
@@ -31,7 +31,6 @@ import java.io.File
 import java.io.IOException
 import java.util.*
 
-// It may be interesting to implement PAPI support in the future.
 /**
  * A Bukkit plugin that adds features related to player deaths and Discord integration.
  * This is the main class of that plugin.
@@ -54,6 +53,11 @@ open class Yolo : JavaPlugin() {
      */
     var isFunctionalityEnabled = false
         private set
+
+    internal lateinit var playerManager: PlayerManager
+    internal lateinit var chatManager: ChatManager
+    internal lateinit var resourcePackManager: ResourcePackManager
+    internal var spicordManager: SpicordManager? = null
 
     /**
      * Contains the configured ban-message, to be shown to players, banned by this plugin, without any replacements
@@ -81,20 +85,19 @@ open class Yolo : JavaPlugin() {
         isFunctionalityEnabled = (Bukkit.isHardcore() || config.getBoolean("enable_on_non_hc", false)) && !config.getBoolean("easy_disable", false)
 
         // Initialize managers:
-        safeSpicordManager()
-        ChatManager
-        PlayerManager
-        ResourcePackManager
+        spicordManager = if (Bukkit.getPluginManager().isPluginEnabled("Spicord")) SpicordManager() else null
+        chatManager = ChatManager()
+        playerManager = PlayerManager()
+        resourcePackManager = ResourcePackManager()
 
         server.pluginManager.registerEvents(YoloEventListener(), this)
-        server.pluginManager.registerEvents(PlayerManager.PlayerManagerEvents(), this)
         val commandRegistrar = CommandRegistrar()
         commandRegistrar.registerCommands()
     }
 
     override fun onDisable() {
         // Plugin shutdown logic
-        PlayerManager.saveAllPlayerData()
+        playerManager.saveAllPlayerData()
     }
 
     /**
@@ -107,9 +110,9 @@ open class Yolo : JavaPlugin() {
 
         // May do some fancy shenanigans later, by reloading classes that implement `ReloadableManager`, later.
         // For now, that's just not worth it, with only three classes that need that.
-        ResourcePackManager.reload()
-        ChatManager.reload()
-        safeSpicordManager()?.reload()
+        resourcePackManager.reload()
+        chatManager.reload()
+        spicordManager?.reload()
 
         var rawBanMessage: String
         val banMessageFile = File(dataFolder.path.plus("/ban_message.txt"))
@@ -130,30 +133,30 @@ open class Yolo : JavaPlugin() {
         // Guarantee the existence of the data folder.
         dataFolder.mkdirs()
 
-        // (With content checks, no subdir) config.yml:
+        // (With content checks, no subdirectory) config.yml:
         saveDefaultConfig()
         validateConfigVersion()
 
-        // (No content checks, in subdir) death_message.json:
+        // (No content checks, in subdirectory) death_message.json:
         if (!File(dataFolder.path + "/discord/death_message.json").exists()) {
             saveResource("discord/death_message.json", false)
         }
-        // (No content checks, in subdir)
+        // (No content checks, in subdirectory)
         if (!File(dataFolder.path + "/discord/totem_use_message.json").exists()) {
             saveResource("discord/totem_use_message.json", false)
         }
 
-        // (No content checks, in subdir)
+        // (No content checks, in subdirectory)
         if (!File(dataFolder.path + "/discord/player_revive.json").exists()) {
             saveResource("discord/player_revive.json", false)
         }
 
-        // (Deferred content checks, no subdir)
+        // (Deferred content checks, no subdirectory)
         if (!File(dataFolder.path + "/chat_messages.properties").exists()) {
             saveResource("chat_messages.properties", false)
         }
 
-        // (No content checks, no subdir)
+        // (No content checks, no subdirectory)
         if(!File(dataFolder.path + "/ban_message.txt").exists()) {
             saveResource("ban_message.txt", false)
         }

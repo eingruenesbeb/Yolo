@@ -44,7 +44,6 @@ dependencies {
     compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
     compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.6.3")
 
-
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.0")
     testImplementation("com.github.seeseemelk:MockBukkit-v1.21:3.127.1")
     testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")

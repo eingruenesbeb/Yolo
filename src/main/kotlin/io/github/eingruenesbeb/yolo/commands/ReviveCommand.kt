@@ -46,7 +46,7 @@ internal class ReviveCommand : TabExecutor {
             } catch (e: IndexOutOfBoundsException) {
                 true
             }
-            PlayerManager.setReviveOnUser(args[0], true, restoreInventory, teleportToDeathPos)
+            Yolo.pluginInstance!!.playerManager.setReviveOnUser(args[0], true, restoreInventory, teleportToDeathPos)
             sender.sendMessage(MiniMessage.miniMessage().deserialize(Yolo.pluginResourceBundle.getString("player.revive.set").replace("%player_name%", args[0])))
         } catch (e: IllegalArgumentException) {
             return false
@@ -65,6 +65,6 @@ internal class ReviveCommand : TabExecutor {
         label: String,
         args: Array<String>
     ): List<String> {
-        return PlayerManager.provideRevivable()
+        return Yolo.pluginInstance!!.playerManager.provideRevivable()
     }
 }

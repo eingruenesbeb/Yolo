@@ -1,7 +1,6 @@
 package io.github.eingruenesbeb.yolo.commands
 
 import io.github.eingruenesbeb.yolo.Yolo
-import io.github.eingruenesbeb.yolo.managers.PlayerManager
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
@@ -14,7 +13,7 @@ class UndoReviveCommand : TabExecutor {
         label: String,
         args: Array<out String>?
     ): List<String> {
-        return PlayerManager.provideRevived()
+        return Yolo.pluginInstance!!.playerManager.provideRevived()
     }
 
     override fun onCommand(
@@ -24,7 +23,7 @@ class UndoReviveCommand : TabExecutor {
         args: Array<out String>?
     ): Boolean {
         return args?.first()?.let { playerNameArg ->
-            PlayerManager.undoRevive(playerNameArg).also {
+            Yolo.pluginInstance!!.playerManager.undoRevive(playerNameArg).also {
                 if (it) sender.sendMessage(MiniMessage.miniMessage().deserialize(Yolo.pluginResourceBundle.getString("player.revive.undo.success")))
                 else sender.sendMessage(MiniMessage.miniMessage().deserialize(Yolo.pluginResourceBundle.getString("player.revive.undo.fail")))
             }

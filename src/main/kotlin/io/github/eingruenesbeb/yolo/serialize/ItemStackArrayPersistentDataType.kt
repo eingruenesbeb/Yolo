@@ -43,11 +43,6 @@ import java.io.Serializable
  */
 class ItemStackArrayPersistentDataType : PersistentDataType<Array<PersistentDataContainer>, Array<ItemStack?>> {
     private data class IndexedItemStackData(val index: Int, val itemStackData: ByteArray) : Serializable {
-        companion object {
-            @Suppress("ConstPropertyName")
-            private const val serialVersionUID = 1L
-        }
-
         fun convertDataToItemStack(): ItemStack {
             return ItemStack.deserializeBytes(itemStackData)
         }

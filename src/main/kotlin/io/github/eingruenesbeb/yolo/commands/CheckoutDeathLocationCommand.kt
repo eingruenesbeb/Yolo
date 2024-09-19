@@ -19,6 +19,7 @@
 
 package io.github.eingruenesbeb.yolo.commands
 
+import io.github.eingruenesbeb.yolo.Yolo
 import io.github.eingruenesbeb.yolo.managers.ChatManager
 import io.github.eingruenesbeb.yolo.managers.PlayerManager
 import org.bukkit.command.Command
@@ -54,7 +55,7 @@ internal class CheckoutDeathLocationCommand : TabExecutor {
         label: String,
         args: Array<out String>?
     ): List<String> {
-        return PlayerManager.provideRevivable()
+        return Yolo.pluginInstance!!.playerManager.provideRevivable()
     }
 
     /**
@@ -69,10 +70,10 @@ internal class CheckoutDeathLocationCommand : TabExecutor {
      */
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>?): Boolean {
         if (sender !is Player) {
-            ChatManager.trySend(sender, ChatManager.ChatMessageType.PLAYER_ONLY_COMMAND, null)
+            Yolo.pluginInstance!!.chatManager.trySend(sender, ChatManager.ChatMessageType.PLAYER_ONLY_COMMAND, null)
             return false
         }
 
-        return PlayerManager.teleportToRevivable(sender, args?.get(0) ?: "")
+        return Yolo.pluginInstance!!.playerManager.teleportToRevivable(sender, args?.get(0) ?: "")
     }
 }

@@ -41,7 +41,6 @@ import org.bukkit.event.HandlerList
  * @see YoloPlayerData
  * @see ReviveResult
  */
-@Suppress("MemberVisibilityCanBePrivate", "unused")
 class YoloPlayerRevivedEvent internal constructor(
     override val yoloPlayerInformation: YoloPlayerData,
     val finalResult: ReviveResult,
@@ -49,6 +48,7 @@ class YoloPlayerRevivedEvent internal constructor(
     companion object {
         private val handlerList = HandlerList()
 
+        @Suppress("unused")
         @JvmStatic
         fun getHandlerList() = handlerList
     }
